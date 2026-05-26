@@ -12,23 +12,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('head')
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col">
 
     @auth
-        <nav class="bg-pachon-green text-white shadow">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 font-bold text-lg">
-                    <span>⚽</span>
-                    <span>Soy Pachón Mundial</span>
-                </a>
-                <div class="flex items-center gap-4 text-sm">
-                    <span class="hidden sm:inline text-white/80">{{ auth()->user()->name }}</span>
+        <nav class="bg-pachon-green text-white shadow" x-data="{ open: false }">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a href="{{ route('predictions.index') }}" class="flex items-center gap-2 font-bold text-lg shrink-0">
+                        <span>⚽</span>
+                        <span class="hidden sm:inline">Soy Pachón Mundial</span>
+                        <span class="sm:hidden">SoyPachón</span>
+                    </a>
+
+                    <!-- Desktop nav -->
+                    <div class="hidden md:flex items-center gap-1 text-sm">
+                        @php $route = request()->route()?->getName(); @endphp
+                        <a href="{{ route('predictions.index') }}"
+                           class="px-3 py-2 rounded-md transition {{ str_starts_with($route, 'predictions.') ? 'bg-pachon-green-dark' : 'hover:bg-white/10' }}">
+                            Mis Pronósticos
+                        </a>
+                        <a href="{{ route('ranking.index') }}"
+                           class="px-3 py-2 rounded-md transition {{ str_starts_with($route, 'ranking.') ? 'bg-pachon-green-dark' : 'hover:bg-white/10' }}">
+                            Ranking
+                        </a>
+                        <a href="{{ route('profile.show') }}"
+                           class="px-3 py-2 rounded-md transition {{ str_starts_with($route, 'profile.') ? 'bg-pachon-green-dark' : 'hover:bg-white/10' }}">
+                            Mi Perfil
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="ml-2">
+                            @csrf
+                            <button type="submit" class="bg-pachon-green-dark hover:bg-black/20 px-3 py-2 rounded-md transition">
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Mobile toggle -->
+                    <button type="button" class="md:hidden p-2 rounded-md hover:bg-white/10" @click="open = !open">
+                        <svg x-show="!open" class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                        <svg x-show="open" x-cloak class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Mobile menu -->
+                <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1">
+                    <a href="{{ route('predictions.index') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Mis Pronósticos</a>
+                    <a href="{{ route('ranking.index') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Ranking</a>
+                    <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Mi Perfil</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="bg-pachon-green-dark hover:bg-black/20 px-3 py-1.5 rounded-md transition">
-                            Cerrar sesión
-                        </button>
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-md hover:bg-white/10">Cerrar Sesión</button>
                     </form>
                 </div>
             </div>
@@ -37,7 +76,7 @@
 
     <main class="flex-1">
         @if (session('status'))
-            <div class="max-w-2xl mx-auto mt-4 px-4">
+            <div class="max-w-3xl mx-auto mt-4 px-4">
                 <div class="bg-pachon-gold/20 border border-pachon-gold text-pachon-green-dark px-4 py-3 rounded">
                     {{ session('status') }}
                 </div>

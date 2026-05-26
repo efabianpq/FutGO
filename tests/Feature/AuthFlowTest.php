@@ -59,8 +59,10 @@ class AuthFlowTest extends TestCase
         $this->assertSame($user->id, (int) $invitation->used_by_user_id);
         $this->assertNotNull($invitation->used_at);
 
-        // El dashboard ahora carga 200
-        $this->get(route('dashboard'))->assertOk();
+        // /dashboard ahora redirige a /predictions (alias compatible)
+        $this->get(route('dashboard'))->assertRedirect(route('predictions.index'));
+        // y /predictions carga 200
+        $this->get(route('predictions.index'))->assertOk();
 
         // ---------- 5. Cerrar sesión ----------
         $this->post(route('logout'))->assertRedirect(route('login'));
