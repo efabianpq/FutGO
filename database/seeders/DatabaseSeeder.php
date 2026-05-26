@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             EliminatorySeeder::class,
             AdminUserSeeder::class,
             TestUsersSeeder::class,
+            InvitationCodeSeeder::class,
         ]);
     }
 }

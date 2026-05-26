@@ -1,32 +1,30 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+@extends('layouts.app')
 
-        <title>{{ config('app.name', 'SoyPachonMundial') }}</title>
+@section('title', 'Soy Pachón Mundial — Polla del Mundial 2026')
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+@section('content')
+<div class="min-h-[calc(100vh-8rem)] bg-gradient-to-br from-pachon-green to-pachon-green-dark flex items-center justify-center text-white -mt-px">
+    <div class="container mx-auto px-6 py-16 text-center">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">⚽ Soy Pachón Mundial</h1>
+        <p class="text-xl text-pachon-gold font-semibold mb-2">Polla del Mundial FIFA 2026</p>
+        <p class="text-white/80 max-w-2xl mx-auto mb-8">
+            Pronostica los 104 partidos del Mundial, compite con tus amigos y gana premios reales.
+        </p>
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased bg-gradient-to-br from-pachon-green to-pachon-green-dark min-h-screen text-white">
-        <div class="container mx-auto px-6 py-16 text-center">
-            <h1 class="text-5xl md:text-6xl font-bold mb-4">
-                ⚽ Soy Pachón Mundial
-            </h1>
-            <p class="text-xl text-pachon-gold font-semibold mb-2">
-                Polla del Mundial FIFA 2026
-            </p>
-            <p class="text-white/80 max-w-2xl mx-auto">
-                Plataforma de pronósticos para el Mundial 2026. Estructura base lista — Fase 1 MVP en desarrollo.
-            </p>
-
-            <div class="mt-12 inline-block bg-white/10 backdrop-blur rounded-xl px-6 py-4 ring-1 ring-white/20">
-                <p class="text-sm text-white/70">Laravel {{ app()->version() }} · PHP {{ PHP_VERSION }}</p>
+        @guest
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{{ route('login') }}" class="bg-white text-pachon-green hover:bg-pachon-gold hover:text-white font-semibold py-3 px-6 rounded-lg transition">
+                    Iniciar sesión
+                </a>
+                <a href="{{ route('register') }}" class="bg-pachon-gold hover:bg-pachon-gold-dark text-white font-semibold py-3 px-6 rounded-lg transition">
+                    Crear cuenta
+                </a>
             </div>
-        </div>
-    </body>
-</html>
+        @else
+            <a href="{{ route('dashboard') }}" class="inline-block bg-pachon-gold hover:bg-pachon-gold-dark text-white font-semibold py-3 px-6 rounded-lg transition">
+                Ir al dashboard
+            </a>
+        @endguest
+    </div>
+</div>
+@endsection
