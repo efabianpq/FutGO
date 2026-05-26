@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\RankingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class ActivationController extends Controller
         return view('auth.activate');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RankingService $ranking): RedirectResponse
     {
         $data = $request->validate([
             'code' => ['required', 'string', 'max:20'],
@@ -51,11 +52,16 @@ class ActivationController extends Controller
             return true;
         });
 
+        if ($activated) {
+            $ranking->ensureRankingRow($user->id);
+        }
+
         if (! $activated) {
             return back()->withErrors([
                 'code' => 'Código incorrecto o ya utilizado.',
             ]);
         }
+
 
         return redirect()->route('dashboard')->with('status', '¡Bienvenido! Ya puedes comenzar a pronosticar.');
     }

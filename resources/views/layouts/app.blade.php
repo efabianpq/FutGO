@@ -16,6 +16,20 @@
 </head>
 <body class="font-sans antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col">
 
+    @guest
+        <nav class="bg-pachon-green text-white shadow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-14">
+                <a href="{{ route('home') }}" class="font-bold flex items-center gap-2">
+                    <span>⚽</span><span>Soy Pachón Mundial</span>
+                </a>
+                <div class="flex items-center gap-2 text-sm">
+                    <a href="{{ route('ranking.index') }}" class="px-3 py-1.5 rounded-md hover:bg-white/10">Ranking</a>
+                    <a href="{{ route('login') }}" class="px-3 py-1.5 rounded-md bg-pachon-green-dark hover:bg-black/20">Iniciar sesión</a>
+                </div>
+            </div>
+        </nav>
+    @endguest
+
     @auth
         <nav class="bg-pachon-green text-white shadow" x-data="{ open: false }">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

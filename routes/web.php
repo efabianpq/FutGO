@@ -14,6 +14,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Ranking público (sin auth)
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+Route::get('/ranking/data', [RankingController::class, 'data'])->name('ranking.data');
+Route::get('/ranking/u/{user}', [RankingController::class, 'show'])->name('ranking.show');
+
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
@@ -42,7 +47,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/predictions/states', [PredictionsController::class, 'states'])->name('predictions.states');
         Route::post('/predictions/{game}', [PredictionsController::class, 'update'])->name('predictions.update');
 
-        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
 
         // Alias compatible con código previo (post-login y post-activación)
