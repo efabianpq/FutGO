@@ -50,29 +50,11 @@
         </div>
     </div>
 
-    {{-- Top 3 destacados --}}
-    <div x-show="rows.length >= 3" x-cloak class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <template x-for="row in rows.slice(0, 3)" :key="row.user_id">
-            <a :href="userShowBase + '/' + row.user_id"
-               class="block bg-white border border-line rounded-md shadow-card p-5 text-center hover:shadow-card-2 transition-all duration-fast"
-               :class="row.current_position === 1 ? 'ring-2 ring-gol' : ''">
-                <div class="font-display font-extrabold text-[40px] leading-none"
-                     :class="row.current_position === 1 ? 'text-gol-deep' : (row.current_position === 2 ? 'text-[#8a8a8a]' : 'text-[#b87333]')"
-                     x-text="row.current_position === 1 ? '🥇' : (row.current_position === 2 ? '🥈' : '🥉')"></div>
-                <p class="font-display font-bold text-display-s text-ink uppercase mt-3 truncate" x-text="row.name"></p>
-                <p class="font-display font-extrabold text-display-l text-pitch mt-3 leading-none" x-text="row.total_points + ''"></p>
-                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mt-2">
-                    <span x-text="row.exact_predictions"></span> exactos
-                </p>
-            </a>
-        </template>
-    </div>
-
-    {{-- Tabla completa --}}
+    {{-- Tabla completa (medallas 🥇🥈🥉 ya integradas en las primeras 3 filas) --}}
     <x-leaderboard :alpine="true" />
 
     <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mt-4">
-        Tip — Hacé clic en cualquier nombre para ver la auditoría partido a partido.
+        Tip — Usá el botón "Ver pronósticos" para entrar al detalle de cada participante.
     </p>
 </div>
 

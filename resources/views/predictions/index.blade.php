@@ -14,7 +14,8 @@
         },
         csrf: document.querySelector('meta[name=csrf-token]').content,
      })"
-     x-init="init()">
+     x-init="init()"
+     @open-predictions-modal.window="openPredictionsModal($event.detail.matchId)">
 
     {{-- Hero pequeño --}}
     <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
@@ -115,13 +116,14 @@
                                     <span x-show="!row.prediction" class="font-body italic text-body-s text-ink-mute">Sin pronóstico</span>
                                 </td>
                                 <td class="px-5 py-3 text-right">
+                                    {{-- Mismas clases que match-card y ranking/show para coherencia visual --}}
                                     <template x-if="row.points_earned !== null">
-                                        <span class="font-mono text-[10.5px] tracking-wide-label uppercase px-2.5 py-1 rounded-pill font-bold"
-                                              :class="row.points_earned === 5 ? 'bg-gol text-pitch' :
-                                                      (row.points_earned === 3 ? 'bg-pitch text-bone' :
-                                                      (row.points_earned === 2 ? 'bg-pitch-mist text-pitch' :
-                                                      (row.points_earned === 1 ? 'bg-gol/40 text-pitch' :
-                                                      'bg-line-soft text-ink-soft')))"
+                                        <span class="inline-flex items-center font-display font-bold border rounded-pill tracking-wide-label uppercase px-2.5 py-1 text-[11px]"
+                                              :class="row.points_earned === 5 ? 'bg-gol text-pitch border-gol-deep' :
+                                                      (row.points_earned === 3 ? 'bg-pitch text-bone border-pitch-deep' :
+                                                      (row.points_earned === 2 ? 'bg-pitch-mist text-pitch border-pitch' :
+                                                      (row.points_earned === 1 ? 'bg-gol/30 text-pitch-deep border-gol/50' :
+                                                      'bg-line-soft text-ink-mute border-line')))"
                                               x-text="row.points_earned + ' pts'"></span>
                                     </template>
                                     <template x-if="row.points_earned === null">

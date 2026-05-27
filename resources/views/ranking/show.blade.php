@@ -4,13 +4,15 @@
 
 @php
     if (! function_exists('points_class')) {
+        // Colorimetría unificada con match-card.blade.php y modal de predictions/index.blade.php.
+        // Mantiene las 5 categorías distinguibles dentro del design system.
         function points_class($p) {
             return match ((int) $p) {
-                5 => 'bg-amber-100 text-amber-900 border-amber-400',
-                3 => 'bg-emerald-100 text-emerald-900 border-emerald-400',
-                2 => 'bg-blue-100 text-blue-900 border-blue-400',
-                1 => 'bg-yellow-100 text-yellow-900 border-yellow-400',
-                default => 'bg-gray-100 text-gray-700 border-gray-300',
+                5 => 'bg-gol text-pitch border-gol-deep',
+                3 => 'bg-pitch text-bone border-pitch-deep',
+                2 => 'bg-pitch-mist text-pitch border-pitch',
+                1 => 'bg-gol/30 text-pitch-deep border-gol/50',
+                default => 'bg-line-soft text-ink-mute border-line',
             };
         }
     }
@@ -102,15 +104,7 @@
                         </thead>
                         <tbody class="divide-y divide-line-soft">
                             @foreach ($phase['rows'] as $row)
-                                @php
-                                    $pts = (int) $row['points_earned'];
-                                    $badgeVariant = match ($pts) {
-                                        5, 3 => 'win',
-                                        2 => 'default',
-                                        1 => 'win',
-                                        default => 'upcoming',
-                                    };
-                                @endphp
+                                @php $pts = (int) $row['points_earned']; @endphp
                                 <tr class="hover:bg-bone-soft transition-colors duration-fast">
                                     <td class="px-4 py-3 font-mono text-[11px] tracking-wide-eyebrow uppercase text-ink-mute whitespace-nowrap">#{{ $row['match_number'] }}</td>
                                     <td class="px-4 py-3">
@@ -133,7 +127,9 @@
                                     </td>
                                     <td class="px-4 py-3 text-right font-display font-extrabold text-display-s text-ink whitespace-nowrap">{{ $row['official'] }}</td>
                                     <td class="px-4 py-3 text-right whitespace-nowrap">
-                                        <x-badge :variant="$badgeVariant">{{ $pts }} pts</x-badge>
+                                        <span class="inline-flex items-center font-display font-bold border rounded-pill tracking-wide-label uppercase px-2.5 py-1 text-[11px] {{ points_class($pts) }}">
+                                            {{ $pts }} pts
+                                        </span>
                                     </td>
                                 </tr>
                             @endforeach
