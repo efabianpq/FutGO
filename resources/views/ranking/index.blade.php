@@ -39,12 +39,12 @@
                x-text="prizes.first === null ? 'Por definir' : formatMoney(prizes.first)"></p>
         </div>
         <div class="bg-white border border-line rounded-md shadow-card p-4">
-            <p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥈 2do puesto (20%)</p>
+            <p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥈 2do puesto (25%)</p>
             <p class="font-display font-extrabold text-display-s text-ink-soft mt-2"
                x-text="prizes.second === null ? 'Por definir' : formatMoney(prizes.second)"></p>
         </div>
         <div class="bg-white border border-line rounded-md shadow-card p-4">
-            <p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥉 3er puesto (10%)</p>
+            <p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥉 3er puesto (15%)</p>
             <p class="font-display font-extrabold text-display-s text-[#b87333] mt-2"
                x-text="prizes.third === null ? 'Por definir' : formatMoney(prizes.third)"></p>
         </div>

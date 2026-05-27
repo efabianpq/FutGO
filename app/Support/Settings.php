@@ -99,12 +99,15 @@ class Settings
             return ['pool' => null, 'first' => null, 'second' => null, 'third' => null, 'platform' => null];
         }
 
+        // Distribución oficial: 60% / 25% / 15% — el 100% del acumulado
+        // se reparte entre los tres primeros puestos. Costos operativos
+        // se cubren aparte (no se descuentan del pozo).
         return [
             'pool' => $pool,
             'first' => (int) round($pool * 0.60),
-            'second' => (int) round($pool * 0.20),
-            'third' => (int) round($pool * 0.10),
-            'platform' => (int) round($pool * 0.10),
+            'second' => (int) round($pool * 0.25),
+            'third' => (int) round($pool * 0.15),
+            'platform' => 0,
         ];
     }
 }

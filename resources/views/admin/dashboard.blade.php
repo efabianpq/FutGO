@@ -30,9 +30,9 @@
             <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-4">💰 Desglose de premios</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥇 60%</p><p class="font-display font-extrabold text-display-s text-gol-deep mt-1">{{ number_format($prizes['first'], 0, ',', '.') }}</p></div>
-                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥈 20%</p><p class="font-display font-extrabold text-display-s text-ink-soft mt-1">{{ number_format($prizes['second'], 0, ',', '.') }}</p></div>
-                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥉 10%</p><p class="font-display font-extrabold text-display-s text-[#b87333] mt-1">{{ number_format($prizes['third'], 0, ',', '.') }}</p></div>
-                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Plataforma 10%</p><p class="font-display font-extrabold text-display-s text-ink-mute mt-1">{{ number_format($prizes['platform'], 0, ',', '.') }}</p></div>
+                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥈 25%</p><p class="font-display font-extrabold text-display-s text-ink-soft mt-1">{{ number_format($prizes['second'], 0, ',', '.') }}</p></div>
+                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">🥉 15%</p><p class="font-display font-extrabold text-display-s text-[#b87333] mt-1">{{ number_format($prizes['third'], 0, ',', '.') }}</p></div>
+                <div><p class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Total premios 100%</p><p class="font-display font-extrabold text-display-s text-ink mt-1">{{ number_format($prizes['first']+$prizes['second']+$prizes['third'], 0, ',', '.') }}</p></div>
             </div>
         </div>
     @endif

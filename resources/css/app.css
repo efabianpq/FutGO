@@ -104,10 +104,17 @@
 
 /* ─── Base body overrides (después de Tailwind base) ────── */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background: var(--color-bone);
     color: var(--color-ink);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+  }
+  /* Anchor targets: dejar espacio para el navbar sticky */
+  section[id] {
+    scroll-margin-top: 80px;
   }
 }

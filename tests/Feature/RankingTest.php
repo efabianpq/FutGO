@@ -52,10 +52,10 @@ class RankingTest extends TestCase
         $response = $this->actingAs($user)->get(route('ranking.index'));
         $response->assertOk();
 
-        // JSON inicial dentro de la vista
+        // JSON inicial dentro de la vista — distribución 60/25/15
         $response->assertSee('600000', false); // 60%
-        $response->assertSee('200000', false); // 20%
-        $response->assertSee('100000', false); // 10%
+        $response->assertSee('250000', false); // 25%
+        $response->assertSee('150000', false); // 15%
     }
 
     public function test_data_endpoint_devuelve_filas_ordenadas(): void

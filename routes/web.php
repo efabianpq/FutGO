@@ -21,6 +21,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Página pública "¿Cómo funciona?" — accesible para guests, auth no-activos y activos
+Route::view('/como-funciona', 'como-funciona')->name('how-it-works');
+
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
