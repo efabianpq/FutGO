@@ -16,6 +16,7 @@ class SettingsController extends Controller
             'prize_pool' => Settings::prizePool(),
             'tournament_name' => Settings::tournamentName(),
             'welcome_message' => Settings::welcomeMessage(),
+            'video_url' => Settings::videoUrl(),
         ]);
     }
 
@@ -25,6 +26,7 @@ class SettingsController extends Controller
             'prize_pool' => ['nullable', 'integer', 'min:0', 'max:9999999999'],
             'tournament_name' => ['required', 'string', 'max:100'],
             'welcome_message' => ['nullable', 'string', 'max:500'],
+            'video_url' => ['nullable', 'string', 'max:255', 'url'],
         ]);
 
         if ($data['prize_pool'] === null || $data['prize_pool'] === '') {
@@ -35,6 +37,7 @@ class SettingsController extends Controller
 
         Settings::set(Settings::TOURNAMENT_NAME, $data['tournament_name']);
         Settings::set(Settings::WELCOME_MESSAGE, $data['welcome_message'] ?? '');
+        Settings::set(Settings::VIDEO_URL, $data['video_url'] ?? '');
 
         return back()->with('status', 'Configuración guardada.');
     }

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', \App\Support\Settings::tournamentName())
+@section('title', 'Soy Pachón Mundial')
 
 @section('content')
-<div class="min-h-[calc(100vh-8rem)] bg-gradient-to-br from-pachon-green to-pachon-green-dark flex items-center justify-center text-white -mt-px">
+<div class="bg-gradient-to-br from-pachon-green to-pachon-green-dark text-white -mt-px">
     <div class="container mx-auto px-6 py-16 text-center">
         <h1 class="text-5xl md:text-6xl font-bold mb-4">⚽ Soy Pachón Mundial</h1>
         <p class="text-xl text-pachon-gold font-semibold mb-2">{{ \App\Support\Settings::tournamentName() }}</p>
@@ -19,15 +19,37 @@
                 <a href="{{ route('register') }}" class="bg-pachon-gold hover:bg-pachon-gold-dark text-white font-semibold py-3 px-6 rounded-lg transition">
                     Crear cuenta
                 </a>
-                <a href="{{ route('ranking.index') }}" class="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition">
-                    Ver Ranking
-                </a>
             </div>
         @else
             <a href="{{ route('predictions.index') }}" class="inline-block bg-pachon-gold hover:bg-pachon-gold-dark text-white font-semibold py-3 px-6 rounded-lg transition">
                 Ir a Mis Pronósticos
             </a>
         @endguest
+    </div>
+
+    <!-- Sección del video explicativo -->
+    <div class="container mx-auto px-6 pb-16">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="text-center text-2xl font-bold text-pachon-gold mb-4">🎥 ¿Cómo funciona?</h2>
+            @php $embed = \App\Support\Settings::videoEmbedUrl(); @endphp
+            @if ($embed)
+                <div class="aspect-video w-full rounded-lg overflow-hidden shadow-2xl bg-black">
+                    <iframe src="{{ $embed }}"
+                            title="Video explicativo"
+                            class="w-full h-full"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen></iframe>
+                </div>
+            @else
+                <div class="aspect-video w-full rounded-lg bg-white/10 border-2 border-dashed border-white/30 flex flex-col items-center justify-center text-center p-6">
+                    <div class="text-6xl mb-3">🎬</div>
+                    <p class="font-semibold text-white">Video explicativo próximamente</p>
+                    <p class="text-sm text-white/70 mt-1">El administrador puede configurar la URL del video desde el panel.</p>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 @endsection

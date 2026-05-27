@@ -20,11 +20,6 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Ranking público (sin auth)
-Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
-Route::get('/ranking/data', [RankingController::class, 'data'])->name('ranking.data');
-Route::get('/ranking/u/{user}', [RankingController::class, 'show'])->name('ranking.show');
-
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
@@ -53,7 +48,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/predictions/states', [PredictionsController::class, 'states'])->name('predictions.states');
         Route::post('/predictions/{game}', [PredictionsController::class, 'update'])->name('predictions.update');
 
+        // Ranking (solo participantes activos)
+        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+        Route::get('/ranking/data', [RankingController::class, 'data'])->name('ranking.data');
+        Route::get('/ranking/u/{user}', [RankingController::class, 'show'])->name('ranking.show');
+
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
+        Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
 
         // Alias compatible
         Route::get('/dashboard', fn () => redirect()->route('predictions.index'))->name('dashboard');

@@ -16,7 +16,7 @@ class SettingsAdminTest extends TestCase
         return User::factory()->create(['role' => 'admin', 'is_active' => true]);
     }
 
-    public function test_guarda_pozo_y_aparece_en_ranking(): void
+    public function test_guarda_acumulado_y_aparece_en_ranking(): void
     {
         $this->actingAs($this->admin())
             ->post(route('admin.settings.update'), [
@@ -31,7 +31,7 @@ class SettingsAdminTest extends TestCase
         $res->assertSee('600000', false); // 60%
     }
 
-    public function test_pozo_vacio_se_borra(): void
+    public function test_acumulado_vacio_se_borra(): void
     {
         Settings::setPrizePool(500_000);
 

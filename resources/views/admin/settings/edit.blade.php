@@ -12,7 +12,7 @@
             @csrf
 
             <div>
-                <label for="prize_pool" class="block text-sm font-medium mb-1">Pozo total (COP)</label>
+                <label for="prize_pool" class="block text-sm font-medium mb-1">Acumulado total (COP)</label>
                 <input type="number" name="prize_pool" id="prize_pool" min="0" step="1"
                        value="{{ old('prize_pool', $prize_pool) }}"
                        placeholder="Dejá vacío para 'Por definir'"
@@ -37,6 +37,16 @@
                 <textarea name="welcome_message" id="welcome_message" rows="3" maxlength="500"
                           class="w-full rounded-md border-gray-300 focus:ring-pachon-green focus:border-pachon-green">{{ old('welcome_message', $welcome_message) }}</textarea>
                 <p class="text-xs text-gray-500 mt-1">Aparece en la portada pública (welcome).</p>
+            </div>
+
+            <div>
+                <label for="video_url" class="block text-sm font-medium mb-1">URL del video explicativo (YouTube)</label>
+                <input type="url" name="video_url" id="video_url" maxlength="255"
+                       value="{{ old('video_url', $video_url) }}"
+                       placeholder="https://www.youtube.com/watch?v=XXXX  o  https://youtu.be/XXXX"
+                       class="w-full rounded-md border-gray-300 focus:ring-pachon-green focus:border-pachon-green">
+                @error('video_url')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                <p class="text-xs text-gray-500 mt-1">Acepta enlaces normales de YouTube (watch, youtu.be o embed). Dejá vacío para mostrar placeholder.</p>
             </div>
 
             <div class="flex justify-end pt-2">

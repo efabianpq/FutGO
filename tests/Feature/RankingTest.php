@@ -14,26 +14,45 @@ class RankingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_ranking_es_publico_sin_autenticacion(): void
+    public function test_ranking_redirige_a_login_si_no_autenticado(): void
     {
-        $this->get(route('ranking.index'))->assertOk();
+        $this->get(route('ranking.index'))->assertRedirect(route('login'));
     }
 
-    public function test_muestra_por_definir_cuando_pozo_no_configurado(): void
+    public function test_ranking_redirige_a_activate_con_mensaje_si_no_activo(): void
+    {
+        $user = User::factory()->create(['is_active' => false]);
+
+        $res = $this->actingAs($user)->get(route('ranking.index'));
+        $res->assertRedirect(route('activate.show'));
+        $res->assertSessionHas('status', fn ($m) => str_contains($m, 'Activá tu código de invitación para acceder al ranking'));
+    }
+
+    public function test_ranking_accesible_para_usuario_activo(): void
+    {
+        $user = User::factory()->create(['is_active' => true]);
+        $this->actingAs($user)->get(route('ranking.index'))->assertOk();
+    }
+
+    public function test_muestra_por_definir_cuando_acumulado_no_configurado(): void
     {
         Settings::clearPrizePool();
-        $this->get(route('ranking.index'))
+        $user = User::factory()->create(['is_active' => true]);
+
+        $this->actingAs($user)->get(route('ranking.index'))
             ->assertOk()
             ->assertSee('Por definir');
     }
 
-    public function test_muestra_premios_cuando_pozo_configurado(): void
+    public function test_muestra_premios_cuando_acumulado_configurado(): void
     {
         Settings::setPrizePool(1_000_000);
-        $response = $this->get(route('ranking.index'));
+        $user = User::factory()->create(['is_active' => true]);
+
+        $response = $this->actingAs($user)->get(route('ranking.index'));
         $response->assertOk();
 
-        // El JSON inicial dentro de la vista contiene los breakdowns
+        // JSON inicial dentro de la vista
         $response->assertSee('600000', false); // 60%
         $response->assertSee('200000', false); // 20%
         $response->assertSee('100000', false); // 10%
@@ -58,7 +77,7 @@ class RankingTest extends TestCase
 
         Artisan::call('predictions:calculate', ['match_id' => $g->id]);
 
-        $res = $this->getJson(route('ranking.data'));
+        $res = $this->actingAs($a)->getJson(route('ranking.data'));
         $res->assertOk();
 
         $rows = $res->json('rows');
@@ -69,47 +88,61 @@ class RankingTest extends TestCase
         $this->assertSame(2, $rows[1]['total_points']);
     }
 
-    public function test_vista_show_es_publica_y_muestra_auditoria(): void
+    public function test_tabla_de_ranking_no_tiene_columna_premio_estimado(): void
     {
-        $g = Game::create([
+        $user = User::factory()->create(['is_active' => true]);
+        $res = $this->actingAs($user)->get(route('ranking.index'));
+        $res->assertOk();
+        $res->assertDontSee('Premio Est.');
+    }
+
+    public function test_show_muestra_solo_partidos_finished_con_puntos(): void
+    {
+        // Partido finalizado con puntos
+        $finished = Game::create([
             'phase' => 'grupos', 'group_name' => 'A', 'match_number' => 9301,
-            'home_team' => 'Local', 'away_team' => 'Visita',
-            'home_flag' => '🏳️', 'away_flag' => '🏳️',
+            'home_team' => 'Local Calc', 'away_team' => 'Visita Calc',
             'match_datetime' => now()->subHours(2),
             'lock_datetime' => now()->subHours(2)->subMinutes(5),
             'status' => 'finished',
             'home_score_official' => 2, 'away_score_official' => 1,
         ]);
 
-        $u = User::factory()->create(['is_active' => true, 'name' => 'Pepito']);
-        Prediction::create(['user_id' => $u->id, 'match_id' => $g->id, 'home_score' => 2, 'away_score' => 1]);
-        Artisan::call('predictions:calculate', ['match_id' => $g->id]);
-
-        $res = $this->get(route('ranking.show', $u));
-        $res->assertOk()
-            ->assertSee('Pepito')
-            ->assertSee('Local')
-            ->assertSee('Visita')
-            ->assertSee('2 - 1') // pronóstico y resultado oficial
-            ->assertSee('5 pts');
-    }
-
-    public function test_show_marca_partidos_no_finalizados_como_pendiente(): void
-    {
-        $g = Game::create([
-            'phase' => 'grupos', 'group_name' => 'A', 'match_number' => 9401,
-            'home_team' => 'X', 'away_team' => 'Y',
+        // Partido pendiente (NO debe verse)
+        $pending = Game::create([
+            'phase' => 'grupos', 'group_name' => 'B', 'match_number' => 9302,
+            'home_team' => 'Secreto Home', 'away_team' => 'Secreto Away',
             'match_datetime' => now()->addHours(5),
             'lock_datetime' => now()->addHours(5)->subMinutes(5),
             'status' => 'upcoming',
         ]);
 
-        $u = User::factory()->create(['is_active' => true, 'name' => 'Sin Pronóstico']);
+        $u = User::factory()->create(['is_active' => true, 'name' => 'Pepito']);
+        Prediction::create(['user_id' => $u->id, 'match_id' => $finished->id, 'home_score' => 2, 'away_score' => 1]);
+        // Pronóstico secreto sobre el partido pendiente — NO debe aparecer
+        Prediction::create(['user_id' => $u->id, 'match_id' => $pending->id, 'home_score' => 4, 'away_score' => 4]);
 
-        $this->get(route('ranking.show', $u))
+        Artisan::call('predictions:calculate', ['match_id' => $finished->id]);
+
+        $res = $this->actingAs($u)->get(route('ranking.show', $u));
+        $res->assertOk()
+            ->assertSee('Pepito')
+            ->assertSee('Local Calc')
+            ->assertSee('2 - 1')
+            ->assertSee('5 pts')
+            ->assertDontSee('Secreto Home')
+            ->assertDontSee('Secreto Away')
+            ->assertDontSee('4 - 4')
+            ->assertDontSee('Pendiente'); // ya no se muestra
+    }
+
+    public function test_show_muestra_mensaje_cuando_no_hay_partidos_finalizados(): void
+    {
+        $u = User::factory()->create(['is_active' => true, 'name' => 'Sin Partidos']);
+
+        $this->actingAs($u)->get(route('ranking.show', $u))
             ->assertOk()
-            ->assertSee('Pendiente')
-            ->assertSee('Sin pronóstico');
+            ->assertSee('Aún no hay partidos finalizados para este participante');
     }
 
     public function test_ranking_solo_lista_usuarios_activos(): void
@@ -117,13 +150,12 @@ class RankingTest extends TestCase
         $active = User::factory()->create(['is_active' => true, 'name' => 'Activo']);
         $inactive = User::factory()->create(['is_active' => false, 'name' => 'Inactivo']);
 
-        // Forzar fila en rankings para ambos (simulando ensure)
         \DB::table('rankings')->insert([
             ['user_id' => $active->id, 'total_points' => 0, 'exact_predictions' => 0, 'created_at' => now(), 'updated_at' => now()],
             ['user_id' => $inactive->id, 'total_points' => 99, 'exact_predictions' => 99, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        $res = $this->getJson(route('ranking.data'));
+        $res = $this->actingAs($active)->getJson(route('ranking.data'));
         $names = collect($res->json('rows'))->pluck('name')->all();
 
         $this->assertContains('Activo', $names);

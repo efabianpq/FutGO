@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name'))</title>
+    @php
+        $brand = config('app.name');
+        $pageTitle = trim($__env->yieldContent('title'));
+        $fullTitle = ($pageTitle === '' || $pageTitle === $brand) ? $brand : ($pageTitle . ' · ' . $brand);
+    @endphp
+    <title>{{ $fullTitle }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +28,8 @@
                     <span>⚽</span><span>Soy Pachón Mundial</span>
                 </a>
                 <div class="flex items-center gap-2 text-sm">
-                    <a href="{{ route('ranking.index') }}" class="px-3 py-1.5 rounded-md hover:bg-white/10">Ranking</a>
                     <a href="{{ route('login') }}" class="px-3 py-1.5 rounded-md bg-pachon-green-dark hover:bg-black/20">Iniciar sesión</a>
+                    <a href="{{ route('register') }}" class="px-3 py-1.5 rounded-md hover:bg-white/10">Crear cuenta</a>
                 </div>
             </div>
         </nav>

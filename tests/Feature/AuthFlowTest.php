@@ -25,6 +25,7 @@ class AuthFlowTest extends TestCase
             'nombre' => 'Lionel',
             'apellido' => 'Pachón',
             'email' => 'lionel.pachon@test.com',
+            'telefono' => '3001234567',
             'password' => 'SuperSecret123',
             'password_confirmation' => 'SuperSecret123',
         ]);

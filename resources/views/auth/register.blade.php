@@ -37,6 +37,18 @@
                 </div>
 
                 <div>
+                    <label for="telefono" class="block text-sm font-medium text-gray-700">
+                        Teléfono WhatsApp <span class="text-xs text-gray-500">(solo números, 7-15 dígitos)</span>
+                    </label>
+                    <input id="telefono" name="telefono" type="tel" required
+                           inputmode="numeric" pattern="[0-9]{7,15}"
+                           value="{{ old('telefono') }}"
+                           placeholder="3001234567"
+                           class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-pachon-green focus:border-pachon-green">
+                    @error('telefono')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
                     <input id="password" name="password" type="password" required
                            class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-pachon-green focus:border-pachon-green">

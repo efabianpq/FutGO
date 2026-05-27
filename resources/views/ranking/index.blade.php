@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Ranking — Soy Pachón Mundial')
+@section('title', 'Ranking')
 
 @push('head')
 <style>[x-cloak] { display: none !important; }</style>
@@ -23,22 +23,22 @@
         </div>
     </div>
 
-    <!-- Pozo / premios -->
+    <!-- Tarjetas de acumulado / premios -->
     <div class="bg-white border border-pachon-gold/30 rounded-lg p-4 mb-6 flex flex-wrap items-center gap-6 text-sm">
         <div>
-            <p class="text-xs uppercase text-gray-500">Pozo Total</p>
+            <p class="text-xs uppercase text-gray-500">Acumulado Total</p>
             <p class="font-bold text-lg" x-text="prizes.pool === null ? 'Por definir' : formatMoney(prizes.pool)"></p>
         </div>
         <div>
-            <p class="text-xs uppercase text-gray-500">🥇 60%</p>
+            <p class="text-xs uppercase text-gray-500">🥇 1er puesto (60%)</p>
             <p class="font-bold text-amber-600" x-text="prizes.first === null ? 'Por definir' : formatMoney(prizes.first)"></p>
         </div>
         <div>
-            <p class="text-xs uppercase text-gray-500">🥈 20%</p>
+            <p class="text-xs uppercase text-gray-500">🥈 2do puesto (20%)</p>
             <p class="font-bold text-gray-600" x-text="prizes.second === null ? 'Por definir' : formatMoney(prizes.second)"></p>
         </div>
         <div>
-            <p class="text-xs uppercase text-gray-500">🥉 10%</p>
+            <p class="text-xs uppercase text-gray-500">🥉 3er puesto (10%)</p>
             <p class="font-bold text-amber-800" x-text="prizes.third === null ? 'Por definir' : formatMoney(prizes.third)"></p>
         </div>
     </div>
@@ -52,7 +52,6 @@
                     <th class="px-3 py-3 text-left">Usuario</th>
                     <th class="px-3 py-3 text-right">Puntos</th>
                     <th class="px-3 py-3 text-right">🎯 Exactos</th>
-                    <th class="px-3 py-3 text-right">Premio Est.</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
@@ -73,11 +72,10 @@
                         </td>
                         <td class="px-3 py-3 text-right font-mono font-bold" x-text="row.total_points"></td>
                         <td class="px-3 py-3 text-right text-amber-700" x-text="row.exact_predictions"></td>
-                        <td class="px-3 py-3 text-right text-xs" x-text="prizeFor(row.current_position)"></td>
                     </tr>
                 </template>
                 <tr x-show="rows.length === 0" x-cloak>
-                    <td colspan="5" class="px-3 py-6 text-center text-gray-500 italic">
+                    <td colspan="4" class="px-3 py-6 text-center text-gray-500 italic">
                         Aún no hay participantes activados. El ranking aparecerá aquí cuando los primeros partidos terminen.
                     </td>
                 </tr>
@@ -129,13 +127,6 @@ function rankingApp({initialRows, initialPrizes, url, userShowBase}) {
             if (row.current_position === 2) return 'bg-gray-50';
             if (row.current_position === 3) return 'bg-orange-50';
             return '';
-        },
-
-        prizeFor(position) {
-            if (position === 1) return this.prizes.first === null ? 'Por definir' : this.formatMoney(this.prizes.first);
-            if (position === 2) return this.prizes.second === null ? 'Por definir' : this.formatMoney(this.prizes.second);
-            if (position === 3) return this.prizes.third === null ? 'Por definir' : this.formatMoney(this.prizes.third);
-            return '—';
         },
 
         formatMoney(n) {

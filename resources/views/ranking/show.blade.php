@@ -47,64 +47,62 @@
         @endif
     </div>
 
-    @foreach ($phases as $phase)
-        <section class="mb-6">
-            <h2 class="text-lg font-bold text-pachon-green-dark mb-2">{{ $phase['label'] }}</h2>
-            <div class="bg-white rounded-lg shadow overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-100 text-left text-xs uppercase text-gray-600">
-                        <tr>
-                            <th class="px-3 py-2">#</th>
-                            <th class="px-3 py-2">Partido</th>
-                            <th class="px-3 py-2 text-right">Pronóstico</th>
-                            <th class="px-3 py-2 text-right">Resultado</th>
-                            <th class="px-3 py-2 text-right">Puntos</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        @foreach ($phase['rows'] as $row)
+    @if ($totalFinished === 0)
+        <div class="bg-white rounded-lg shadow p-10 text-center text-gray-500">
+            <div class="text-5xl mb-3">⏳</div>
+            <p class="text-lg font-semibold">Aún no hay partidos finalizados para este participante</p>
+            <p class="text-sm mt-1">La auditoría aparecerá acá apenas el administrador cargue los primeros resultados oficiales.</p>
+        </div>
+    @else
+        @foreach ($phases as $phase)
+            <section class="mb-6">
+                <h2 class="text-lg font-bold text-pachon-green-dark mb-2">{{ $phase['label'] }}</h2>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100 text-left text-xs uppercase text-gray-600">
                             <tr>
-                                <td class="px-3 py-2 text-xs text-gray-500 font-mono">#{{ $row['match_number'] }}</td>
-                                <td class="px-3 py-2">
-                                    <div class="font-medium">
-                                        {{ $row['home_flag'] }} {{ $row['home_team'] }}
-                                        <span class="text-gray-400">vs</span>
-                                        {{ $row['away_flag'] }} {{ $row['away_team'] }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">
-                                        @if ($row['group_name']) Grupo {{ $row['group_name'] }} · @endif
-                                        {{ $row['date_label'] }} GMT-5
-                                    </div>
-                                </td>
-                                <td class="px-3 py-2 text-right font-mono">
-                                    @if ($row['prediction'])
-                                        <span class="font-bold">{{ $row['prediction'] }}</span>
-                                    @else
-                                        <span class="text-gray-400 italic text-xs">Sin pronóstico</span>
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2 text-right">
-                                    @if ($row['is_finished'])
-                                        <span class="font-mono font-bold">{{ $row['official'] }}</span>
-                                    @else
-                                        <span class="text-gray-400 italic text-xs">Pendiente</span>
-                                    @endif
-                                </td>
-                                <td class="px-3 py-2 text-right">
-                                    @if ($row['is_finished'])
-                                        <span class="{{ points_class($row['points_earned']) }} px-2 py-0.5 rounded font-bold border text-sm">
-                                            {{ $row['points_earned'] ?? 0 }} pts
-                                        </span>
-                                    @else
-                                        <span class="text-gray-400">—</span>
-                                    @endif
-                                </td>
+                                <th class="px-3 py-2">#</th>
+                                <th class="px-3 py-2">Partido</th>
+                                <th class="px-3 py-2 text-right">Pronóstico</th>
+                                <th class="px-3 py-2 text-right">Resultado</th>
+                                <th class="px-3 py-2 text-right">Puntos</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    @endforeach
+                        </thead>
+                        <tbody class="divide-y">
+                            @foreach ($phase['rows'] as $row)
+                                <tr>
+                                    <td class="px-3 py-2 text-xs text-gray-500 font-mono">#{{ $row['match_number'] }}</td>
+                                    <td class="px-3 py-2">
+                                        <div class="font-medium">
+                                            {{ $row['home_flag'] }} {{ $row['home_team'] }}
+                                            <span class="text-gray-400">vs</span>
+                                            {{ $row['away_flag'] }} {{ $row['away_team'] }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            @if ($row['group_name']) Grupo {{ $row['group_name'] }} · @endif
+                                            {{ $row['date_label'] }} GMT-5
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2 text-right font-mono">
+                                        @if ($row['prediction'])
+                                            <span class="font-bold">{{ $row['prediction'] }}</span>
+                                        @else
+                                            <span class="text-gray-400 italic text-xs">Sin pronóstico</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-3 py-2 text-right font-mono font-bold">{{ $row['official'] }}</td>
+                                    <td class="px-3 py-2 text-right">
+                                        <span class="{{ points_class($row['points_earned']) }} px-2 py-0.5 rounded font-bold border text-sm">
+                                            {{ $row['points_earned'] }} pts
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        @endforeach
+    @endif
 </div>
 @endsection

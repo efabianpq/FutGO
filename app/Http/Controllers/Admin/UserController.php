@@ -28,6 +28,7 @@ class UserController extends Controller
                 'users.id',
                 'users.name',
                 'users.email',
+                'users.phone_whatsapp',
                 'users.role',
                 'users.is_active',
                 'users.invitation_code',

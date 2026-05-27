@@ -28,7 +28,7 @@
             </p>
         </div>
         <div class="bg-white rounded-lg shadow p-4 border-l-4 border-pachon-gold">
-            <p class="text-xs uppercase text-gray-500">Pozo Total</p>
+            <p class="text-xs uppercase text-gray-500">Acumulado Total</p>
             <p class="text-2xl font-bold text-pachon-gold-dark">
                 @if ($prizes['pool'] !== null)
                     {{ number_format($prizes['pool'], 0, ',', '.') }} COP

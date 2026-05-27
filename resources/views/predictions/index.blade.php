@@ -28,29 +28,23 @@
         </div>
     </div>
 
-    <!-- Filtros -->
+    <!-- Filtro único -->
     <div class="bg-white rounded-lg shadow-sm p-3 mb-6 flex flex-wrap items-center gap-2 sticky top-0 z-10">
-        <button type="button"
-                @click="filter = 'all'"
-                :class="filter === 'all' ? 'bg-pachon-green text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition">
-            Todos
-        </button>
-        <button type="button"
-                @click="filter = 'pending'"
-                :class="filter === 'pending' ? 'bg-pachon-green text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-                class="px-3 py-1.5 text-sm font-medium rounded-md transition">
-            Solo abiertos sin pronóstico
-        </button>
-
-        <label class="ml-auto text-sm flex items-center gap-2">
-            <span class="text-gray-600">Grupo:</span>
-            <select x-model="groupFilter"
-                    class="rounded-md border-gray-300 text-sm focus:ring-pachon-green focus:border-pachon-green">
-                <option value="">Todos</option>
+        <label class="text-sm flex items-center gap-2 w-full sm:w-auto">
+            <span class="text-gray-600 font-medium">Filtro:</span>
+            <select x-model="filter"
+                    class="grow sm:grow-0 rounded-md border-gray-300 text-sm focus:ring-pachon-green focus:border-pachon-green">
+                <option value="all">Todos los partidos</option>
+                <option value="pending">Solo abiertos (pendientes de pronosticar)</option>
                 <template x-for="g in groups" :key="g">
-                    <option :value="g" x-text="'Grupo ' + g"></option>
+                    <option :value="'group:' + g" x-text="'Grupo ' + g"></option>
                 </template>
+                <option value="phase:dieciseisavos">Dieciseisavos de Final</option>
+                <option value="phase:octavos">Octavos de Final</option>
+                <option value="phase:cuartos">Cuartos de Final</option>
+                <option value="phase:semifinal">Semifinales</option>
+                <option value="phase:3er_puesto">Tercer y Cuarto Puesto</option>
+                <option value="phase:final">Final</option>
             </select>
         </label>
     </div>
@@ -173,7 +167,6 @@ function predictionsApp({phases, groups, urls, csrf}) {
         urls,
         csrf,
         filter: 'all',
-        groupFilter: '',
         lastSync: '',
 
         init() {
@@ -196,9 +189,15 @@ function predictionsApp({phases, groups, urls, csrf}) {
         },
 
         isVisible(match) {
-            if (this.groupFilter && match.group_name !== this.groupFilter) return false;
+            if (this.filter === 'all') return true;
             if (this.filter === 'pending') {
                 return !match.is_locked && match.status !== 'finished' && !match.has_prediction;
+            }
+            if (this.filter.startsWith('group:')) {
+                return match.group_name === this.filter.slice(6);
+            }
+            if (this.filter.startsWith('phase:')) {
+                return match.phase === this.filter.slice(6);
             }
             return true;
         },

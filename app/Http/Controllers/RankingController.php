@@ -41,13 +41,20 @@ class RankingController extends Controller
 
     public function show(User $user): View
     {
-        $games = Game::orderBy('match_datetime')->get();
-        $predictions = Prediction::where('user_id', $user->id)
+        // Solo partidos finalizados con puntos calculados — protege pronósticos
+        // de partidos que aún no han iniciado.
+        $games = Game::where('status', 'finished')
+            ->orderBy('match_datetime')
+            ->get();
+
+        $predictionsRaw = Prediction::where('user_id', $user->id)
+            ->whereNotNull('points_earned')
+            ->whereIn('match_id', $games->pluck('id'))
             ->get()
             ->keyBy('match_id');
 
-        $now = now();
         $phases = [];
+        $totalFinished = 0;
 
         foreach (self::PHASES as $key => $label) {
             $phaseGames = $games->where('phase', $key)->values();
@@ -55,11 +62,10 @@ class RankingController extends Controller
                 continue;
             }
 
-            $rows = $phaseGames->map(function (Game $g) use ($predictions, $now) {
-                $p = $predictions->get($g->id);
-                $isLocked = $g->lock_datetime <= $now;
-                $isFinished = $g->status === 'finished';
-
+            // Filtrar a los que efectivamente tienen un pronóstico calculado
+            // (si el user no jugó ese partido, mostramos 'Sin pronóstico' con 0 pts)
+            $rows = $phaseGames->map(function (Game $g) use ($predictionsRaw) {
+                $p = $predictionsRaw->get($g->id);
                 return [
                     'match_number' => $g->match_number,
                     'home_team' => $g->home_team,
@@ -68,18 +74,13 @@ class RankingController extends Controller
                     'away_flag' => $g->away_flag,
                     'date_label' => $g->match_datetime->locale('es')->isoFormat('ddd D MMM HH:mm'),
                     'group_name' => $g->group_name,
-                    'is_finished' => $isFinished,
-                    'is_locked' => $isLocked,
-                    'official' => $isFinished
-                        ? "{$g->home_score_official} - {$g->away_score_official}"
-                        : null,
-                    'prediction' => $p
-                        ? "{$p->home_score} - {$p->away_score}"
-                        : null,
-                    'points_earned' => $p?->points_earned,
+                    'official' => "{$g->home_score_official} - {$g->away_score_official}",
+                    'prediction' => $p ? "{$p->home_score} - {$p->away_score}" : null,
+                    'points_earned' => $p ? (int) $p->points_earned : 0,
                 ];
             })->all();
 
+            $totalFinished += count($rows);
             $phases[] = ['key' => $key, 'label' => $label, 'rows' => $rows];
         }
 
@@ -89,6 +90,7 @@ class RankingController extends Controller
             'participant' => $user,
             'ranking' => $ranking,
             'phases' => $phases,
+            'totalFinished' => $totalFinished,
         ]);
     }
 

@@ -9,6 +9,7 @@ class Settings
     public const PRIZE_POOL = 'prize_pool';
     public const TOURNAMENT_NAME = 'tournament_name';
     public const WELCOME_MESSAGE = 'welcome_message';
+    public const VIDEO_URL = 'video_url';
 
     public const DEFAULT_TOURNAMENT_NAME = '@SoyPachonMundial';
     public const DEFAULT_WELCOME = 'Pronostica los 104 partidos del Mundial 2026, compite con tus amigos y gana premios reales.';
@@ -53,6 +54,39 @@ class Settings
     public static function welcomeMessage(): string
     {
         return self::get(self::WELCOME_MESSAGE, self::DEFAULT_WELCOME) ?? self::DEFAULT_WELCOME;
+    }
+
+    public static function videoUrl(): ?string
+    {
+        $v = self::get(self::VIDEO_URL);
+        return ($v === null || $v === '') ? null : $v;
+    }
+
+    /**
+     * Convierte una URL de YouTube (watch, youtu.be o embed) a embed URL.
+     * Devuelve null si no se reconoce.
+     */
+    public static function videoEmbedUrl(): ?string
+    {
+        $url = self::videoUrl();
+        if ($url === null) {
+            return null;
+        }
+
+        // youtu.be/<ID>
+        if (preg_match('~youtu\.be/([A-Za-z0-9_\-]{6,})~', $url, $m)) {
+            return 'https://www.youtube.com/embed/' . $m[1];
+        }
+        // youtube.com/watch?v=<ID>
+        if (preg_match('~[?&]v=([A-Za-z0-9_\-]{6,})~', $url, $m)) {
+            return 'https://www.youtube.com/embed/' . $m[1];
+        }
+        // youtube.com/embed/<ID>
+        if (preg_match('~youtube\.com/embed/([A-Za-z0-9_\-]{6,})~', $url, $m)) {
+            return 'https://www.youtube.com/embed/' . $m[1];
+        }
+
+        return null;
     }
 
     /**
