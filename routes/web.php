@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
+use App\Http\Controllers\Admin\InvitationCodeController as AdminCodesController;
+use App\Http\Controllers\Admin\ResultsController as AdminResultsController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\UserController as AdminUsersController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -49,7 +55,35 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
 
-        // Alias compatible con código previo (post-login y post-activación)
+        // Alias compatible
         Route::get('/dashboard', fn () => redirect()->route('predictions.index'))->name('dashboard');
+
+        // ============ ADMIN ============
+        Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+            Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+            // Códigos
+            Route::get('/codigos', [AdminCodesController::class, 'index'])->name('codes.index');
+            Route::post('/codigos/generar', [AdminCodesController::class, 'generate'])->name('codes.generate');
+            Route::patch('/codigos/{code}/desactivar', [AdminCodesController::class, 'deactivate'])->name('codes.deactivate');
+            Route::get('/codigos/exportar', [AdminCodesController::class, 'export'])->name('codes.export');
+
+            // Usuarios
+            Route::get('/usuarios', [AdminUsersController::class, 'index'])->name('users.index');
+            Route::patch('/usuarios/{user}/toggle', [AdminUsersController::class, 'toggleActive'])->name('users.toggle');
+
+            // Fixture
+            Route::get('/fixture', [AdminFixtureController::class, 'index'])->name('fixture.index');
+            Route::get('/fixture/{game}/editar', [AdminFixtureController::class, 'edit'])->name('fixture.edit');
+            Route::patch('/fixture/{game}', [AdminFixtureController::class, 'update'])->name('fixture.update');
+
+            // Resultados
+            Route::get('/resultados', [AdminResultsController::class, 'index'])->name('results.index');
+            Route::post('/resultados/{game}', [AdminResultsController::class, 'store'])->name('results.store');
+
+            // Configuración
+            Route::get('/configuracion', [AdminSettingsController::class, 'edit'])->name('settings.edit');
+            Route::post('/configuracion', [AdminSettingsController::class, 'update'])->name('settings.update');
+        });
     });
 });

@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ensure.active' => \App\Http\Middleware\EnsureActive::class,
             'redirect.if.active' => \App\Http\Middleware\RedirectIfActive::class,
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

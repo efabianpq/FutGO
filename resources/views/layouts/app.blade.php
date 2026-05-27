@@ -55,6 +55,12 @@
                            class="px-3 py-2 rounded-md transition {{ str_starts_with($route, 'profile.') ? 'bg-pachon-green-dark' : 'hover:bg-white/10' }}">
                             Mi Perfil
                         </a>
+                        @if (auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}"
+                               class="px-3 py-2 rounded-md transition {{ str_starts_with($route, 'admin.') ? 'bg-pachon-gold text-pachon-green-dark' : 'bg-pachon-gold/80 text-pachon-green-dark hover:bg-pachon-gold' }}">
+                                ⚙️ Admin
+                            </a>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}" class="ml-2">
                             @csrf
                             <button type="submit" class="bg-pachon-green-dark hover:bg-black/20 px-3 py-2 rounded-md transition">
@@ -79,6 +85,9 @@
                     <a href="{{ route('predictions.index') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Mis Pronósticos</a>
                     <a href="{{ route('ranking.index') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Ranking</a>
                     <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md hover:bg-white/10">Mi Perfil</a>
+                    @if (auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md bg-pachon-gold/80 text-pachon-green-dark hover:bg-pachon-gold">⚙️ Admin</a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left px-3 py-2 rounded-md hover:bg-white/10">Cerrar Sesión</button>
