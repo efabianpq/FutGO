@@ -27,18 +27,21 @@ class CalculatePredictionsCommandTest extends TestCase
 
     public function test_calcula_puntos_y_actualiza_predicciones(): void
     {
+        // Resultado oficial: home 2 - away 1 (gana local)
         $game = $this->finishedGame(2, 1);
-        $u1 = User::factory()->create(['is_active' => true, 'name' => 'A']); // exacto -> 5
-        $u2 = User::factory()->create(['is_active' => true, 'name' => 'B']); // ganador + 1 -> 3
-        $u3 = User::factory()->create(['is_active' => true, 'name' => 'C']); // solo ganador -> 2
-        $u4 = User::factory()->create(['is_active' => true, 'name' => 'D']); // espejo -> 1
-        $u5 = User::factory()->create(['is_active' => true, 'name' => 'E']); // sin coincidencias -> 0
+        $u1 = User::factory()->create(['is_active' => true, 'name' => 'A']); // 2-1 exacto -> 5
+        $u2 = User::factory()->create(['is_active' => true, 'name' => 'B']); // 3-1 ganador+away exacto -> 3
+        $u3 = User::factory()->create(['is_active' => true, 'name' => 'C']); // 3-0 solo ganador -> 2
+        $u4 = User::factory()->create(['is_active' => true, 'name' => 'D']); // 0-1 wrong winner + away exacto -> 1
+        $u5 = User::factory()->create(['is_active' => true, 'name' => 'E']); // 1-2 espejo invertido -> 0
+        $u6 = User::factory()->create(['is_active' => true, 'name' => 'F']); // 0-4 sin coincidencias -> 0
 
         Prediction::create(['user_id' => $u1->id, 'match_id' => $game->id, 'home_score' => 2, 'away_score' => 1]);
         Prediction::create(['user_id' => $u2->id, 'match_id' => $game->id, 'home_score' => 3, 'away_score' => 1]);
         Prediction::create(['user_id' => $u3->id, 'match_id' => $game->id, 'home_score' => 3, 'away_score' => 0]);
-        Prediction::create(['user_id' => $u4->id, 'match_id' => $game->id, 'home_score' => 1, 'away_score' => 2]);
-        Prediction::create(['user_id' => $u5->id, 'match_id' => $game->id, 'home_score' => 0, 'away_score' => 4]);
+        Prediction::create(['user_id' => $u4->id, 'match_id' => $game->id, 'home_score' => 0, 'away_score' => 1]);
+        Prediction::create(['user_id' => $u5->id, 'match_id' => $game->id, 'home_score' => 1, 'away_score' => 2]);
+        Prediction::create(['user_id' => $u6->id, 'match_id' => $game->id, 'home_score' => 0, 'away_score' => 4]);
 
         $this->artisan('predictions:calculate', ['match_id' => $game->id])->assertSuccessful();
 
@@ -46,7 +49,9 @@ class CalculatePredictionsCommandTest extends TestCase
         $this->assertSame(3, (int) Prediction::where(['user_id' => $u2->id, 'match_id' => $game->id])->value('points_earned'));
         $this->assertSame(2, (int) Prediction::where(['user_id' => $u3->id, 'match_id' => $game->id])->value('points_earned'));
         $this->assertSame(1, (int) Prediction::where(['user_id' => $u4->id, 'match_id' => $game->id])->value('points_earned'));
-        $this->assertSame(0, (int) Prediction::where(['user_id' => $u5->id, 'match_id' => $game->id])->value('points_earned'));
+        $this->assertSame(0, (int) Prediction::where(['user_id' => $u5->id, 'match_id' => $game->id])->value('points_earned'),
+            'Espejo invertido 1-2 vs 2-1 NO debe sumar — ningún marcador coincide con su equipo');
+        $this->assertSame(0, (int) Prediction::where(['user_id' => $u6->id, 'match_id' => $game->id])->value('points_earned'));
     }
 
     public function test_ranking_se_ordena_por_total_y_desempata_por_exactos(): void
