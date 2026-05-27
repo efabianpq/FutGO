@@ -1,18 +1,18 @@
 @php $r = request()->route()?->getName(); @endphp
-<div class="bg-pachon-gold/20 border-b border-pachon-gold/30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-1 py-2 text-sm">
-        <span class="font-bold text-pachon-green-dark mr-2">⚙️ Panel Admin:</span>
+<div class="bg-pitch-mist border-b border-line">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-1 py-3 font-display font-semibold text-[13px] uppercase tracking-[.10em]">
+        <span class="font-mono text-[11px] tracking-wide-label uppercase text-pitch mr-3">⚙ Admin</span>
         @foreach ([
-            'admin.dashboard'   => ['Dashboard', '📊'],
-            'admin.results.index'=>['Resultados', '🎯'],
-            'admin.codes.index' => ['Códigos',    '🎟️'],
-            'admin.users.index' => ['Usuarios',   '👥'],
-            'admin.fixture.index'=>['Fixture',    '📅'],
-            'admin.settings.edit'=>['Configuración', '⚙️'],
-        ] as $name => [$label, $icon])
+            'admin.dashboard'    => 'Dashboard',
+            'admin.results.index'=> 'Resultados',
+            'admin.codes.index'  => 'Códigos',
+            'admin.users.index'  => 'Usuarios',
+            'admin.fixture.index'=> 'Fixture',
+            'admin.settings.edit'=> 'Configuración',
+        ] as $name => $label)
             <a href="{{ route($name) }}"
-               class="px-3 py-1.5 rounded-md transition {{ $r === $name ? 'bg-pachon-green text-white' : 'text-pachon-green-dark hover:bg-white/50' }}">
-                {{ $icon }} {{ $label }}
+               class="px-3 py-2 rounded-md transition-all duration-fast {{ $r === $name ? 'bg-pitch text-bone' : 'text-pitch hover:bg-white' }}">
+                {{ $label }}
             </a>
         @endforeach
     </div>

@@ -4,68 +4,67 @@
 @section('content')
 @include('admin._nav')
 
-<div class="max-w-7xl mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold text-pachon-green mb-4">👥 Usuarios</h1>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <p class="eyebrow">Comunidad</p>
+    <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-2 mb-6">Usuarios</h1>
 
     <form method="GET" class="mb-4">
-        <input type="search" name="q" value="{{ $search }}"
-               placeholder="Buscar por nombre o email..."
-               class="w-full sm:w-96 rounded-md border-gray-300 focus:ring-pachon-green focus:border-pachon-green">
+        <input type="search" name="q" value="{{ $search }}" placeholder="Buscar por nombre o email..."
+               class="w-full sm:w-96 h-[46px] px-3.5 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0">
     </form>
 
-    <div class="bg-white rounded-lg shadow overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-100 text-left text-xs uppercase text-gray-600">
+    <div class="bg-white border border-line rounded-md shadow-card overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-pitch text-bone font-mono text-[10.5px] tracking-wide-label uppercase text-left">
                 <tr>
-                    <th class="px-3 py-2">#</th>
-                    <th class="px-3 py-2">Nombre</th>
-                    <th class="px-3 py-2">Email</th>
-                    <th class="px-3 py-2">📱 Teléfono</th>
-                    <th class="px-3 py-2">Rol</th>
-                    <th class="px-3 py-2">Estado</th>
-                    <th class="px-3 py-2 text-right">Pts</th>
-                    <th class="px-3 py-2 text-right">Pos</th>
-                    <th class="px-3 py-2">Registrado</th>
-                    <th class="px-3 py-2 text-right">Acciones</th>
+                    <th class="px-3 py-2.5">#</th>
+                    <th class="px-3 py-2.5">Nombre</th>
+                    <th class="px-3 py-2.5">Email</th>
+                    <th class="px-3 py-2.5">📱 Teléfono</th>
+                    <th class="px-3 py-2.5">Rol</th>
+                    <th class="px-3 py-2.5">Estado</th>
+                    <th class="px-3 py-2.5 text-right">Pts</th>
+                    <th class="px-3 py-2.5 text-right">Pos</th>
+                    <th class="px-3 py-2.5">Registrado</th>
+                    <th class="px-3 py-2.5 text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody class="divide-y divide-line-soft">
                 @forelse ($rows as $u)
-                    <tr>
-                        <td class="px-3 py-2 text-xs text-gray-500">{{ $u->id }}</td>
-                        <td class="px-3 py-2 font-medium">{{ $u->name }}</td>
-                        <td class="px-3 py-2 text-xs text-gray-600">{{ $u->email }}</td>
-                        <td class="px-3 py-2 text-xs font-mono text-gray-600">{{ $u->phone_whatsapp ?? '—' }}</td>
-                        <td class="px-3 py-2">
+                    <tr class="hover:bg-bone-soft transition-colors duration-fast">
+                        <td class="px-3 py-2.5 font-mono text-[11px] text-ink-mute">{{ $u->id }}</td>
+                        <td class="px-3 py-2.5 font-display font-semibold">{{ $u->name }}</td>
+                        <td class="px-3 py-2.5 font-mono text-[11px] text-ink-soft">{{ $u->email }}</td>
+                        <td class="px-3 py-2.5 font-mono text-[11px] text-ink-soft">{{ $u->phone_whatsapp ?? '—' }}</td>
+                        <td class="px-3 py-2.5">
                             @if ($u->role === 'admin')
-                                <span class="bg-pachon-gold/30 text-pachon-green-dark px-2 py-0.5 rounded text-xs font-bold">admin</span>
+                                <x-badge variant="win">admin</x-badge>
                             @else
-                                <span class="text-xs text-gray-600">user</span>
+                                <span class="font-mono text-[11px] text-ink-mute">user</span>
                             @endif
                         </td>
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2.5">
                             @if ($u->is_active)
-                                <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">Activo</span>
+                                <x-badge variant="default">Activo</x-badge>
                             @else
-                                <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Pendiente código</span>
+                                <x-badge variant="upcoming">Pendiente</x-badge>
                             @endif
                         </td>
-                        <td class="px-3 py-2 text-right font-mono">{{ $u->total_points ?? '—' }}</td>
-                        <td class="px-3 py-2 text-right">{{ $u->current_position ?? '—' }}</td>
-                        <td class="px-3 py-2 text-xs text-gray-500">{{ $u->created_at ? \Carbon\Carbon::parse($u->created_at)->locale('es')->isoFormat('D MMM YYYY') : '—' }}</td>
-                        <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <a href="{{ route('ranking.show', $u->id) }}" target="_blank"
-                               class="text-xs text-pachon-green hover:underline mr-2">Ver pronósticos</a>
+                        <td class="px-3 py-2.5 text-right font-mono font-bold">{{ $u->total_points ?? '—' }}</td>
+                        <td class="px-3 py-2.5 text-right font-display font-bold">{{ $u->current_position ?? '—' }}</td>
+                        <td class="px-3 py-2.5 font-mono text-[11px] text-ink-mute">{{ $u->created_at ? \Carbon\Carbon::parse($u->created_at)->locale('es')->isoFormat('D MMM YY') : '—' }}</td>
+                        <td class="px-3 py-2.5 text-right whitespace-nowrap">
+                            <a href="{{ route('ranking.show', $u->id) }}" target="_blank" class="font-mono text-[11px] tracking-wide-label uppercase text-pitch hover:underline mr-3">Ver</a>
                             <form method="POST" action="{{ route('admin.users.toggle', $u->id) }}" class="inline">
                                 @csrf @method('PATCH')
-                                <button type="submit" class="text-xs {{ $u->is_active ? 'text-red-600' : 'text-green-700' }} hover:underline">
+                                <button type="submit" class="font-mono text-[11px] tracking-wide-label uppercase {{ $u->is_active ? 'text-alerta' : 'text-pitch' }} hover:underline">
                                     {{ $u->is_active ? 'Desactivar' : 'Activar' }}
                                 </button>
                             </form>
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="10" class="px-3 py-6 text-center text-gray-500 italic">No hay usuarios que coincidan.</td></tr>
+                    <tr><td colspan="10" class="px-3 py-10 text-center font-body text-body-s text-ink-mute italic">No hay usuarios que coincidan.</td></tr>
                 @endforelse
             </tbody>
         </table>
