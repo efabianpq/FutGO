@@ -41,10 +41,10 @@
     <footer class="border-t border-line bg-bone-soft mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-ink-mute">
             <p class="font-display font-bold text-[14px] uppercase tracking-[.04em]">
-                Pachón<span class="text-gol">·</span>Mundial
+                <span class="text-gol">@</span>SoyPachon
             </p>
             <p class="font-mono text-[11px] tracking-wide-eyebrow uppercase">
-                @SoyPachón — Polla del Mundial 2026
+                Polla del Mundial 2026
             </p>
         </div>
     </footer>

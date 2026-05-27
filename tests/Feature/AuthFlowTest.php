@@ -66,7 +66,8 @@ class AuthFlowTest extends TestCase
         $this->get(route('predictions.index'))->assertOk();
 
         // ---------- 5. Cerrar sesión ----------
-        $this->post(route('logout'))->assertRedirect(route('login'));
+        // Logout redirige a home (no a login) para que el usuario vea la página principal
+        $this->post(route('logout'))->assertRedirect(route('home'));
         $this->assertGuest();
 
         // ---------- 6. Iniciar sesión nuevamente y ver que va directo al dashboard ----------

@@ -45,8 +45,11 @@ class SettingsAdminTest extends TestCase
         $this->assertNull(Settings::prizePool());
     }
 
-    public function test_guarda_nombre_y_mensaje_y_aparecen_en_welcome(): void
+    public function test_guarda_nombre_y_mensaje_se_persisten(): void
     {
+        // tournament_name y welcome_message ya no se muestran en la home
+        // (la home es solo hero + CTAs) — pero el admin sigue pudiendo
+        // guardarlos para uso futuro / referencia.
         $this->actingAs($this->admin())
             ->post(route('admin.settings.update'), [
                 'prize_pool' => null,
@@ -56,9 +59,5 @@ class SettingsAdminTest extends TestCase
 
         $this->assertSame('Polla 2026 Test', Settings::tournamentName());
         $this->assertSame('Mensaje de bienvenida personalizado', Settings::welcomeMessage());
-
-        $res = $this->get(route('home'));
-        $res->assertSee('Polla 2026 Test');
-        $res->assertSee('Mensaje de bienvenida personalizado');
     }
 }

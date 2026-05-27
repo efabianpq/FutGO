@@ -15,7 +15,7 @@
 
                 {{-- Brand --}}
                 <a href="{{ route('predictions.index') }}" class="font-display font-extrabold text-[20px] uppercase tracking-[.04em] shrink-0">
-                    Pachón<span class="text-gol">·</span>Mundial
+                    <span class="text-gol">@</span>SoyPachon
                 </a>
 
                 {{-- Desktop nav --}}
@@ -87,7 +87,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-14 gap-4">
                 <a href="{{ route('home') }}" class="font-display font-extrabold text-[18px] uppercase tracking-[.04em]">
-                    Pachón<span class="text-gol">·</span>Mundial
+                    <span class="text-gol">@</span>SoyPachon
                 </a>
 
                 {{-- Desktop: links inline --}}

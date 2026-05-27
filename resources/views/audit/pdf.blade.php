@@ -105,7 +105,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="brand">Pachón<span class="dot">·</span>Mundial <span style="font-size:9px; letter-spacing:.14em; color:#4a4a48; font-weight:500; margin-left:8px;">@SoyPachón</span></div>
+        <div class="brand"><span class="dot">@</span>SoyPachon <span style="font-size:9px; letter-spacing:.14em; color:#4a4a48; font-weight:500; margin-left:8px;">Polla del Mundial 2026</span></div>
         <div class="meta">Reporte de auditoría<br>{{ $generatedAt }}</div>
     </div>
 

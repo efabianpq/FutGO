@@ -6,6 +6,10 @@ use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Estos tests originalmente vivían en /. El video se movió a /como-funciona
+ * cuando la home se simplificó para ser solo hero + CTAs.
+ */
 class WelcomeVideoTest extends TestCase
 {
     use RefreshDatabase;
@@ -14,7 +18,7 @@ class WelcomeVideoTest extends TestCase
     {
         Settings::set(Settings::VIDEO_URL, '');
 
-        $this->get(route('home'))
+        $this->get(route('how-it-works'))
             ->assertOk()
             ->assertSee('Video explicativo próximamente');
     }
@@ -23,7 +27,7 @@ class WelcomeVideoTest extends TestCase
     {
         Settings::set(Settings::VIDEO_URL, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 
-        $this->get(route('home'))
+        $this->get(route('how-it-works'))
             ->assertOk()
             ->assertSee('https://www.youtube.com/embed/dQw4w9WgXcQ', false)
             ->assertDontSee('Video explicativo próximamente');
@@ -33,7 +37,7 @@ class WelcomeVideoTest extends TestCase
     {
         Settings::set(Settings::VIDEO_URL, 'https://youtu.be/dQw4w9WgXcQ');
 
-        $this->get(route('home'))
+        $this->get(route('how-it-works'))
             ->assertOk()
             ->assertSee('https://www.youtube.com/embed/dQw4w9WgXcQ', false);
     }
@@ -42,7 +46,7 @@ class WelcomeVideoTest extends TestCase
     {
         Settings::set(Settings::VIDEO_URL, 'https://www.youtube.com/embed/abc123XYZ');
 
-        $this->get(route('home'))
+        $this->get(route('how-it-works'))
             ->assertOk()
             ->assertSee('https://www.youtube.com/embed/abc123XYZ', false);
     }
@@ -51,7 +55,7 @@ class WelcomeVideoTest extends TestCase
     {
         Settings::set(Settings::VIDEO_URL, 'https://vimeo.com/123456');
 
-        $this->get(route('home'))
+        $this->get(route('how-it-works'))
             ->assertOk()
             ->assertSee('Video explicativo próximamente');
     }
