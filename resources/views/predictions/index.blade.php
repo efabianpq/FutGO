@@ -29,11 +29,11 @@
     </div>
 
     <!-- Filtro único -->
-    <div class="bg-white rounded-lg shadow-sm p-3 mb-6 flex flex-wrap items-center gap-2 sticky top-0 z-10">
+    <div class="bg-pachon-green text-white rounded-lg shadow-md p-3 mb-6 flex flex-wrap items-center gap-3 sticky top-0 z-10">
         <label class="text-sm flex items-center gap-2 w-full sm:w-auto">
-            <span class="text-gray-600 font-medium">Filtro:</span>
+            <span class="font-semibold uppercase tracking-wider text-pachon-gold">🎯 Filtro:</span>
             <select x-model="filter"
-                    class="grow sm:grow-0 rounded-md border-gray-300 text-sm focus:ring-pachon-green focus:border-pachon-green">
+                    class="grow sm:grow-0 sm:min-w-[260px] rounded-md border-2 border-pachon-gold bg-white text-pachon-green-dark font-medium text-sm focus:ring-2 focus:ring-pachon-gold focus:border-pachon-gold">
                 <option value="all">Todos los partidos</option>
                 <option value="pending">Solo abiertos (pendientes de pronosticar)</option>
                 <template x-for="g in groups" :key="g">
@@ -101,7 +101,7 @@
                                        :disabled="match.is_locked || match.status === 'finished'"
                                        @blur="save(match)"
                                        @keydown.enter.prevent="$event.target.blur()"
-                                       class="w-14 text-center text-xl font-bold rounded-md border-gray-300 disabled:bg-gray-100 disabled:text-gray-500 focus:ring-pachon-green focus:border-pachon-green"
+                                       class="w-16 text-center text-xl font-bold rounded-md border-2 border-pachon-green/40 bg-pachon-green/5 text-pachon-green-dark shadow-sm disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-300 focus:ring-2 focus:ring-pachon-green focus:border-pachon-green focus:bg-white transition"
                                        :placeholder="match.is_locked && match.home_score === null ? '—' : ''">
 
                                 <span class="text-gray-400 font-bold">:</span>
@@ -111,7 +111,7 @@
                                        :disabled="match.is_locked || match.status === 'finished'"
                                        @blur="save(match)"
                                        @keydown.enter.prevent="$event.target.blur()"
-                                       class="w-14 text-center text-xl font-bold rounded-md border-gray-300 disabled:bg-gray-100 disabled:text-gray-500 focus:ring-pachon-green focus:border-pachon-green"
+                                       class="w-16 text-center text-xl font-bold rounded-md border-2 border-pachon-green/40 bg-pachon-green/5 text-pachon-green-dark shadow-sm disabled:bg-gray-100 disabled:text-gray-500 disabled:border-gray-300 focus:ring-2 focus:ring-pachon-green focus:border-pachon-green focus:bg-white transition"
                                        :placeholder="match.is_locked && match.away_score === null ? '—' : ''">
                             </div>
 
