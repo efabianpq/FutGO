@@ -4,54 +4,51 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-bold text-pachon-green mb-4">👤 Mi Perfil</h1>
+    <p class="eyebrow">Mi cuenta</p>
+    <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-3 mb-6">Mi perfil</h1>
 
-    <div class="bg-white rounded-lg shadow-md p-6 space-y-5">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+    <div class="bg-white border border-line rounded-md shadow-card p-6 sm:p-8 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-5 border-b border-line-soft">
             <div>
-                <p class="text-xs uppercase text-gray-500">Nombre</p>
-                <p class="font-semibold">{{ auth()->user()->name }}</p>
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Nombre</p>
+                <p class="font-display font-bold text-display-s text-ink mt-1">{{ auth()->user()->name }}</p>
             </div>
             <div>
-                <p class="text-xs uppercase text-gray-500">Email</p>
-                <p class="font-semibold">{{ auth()->user()->email }}</p>
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Email</p>
+                <p class="font-mono text-body-s text-ink mt-1 break-all">{{ auth()->user()->email }}</p>
             </div>
             <div>
-                <p class="text-xs uppercase text-gray-500">Código usado</p>
-                <p class="font-mono">{{ auth()->user()->invitation_code ?? '—' }}</p>
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Código usado</p>
+                <p class="font-mono font-bold text-body text-pitch mt-1">{{ auth()->user()->invitation_code ?? '—' }}</p>
             </div>
             <div>
-                <p class="text-xs uppercase text-gray-500">Rol</p>
-                <p class="capitalize">{{ auth()->user()->role }}</p>
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Rol</p>
+                <p class="font-display font-bold text-display-s text-pitch uppercase mt-1">{{ auth()->user()->role }}</p>
             </div>
         </div>
 
-        <form method="POST" action="{{ route('profile.update') }}" class="space-y-4">
+        <form method="POST" action="{{ route('profile.update') }}" class="space-y-5">
             @csrf
             @method('PATCH')
 
-            <div>
-                <label for="phone_whatsapp" class="block text-sm font-medium text-gray-700">
-                    Teléfono WhatsApp <span class="text-xs text-gray-500">(solo números, 7-15 dígitos)</span>
-                </label>
-                <input id="phone_whatsapp" name="phone_whatsapp" type="tel" required
-                       inputmode="numeric" pattern="[0-9]{7,15}"
+            <div class="flex flex-col gap-1.5">
+                <label for="phone_whatsapp" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Teléfono WhatsApp</label>
+                <input id="phone_whatsapp" name="phone_whatsapp" type="tel" required inputmode="numeric" pattern="[0-9]{7,15}"
                        value="{{ old('phone_whatsapp', auth()->user()->phone_whatsapp) }}"
-                       class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-pachon-green focus:border-pachon-green">
-                @error('phone_whatsapp')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                       class="h-[46px] px-3.5 bg-white border-[1.5px] {{ $errors->has('phone_whatsapp') ? 'border-alerta' : 'border-line' }} rounded-md text-[15px] focus:border-pitch focus:ring-0">
+                <p class="text-[12px] text-ink-mute">Solo números, 7 a 15 dígitos.</p>
+                @error('phone_whatsapp')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
 
-            <label class="inline-flex items-center gap-2 text-sm">
+            <label class="inline-flex items-center gap-2 text-body-s">
                 <input type="checkbox" name="notifications_enabled" value="1"
                        @checked(auth()->user()->notifications_enabled)
-                       class="rounded border-gray-300 text-pachon-green focus:ring-pachon-green">
-                <span class="text-gray-700">Quiero recibir notificaciones por WhatsApp</span>
+                       class="w-[18px] h-[18px] rounded-sm accent-pitch border-line">
+                <span class="text-ink">Recibir notificaciones por email</span>
             </label>
 
-            <div class="flex justify-end pt-2">
-                <button type="submit" class="bg-pachon-green hover:bg-pachon-green-dark text-white px-4 py-2 rounded-md text-sm font-semibold">
-                    Guardar cambios
-                </button>
+            <div class="flex justify-end">
+                <x-btn type="submit" variant="primary">Guardar cambios</x-btn>
             </div>
         </form>
     </div>
