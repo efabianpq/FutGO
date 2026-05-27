@@ -31,7 +31,7 @@
     <!-- Filtro único -->
     <div class="bg-pachon-green text-white rounded-lg shadow-md p-3 mb-6 flex flex-wrap items-center gap-3 sticky top-0 z-10">
         <label class="text-sm flex items-center gap-2 w-full sm:w-auto">
-            <span class="font-semibold text-pachon-gold">Filtro:</span>
+            <span class="font-semibold text-white">Filtro:</span>
             <select x-model="filter"
                     class="grow sm:grow-0 sm:min-w-[260px] rounded-md border-2 border-pachon-gold bg-white text-pachon-green-dark font-medium text-sm focus:ring-2 focus:ring-pachon-gold focus:border-pachon-gold">
                 <option value="all">Todos los partidos</option>
