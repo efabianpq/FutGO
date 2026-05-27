@@ -19,11 +19,12 @@
             <span class="text-right">Puntos</span>
         </div>
 
-        {{-- Rows (Alpine) --}}
+        {{-- Rows (Alpine) — TODA la fila es <a>, el nombre se subraya en hover --}}
         <template x-for="(row, idx) in rows" :key="row.user_id">
             <a :href="userUrlBase + '/' + row.user_id"
-               class="grid grid-cols-[44px_1fr_72px] sm:grid-cols-[44px_1fr_72px_80px] gap-3 px-4 py-3 items-center border-b border-line-soft last:border-b-0 hover:bg-bone-soft transition-colors duration-fast"
-               :class="row.user_id === me ? 'bg-[#fef9e3]' : ''">
+               class="group grid grid-cols-[44px_1fr_72px] sm:grid-cols-[44px_1fr_72px_80px] gap-3 px-4 py-3 items-center border-b border-line-soft last:border-b-0 hover:bg-bone-soft transition-colors duration-fast cursor-pointer"
+               :class="row.user_id === me ? 'bg-[#fef9e3]' : ''"
+               :title="'Ver detalle de ' + row.name">
                 <span class="font-display font-extrabold text-[20px]"
                       :class="row.current_position === 1 ? 'text-gol-deep' : (row.current_position === 2 ? 'text-[#8a8a8a]' : (row.current_position === 3 ? 'text-[#b87333]' : 'text-ink'))"
                       x-text="row.current_position ?? '—'"></span>
@@ -32,7 +33,7 @@
                     <div class="w-8 h-8 rounded-pill flex items-center justify-center bg-pitch-light text-bone font-display font-bold text-[13px] shrink-0"
                          x-text="row.name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()"></div>
                     <div class="min-w-0">
-                        <p class="font-medium text-body-s text-ink truncate" x-text="row.name"></p>
+                        <p class="font-semibold text-body-s text-ink truncate group-hover:text-pitch group-hover:underline" x-text="row.name"></p>
                         <p class="font-mono text-[11px] text-ink-mute truncate"
                            x-text="'@' + row.name.toLowerCase().replace(/\s+/g,'')"></p>
                     </div>
@@ -41,6 +42,8 @@
                               :class="row.previous_position > row.current_position ? 'text-pitch-light' : 'text-alerta'"
                               x-text="row.previous_position > row.current_position ? '↑' : '↓'"></span>
                     </template>
+                    {{-- Chevron que aparece en hover indicando "click para ver detalle" --}}
+                    <span class="opacity-0 group-hover:opacity-100 text-pitch font-display font-bold transition-opacity duration-fast" aria-hidden="true">→</span>
                 </div>
 
                 <span class="hidden sm:block text-right font-mono text-[13px] text-gol-deep" x-text="row.exact_predictions"></span>
@@ -75,13 +78,15 @@
                 $initials = collect(explode(' ', $row['name']))->map(fn($p) => substr($p, 0, 1))->take(2)->join('');
             @endphp
             <a href="{{ $userUrlBase ? $userUrlBase . '/' . $row['user_id'] : '#' }}"
-               class="grid grid-cols-[44px_1fr_72px] sm:grid-cols-[44px_1fr_72px_80px] gap-3 px-4 py-3 items-center border-b border-line-soft last:border-b-0 hover:bg-bone-soft transition-colors duration-fast {{ $isMe ? 'bg-[#fef9e3]' : '' }}">
+               class="group grid grid-cols-[44px_1fr_72px] sm:grid-cols-[44px_1fr_72px_80px] gap-3 px-4 py-3 items-center border-b border-line-soft last:border-b-0 hover:bg-bone-soft transition-colors duration-fast cursor-pointer {{ $isMe ? 'bg-[#fef9e3]' : '' }}"
+               title="Ver detalle de {{ $row['name'] }}">
                 <span class="font-display font-extrabold text-[20px] {{ $rankColor }}">{{ $row['current_position'] ?? '—' }}</span>
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="w-8 h-8 rounded-pill flex items-center justify-center bg-pitch-light text-bone font-display font-bold text-[13px] shrink-0">{{ strtoupper($initials) }}</div>
-                    <div class="min-w-0">
-                        <p class="font-medium text-body-s text-ink truncate">{{ $row['name'] }}</p>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-body-s text-ink truncate group-hover:text-pitch group-hover:underline">{{ $row['name'] }}</p>
                     </div>
+                    <span class="opacity-0 group-hover:opacity-100 text-pitch font-display font-bold transition-opacity duration-fast" aria-hidden="true">→</span>
                 </div>
                 <span class="hidden sm:block text-right font-mono text-[13px] text-gol-deep">{{ $row['exact_predictions'] }}</span>
                 <span class="text-right font-display font-extrabold text-[20px] {{ $isMe ? 'text-gol-deep' : 'text-pitch' }}">{{ $row['total_points'] }}</span>

@@ -136,6 +136,29 @@ class RankingTest extends TestCase
             ->assertDontSee('Pendiente'); // ya no se muestra
     }
 
+    public function test_show_incluye_resumen_y_boton_volver(): void
+    {
+        $g = Game::create([
+            'phase' => 'grupos', 'group_name' => 'A', 'match_number' => 9401,
+            'home_team' => 'Home', 'away_team' => 'Away',
+            'match_datetime' => now()->subHours(2),
+            'lock_datetime' => now()->subHours(2)->subMinutes(5),
+            'status' => 'finished',
+            'home_score_official' => 2, 'away_score_official' => 1,
+        ]);
+
+        $u = User::factory()->create(['is_active' => true, 'name' => 'Tester']);
+        Prediction::create(['user_id' => $u->id, 'match_id' => $g->id, 'home_score' => 2, 'away_score' => 1]);
+        Artisan::call('predictions:calculate', ['match_id' => $g->id]);
+
+        $res = $this->actingAs($u)->get(route('ranking.show', $u));
+        $res->assertOk()
+            ->assertSee('Volver al Ranking')         // botón explícito
+            ->assertSee('Resumen del participante')  // sección de resumen
+            ->assertSee('Aprovechamiento')           // métrica nueva
+            ->assertSee('Partidos jugados');         // tarjeta de partidos
+    }
+
     public function test_show_muestra_mensaje_cuando_no_hay_partidos_finalizados(): void
     {
         $u = User::factory()->create(['is_active' => true, 'name' => 'Sin Partidos']);
