@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\InvitationCodeController as AdminCodesController;
 use App\Http\Controllers\Admin\ResultsController as AdminResultsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUsersController;
+use App\Http\Controllers\AuditExportController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -57,6 +58,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
 
+        // Auditoría exportable (usuarios activos)
+        Route::get('/auditoria/exportar',     [AuditExportController::class, 'index'])->name('audit.index');
+        Route::get('/auditoria/exportar/csv', [AuditExportController::class, 'csv'])->name('audit.csv');
+        Route::get('/auditoria/exportar/pdf', [AuditExportController::class, 'pdf'])->name('audit.pdf');
+
         // Alias compatible
         Route::get('/dashboard', fn () => redirect()->route('predictions.index'))->name('dashboard');
 
@@ -86,6 +92,11 @@ Route::middleware('auth')->group(function () {
             // Configuración
             Route::get('/configuracion', [AdminSettingsController::class, 'edit'])->name('settings.edit');
             Route::post('/configuracion', [AdminSettingsController::class, 'update'])->name('settings.update');
+
+            // Auditoría exportable (admin)
+            Route::get('/auditoria/exportar',     [AuditExportController::class, 'index'])->name('audit.index');
+            Route::get('/auditoria/exportar/csv', [AuditExportController::class, 'csv'])->name('audit.csv');
+            Route::get('/auditoria/exportar/pdf', [AuditExportController::class, 'pdf'])->name('audit.pdf');
         });
     });
 });

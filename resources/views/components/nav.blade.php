@@ -21,13 +21,14 @@
                 {{-- Desktop nav --}}
                 <nav class="hidden md:flex items-center gap-6 font-display font-semibold text-[13px] uppercase tracking-wide-label">
                     @foreach ([
-                        'predictions.index' => 'Mis Pronósticos',
-                        'ranking.index'     => 'Ranking',
-                        'profile.show'      => 'Perfil',
-                    ] as $route => $label)
+                        'predictions.index' => ['label' => 'Mis Pronósticos', 'icon' => null],
+                        'ranking.index'     => ['label' => 'Ranking',          'icon' => null],
+                        'audit.index'       => ['label' => 'Auditoría',        'icon' => '↓'],
+                        'profile.show'      => ['label' => 'Perfil',           'icon' => null],
+                    ] as $route => $meta)
                         <a href="{{ route($route) }}"
                            class="pb-1 border-b-2 transition-all duration-fast {{ $isActive(explode('.', $route)[0]) ? 'border-gol opacity-100' : 'border-transparent opacity-70 hover:opacity-100' }}">
-                            {{ $label }}
+                            @if ($meta['icon']) <span class="text-gol">{{ $meta['icon'] }}</span> @endif{{ $meta['label'] }}
                         </a>
                     @endforeach
                 </nav>
@@ -66,6 +67,7 @@
             <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1 font-display font-semibold text-[13px] uppercase tracking-wide-label">
                 <a href="{{ route('predictions.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Mis Pronósticos</a>
                 <a href="{{ route('ranking.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Ranking</a>
+                <a href="{{ route('audit.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10"><span class="text-gol">↓</span> Auditoría</a>
                 <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Perfil</a>
                 @if ($user->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md bg-gol text-pitch">⚙ Admin</a>
