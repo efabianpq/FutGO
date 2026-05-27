@@ -1,3 +1,113 @@
+/* ============================================================
+   SoyPachonMundial · Design Tokens (handoff Claude Design)
+   ============================================================ */
+
+:root {
+  /* ─── Color · primarios ─────────────────────────────── */
+  --color-pitch:        #0a3d2e;
+  --color-pitch-deep:   #06281e;
+  --color-pitch-light:  #14593f;
+  --color-pitch-mist:   #e8efe9;
+  --color-pitch-900:    #06281e;
+  --color-pitch-700:    #0a3d2e;
+  --color-pitch-500:    #14593f;
+  --color-pitch-300:    #4a8a6f;
+  --color-pitch-100:    #b8d2c4;
+  --color-pitch-050:    #e8efe9;
+
+  /* ─── Color · acentos ───────────────────────────────── */
+  --color-gol:          #f4d03f;
+  --color-gol-deep:     #d4a82a;
+  --color-alerta:       #e74c3c;
+  --color-alerta-deep:  #b8392b;
+
+  /* ─── Color · neutros ───────────────────────────────── */
+  --color-bone:         #f5f1e8;
+  --color-bone-soft:    #faf7ef;
+  --color-ink:          #1a1a1a;
+  --color-ink-soft:     #4a4a48;
+  --color-ink-mute:     #8a8884;
+  --color-line:         #e5dfd1;
+  --color-line-soft:    #efeadc;
+
+  --color-neutral-900:  #1a1a1a;
+  --color-neutral-700:  #4a4a48;
+  --color-neutral-500:  #8a8884;
+  --color-neutral-300:  #c8c4ba;
+  --color-neutral-200:  #e5dfd1;
+  --color-neutral-050:  #f5f1e8;
+
+  /* ─── Tipografía ────────────────────────────────────── */
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body:    "DM Sans", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --fs-display-xl: 96px;   --lh-display-xl: 0.90;
+  --fs-display-l:  56px;   --lh-display-l:  0.98;
+  --fs-display-m:  32px;   --lh-display-m:  1.05;
+  --fs-display-s:  22px;   --lh-display-s:  1.10;
+  --fs-body-l:     20px;   --lh-body-l:     1.50;
+  --fs-body:       16px;   --lh-body:       1.60;
+  --fs-body-s:     14px;   --lh-body-s:     1.55;
+  --fs-mono-label: 11px;   --lh-mono-label: 1.40;
+
+  /* ─── Radios ────────────────────────────────────────── */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 22px;
+  --r-pill: 999px;
+
+  /* ─── Sombras ───────────────────────────────────────── */
+  --shadow-1: 0 1px 2px  rgba(10, 25, 18, .06);
+  --shadow-2: 0 4px 16px rgba(10, 25, 18, .08);
+  --shadow-3: 0 12px 40px rgba(10, 25, 18, .12);
+
+  /* ─── Spacing (base 4px) ────────────────────────────── */
+  --sp-1:  4px;  --sp-2:  8px;  --sp-3:  12px;
+  --sp-4:  16px; --sp-5:  20px; --sp-6:  24px;
+  --sp-7:  28px; --sp-8:  32px; --sp-10: 40px;
+  --sp-14: 56px; --sp-20: 80px; --sp-24: 96px;
+
+  --tx-fast: .15s ease;
+}
+
+/* ─── Utility helpers de tipografía ────────────────────── */
+.t-display-xl { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-display-xl); line-height: var(--lh-display-xl); letter-spacing: -.02em; text-transform: uppercase; }
+.t-display-l  { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-display-l);  line-height: var(--lh-display-l);  letter-spacing: -.015em; text-transform: uppercase; }
+.t-display-m  { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-display-m);  line-height: var(--lh-display-m);  letter-spacing: .01em; text-transform: uppercase; }
+.t-display-s  { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-display-s);  line-height: var(--lh-display-s);  letter-spacing: .02em; text-transform: uppercase; }
+.t-body-l     { font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body-l); line-height: var(--lh-body-l); }
+.t-body       { font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body);   line-height: var(--lh-body); }
+.t-body-s     { font-family: var(--font-body); font-weight: 400; font-size: var(--fs-body-s); line-height: var(--lh-body-s); }
+.t-mono-label { font-family: var(--font-mono); font-weight: 500; font-size: var(--fs-mono-label); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ─── Eyebrow (con guion antes) ──────────────────────── */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--color-pitch-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 28px; height: 1px; background: var(--color-pitch-light);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Base body overrides (después de Tailwind base) ────── */
+@layer base {
+  body {
+    background: var(--color-bone);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+}
