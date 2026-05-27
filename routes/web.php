@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/predictions', [PredictionsController::class, 'index'])->name('predictions.index');
         Route::get('/predictions/states', [PredictionsController::class, 'states'])->name('predictions.states');
         Route::post('/predictions/{game}', [PredictionsController::class, 'update'])->name('predictions.update');
+        Route::get('/partidos/{game}/pronosticos', [PredictionsController::class, 'matchPredictions'])->name('predictions.byMatch');
 
         // Ranking (solo participantes activos)
         Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');

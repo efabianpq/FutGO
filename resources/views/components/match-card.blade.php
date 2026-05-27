@@ -87,12 +87,22 @@
         </div>
 
         {{-- Footer --}}
-        <div class="px-4 sm:px-5 py-3 bg-bone-soft border-t border-line-soft font-mono text-[11px] tracking-wide-eyebrow uppercase text-ink-mute flex items-center justify-between gap-2 flex-wrap">
-            <span class="truncate">📍 <span x-text="match.venue"></span></span>
-            <span x-show="match.savedFlash" x-cloak class="text-pitch font-display font-bold">Guardado ✓</span>
-            <span x-show="match.saveError" x-cloak class="text-alerta font-display font-bold" x-text="match.saveError"></span>
-            <span x-show="match.is_locked && match.status !== 'finished' && !match.has_prediction" class="italic">Sin pronóstico</span>
-            <span x-show="match.has_prediction && match.status !== 'finished'" class="text-pitch font-display font-bold">Pronóstico guardado</span>
+        <div class="px-4 sm:px-5 py-3 bg-bone-soft border-t border-line-soft font-mono text-[11px] tracking-wide-eyebrow uppercase text-ink-mute flex items-center justify-between gap-3 flex-wrap">
+            <span class="truncate min-w-0">📍 <span x-text="match.venue"></span></span>
+            <div class="flex items-center gap-3 flex-wrap justify-end">
+                <span x-show="match.savedFlash" x-cloak class="text-pitch font-display font-bold">Guardado ✓</span>
+                <span x-show="match.saveError" x-cloak class="text-alerta font-display font-bold" x-text="match.saveError"></span>
+                <span x-show="match.is_locked && match.status !== 'finished' && !match.has_prediction" class="italic">Sin pronóstico</span>
+                <span x-show="match.has_prediction && match.status !== 'finished' && !match.is_locked" class="text-pitch font-display font-bold">Pronóstico guardado</span>
+
+                {{-- Botón Ver Pronósticos: solo visible si está bloqueado o finalizado --}}
+                <button type="button"
+                        x-show="match.is_locked || match.status === 'finished'"
+                        @click="$root.openPredictionsModal(match.id)"
+                        class="font-display font-bold text-[11px] uppercase tracking-wide-cta px-3 py-1.5 rounded-md bg-pitch text-bone hover:bg-pitch-deep transition-all duration-fast">
+                    👁 Ver pronósticos
+                </button>
+            </div>
         </div>
     </div>
 @endif
