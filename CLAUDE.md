@@ -305,6 +305,8 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 | MAIL_MAILER local | `log` en desarrollo — los emails se escriben en `storage/logs/laravel.log`. Para verlos: `Get-Content storage\logs\laravel.log -Tail 80` |
 | Logout | Redirige a **`/`** (home) no a `/login` — para que el usuario vea la portada |
 | Sesiones SSH Hostinger | Puerto **65002** (no 22). Llave SSH recomendada. |
+| MailMessage `->table()` | No existe en `MailMessage` — usar `->line()` por cada ítem. Ver `WelcomeNotification` como referencia. |
+| Email templates vendor | Publicados en `resources/views/vendor/mail/html/`. Los colores del design system van en `themes/default.css`. El `message.blade.php` tiene un footer hardcodeado en el `x-slot:footer` — nuestro `footer.blade.php` lo sobrescribe correctamente ignorando el slot. |
 
 ---
 
@@ -321,6 +323,9 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 - ✅ Panel admin: dashboard, códigos, usuarios, fixture, resultados, settings
 - ✅ Exportación auditoría: CSV + PDF (dompdf, landscape, branding)
 - ✅ Notificaciones por email (driver log local, SMTP en prod) — recordatorio 15min antes
+- ✅ Email de bienvenida al activar código SPM (`WelcomeNotification`) — rama `feat/email-smtp`
+- ✅ Templates HTML de email con branding SPM (pitch/gol/bone) — `resources/views/vendor/mail/`
+- ✅ SMTP Hostinger verificado: `smtp.hostinger.com:465 SSL` — ver `.env.example` para variables
 - ✅ Página pública `/como-funciona` con calculadora Alpine de premios
 - ✅ Design system aplicado completo (handoff Claude Design)
 
@@ -335,7 +340,7 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 
 | Métrica | Valor |
 |---|---|
-| Tests | 86 passing (309 assertions) |
+| Tests | 89 passing (325 assertions) |
 | Tag de release | `v1.0.0` (`c774a8f`) |
 | Último commit master | ver `git log --oneline -1` |
 | Producción | https://soypachonmundial.online |
