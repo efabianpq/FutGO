@@ -258,9 +258,9 @@ git push
 # SERVIDOR (SSH Hostinger puerto 65002)
 cd ~/soypachonmundial
 git pull origin master
-composer install --no-dev --optimize-autoloader
 
-# IMPORTANTE: PHP 8.3 en Hostinger está en /opt/alt/php83/usr/bin/php (no en PATH)
+# IMPORTANTE: PHP 8.3 y Composer en Hostinger necesitan ruta completa
+/opt/alt/php83/usr/bin/php /usr/local/bin/composer install --no-dev --optimize-autoloader
 /opt/alt/php83/usr/bin/php artisan migrate --force        # si hay migraciones nuevas
 /opt/alt/php83/usr/bin/php artisan optimize:clear
 /opt/alt/php83/usr/bin/php artisan config:cache
@@ -268,7 +268,13 @@ composer install --no-dev --optimize-autoloader
 /opt/alt/php83/usr/bin/php artisan view:cache
 ```
 
-Para evitar tipear la ruta cada vez, crear alias: `alias php83="/opt/alt/php83/usr/bin/php"` o exportar en `~/.bashrc`.
+Para evitar tipear las rutas cada vez, crear alias en `~/.bashrc`:
+```bash
+alias php83="/opt/alt/php83/usr/bin/php"
+alias composer83="/opt/alt/php83/usr/bin/php /usr/local/bin/composer"
+```
+
+Luego `source ~/.bashrc` y ya funciona `php83 artisan ...` y `composer83 install ...`
 
 ⚠️ **`public/build/` se commitea al repo** (excepción al default de Laravel) porque Hostinger Premium no tiene Node disponible para builds en el servidor. Sin esto, el sitio queda con CSS viejo. Ver commit `c069e5a` por contexto.
 
