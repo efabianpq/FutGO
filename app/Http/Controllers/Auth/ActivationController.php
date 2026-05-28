@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\WelcomeNotification;
 use App\Services\RankingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -62,6 +63,9 @@ class ActivationController extends Controller
             ]);
         }
 
+        // El notify va fuera del transaction: si el email falla, la activación
+        // ya quedó confirmada en BD y no se revierte.
+        $user->notify(new WelcomeNotification());
 
         return redirect()->route('dashboard')->with('status', '¡Bienvenido! Ya puedes comenzar a pronosticar.');
     }
