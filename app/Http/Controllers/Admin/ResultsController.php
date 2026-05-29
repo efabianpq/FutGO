@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Services\PredictionsCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -27,10 +28,26 @@ class ResultsController extends Controller
             ->limit(20)
             ->get();
 
+        $mappedCount = Game::whereNotNull('api_match_id')->count();
+        $lastSync = Game::where('status', 'finished')
+            ->whereNotNull('api_match_id')
+            ->max('updated_at');
+
         return view('admin.results.index', [
             'pending' => $pending,
             'finished' => $finished,
+            'mappedCount' => $mappedCount,
+            'lastSync' => $lastSync ? \Illuminate\Support\Carbon::parse($lastSync) : null,
         ]);
+    }
+
+    public function syncNow(): RedirectResponse
+    {
+        Artisan::call('results:sync');
+        $output = trim(Artisan::output()) ?: 'Sin partidos activos.';
+
+        return redirect()->route('admin.results.index')
+            ->with('status', 'Sync ejecutado: ' . $output);
     }
 
     public function store(Request $request, Game $game, PredictionsCalculator $calculator): RedirectResponse

@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
 
             // Resultados
             Route::get('/resultados', [AdminResultsController::class, 'index'])->name('results.index');
+            Route::post('/resultados/sync', [AdminResultsController::class, 'syncNow'])->name('results.sync');
             Route::post('/resultados/{game}', [AdminResultsController::class, 'store'])->name('results.store');
 
             // Configuración

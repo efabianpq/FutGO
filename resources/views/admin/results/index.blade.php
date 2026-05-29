@@ -11,6 +11,24 @@
 
     @error('result')<div class="bg-alerta/10 border border-alerta text-alerta px-4 py-2 rounded-md mb-4 font-mono text-[12px]">{{ $message }}</div>@enderror
 
+    <div class="bg-white border border-line rounded-md shadow-card p-4 mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <p class="eyebrow">Sincronización automática</p>
+            <p class="font-body text-body-s text-ink-soft mt-1">
+                {{ $mappedCount }}/104 partidos mapeados a la API.
+                @if ($lastSync)
+                    Última sync: <span class="font-mono text-[12px] text-pitch">hace {{ $lastSync->locale('es')->diffForHumans(['parts' => 1]) }}</span>.
+                @else
+                    <span class="font-mono text-[12px] text-ink-mute">Sin sincronizaciones automáticas aún.</span>
+                @endif
+            </p>
+        </div>
+        <form method="POST" action="{{ route('admin.results.sync') }}">
+            @csrf
+            <x-btn type="submit" variant="ghost" size="sm">Sincronizar ahora</x-btn>
+        </form>
+    </div>
+
     <section class="mb-10">
         <header class="flex items-end justify-between mb-3 pb-2 border-b-2 border-pitch">
             <h2 class="font-display font-bold text-display-s text-pitch uppercase">⏰ Pendientes de resultado</h2>
@@ -30,7 +48,14 @@
                     @forelse ($pending as $g)
                         <tr class="hover:bg-bone-soft transition-colors duration-fast">
                             <td class="px-3 py-3 font-mono text-[11px] text-ink-mute">{{ $g->match_number }}</td>
-                            <td class="px-3 py-3 font-display font-semibold">{{ $g->home_flag }} {{ $g->home_team }} <span class="text-ink-mute font-body normal-case">vs</span> {{ $g->away_flag }} {{ $g->away_team }}</td>
+                            <td class="px-3 py-3 font-display font-semibold">
+                                {{ $g->home_flag }} {{ $g->home_team }} <span class="text-ink-mute font-body normal-case">vs</span> {{ $g->away_flag }} {{ $g->away_team }}
+                                @if ($g->api_match_id)
+                                    <x-badge variant="win" class="ml-1">API ✓</x-badge>
+                                @else
+                                    <x-badge variant="upcoming" class="ml-1">Manual</x-badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-3 font-mono text-[11px] text-ink-soft">{{ $g->match_datetime->locale('es')->isoFormat('ddd D MMM HH:mm') }}</td>
                             <td class="px-3 py-3">
                                 <form method="POST" action="{{ route('admin.results.store', $g->id) }}" class="flex items-center justify-end gap-2 flex-wrap">
@@ -70,7 +95,14 @@
                     @forelse ($finished as $g)
                         <tr class="hover:bg-bone-soft transition-colors duration-fast">
                             <td class="px-3 py-3 font-mono text-[11px] text-ink-mute">{{ $g->match_number }}</td>
-                            <td class="px-3 py-3 font-display font-semibold">{{ $g->home_team }} <span class="text-ink-mute font-body normal-case">vs</span> {{ $g->away_team }}</td>
+                            <td class="px-3 py-3 font-display font-semibold">
+                                {{ $g->home_team }} <span class="text-ink-mute font-body normal-case">vs</span> {{ $g->away_team }}
+                                @if ($g->api_match_id)
+                                    <x-badge variant="win" class="ml-1">API ✓</x-badge>
+                                @else
+                                    <x-badge variant="upcoming" class="ml-1">Manual</x-badge>
+                                @endif
+                            </td>
                             <td class="px-3 py-3">
                                 <form method="POST" action="{{ route('admin.results.store', $g->id) }}" class="flex items-center justify-end gap-2 flex-wrap">
                                     @csrf

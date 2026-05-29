@@ -73,6 +73,8 @@ php artisan schedule:work
 php artisan predictions:lock                       # bloquea pronósticos vencidos
 php artisan predictions:calculate {match_id}       # calcula puntos de un partido
 php artisan notifications:reminders                # envía recordatorios 15min antes
+php artisan fixtures:map-ids [--dry-run] [--force] # mapea api_match_id desde football-data.org (1 sola vez)
+php artisan results:sync                           # sincroniza resultados desde la API (auto vía scheduler c/5min)
 
 # seeders
 php artisan migrate:fresh --seed                   # fixture limpio + admin + users de prueba
@@ -317,6 +319,11 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 | Sesiones SSH Hostinger | Puerto **65002** (no 22). Llave SSH recomendada. |
 | MailMessage `->table()` | No existe en `MailMessage` — usar `->line()` por cada ítem. Ver `WelcomeNotification` como referencia. |
 | Email templates vendor | Publicados en `resources/views/vendor/mail/html/`. Los colores del design system van en `themes/default.css`. El `message.blade.php` tiene un footer hardcodeado en el `x-slot:footer` — nuestro `footer.blade.php` lo sobrescribe correctamente ignorando el slot. |
+| football-data.org free tier | 10 req/min, sin límite diario. Status inicial de partidos futuros es **TIMED** (no SCHEDULED). `score.fullTime` es el tiempo reglamentario — correcto para SPM. |
+| Mapeo IDs eliminatoria | Los IDs de eliminatoria existen desde antes del torneo con `homeTeam/awayTeam` null. NO mapear por fecha (las fechas locales son estimadas): mapear por **etapa + posición** — las cuentas por ronda coinciden 1:1 (16/8/4/2/1/1). |
+| Mapeo IDs grupos | El fixture local está en **español** y la API en **inglés** → diccionario `TEAM_ALIASES` en `MapFootballDataIds`. El matching es por **par de nombres** (no por fecha), porque cada cruce de grupos es único y las fechas locales pueden estar alteradas por el `DemoSeeder`. |
+| Home/visitante invertido | El comando detecta cruces que en la API tienen local/visitante al revés (ej: local "Brasil vs Escocia" vs API "Scotland vs Brazil") y los deja **sin mapear** con aviso `⇄ INVERTIDO`, porque el sync asigna goles por lado. Hay que corregir el fixture local, no forzar el mapeo. |
+| Prioridad admin en sync | `results:sync` nunca sobreescribe un resultado manual: si `home_score_official` NOT NULL → skip. Solo `FINISHED` dispara el cálculo de puntos. |
 
 ---
 
@@ -338,11 +345,11 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 - ✅ SMTP Hostinger verificado: `smtp.hostinger.com:465 SSL` — ver `.env.example` para variables
 - ✅ Página pública `/como-funciona` con calculadora Alpine de premios
 - ✅ Design system aplicado completo (handoff Claude Design)
+- ✅ Sincronización automática de resultados desde **football-data.org** (API v4): `FootballDataService`, `fixtures:map-ids`, `results:sync` (scheduler c/5min), badges API/Manual + botón sync en el panel admin. Prioridad del resultado manual del admin.
 
 ### Próximas evoluciones probables
 
 - Notificaciones por WhatsApp (Fase 3 según requerimientos doc)
-- Resultados desde API-Football (Fase 3)
 - Integración con MercadoPago / PSE para pagos online
 - Sistema de invitaciones automáticas por email
 
@@ -350,7 +357,7 @@ Esto dispara los 2 schedulers: `predictions:lock` + `notifications:reminders`.
 
 | Métrica | Valor |
 |---|---|
-| Tests | 89 passing (325 assertions) |
+| Tests | 111 passing (377 assertions) |
 | Tag de release | `v1.0.0` (`c774a8f`) |
 | Último commit master | ver `git log --oneline -1` |
 | Producción | https://soypachonmundial.online |
