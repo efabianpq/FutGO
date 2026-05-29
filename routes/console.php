@@ -10,8 +10,7 @@ Schedule::command('predictions:lock')
 Schedule::command('notifications:reminders')
     ->everyMinute()
     ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/reminders.log'))
-    ->runInBackground();
+    ->appendOutputTo(storage_path('logs/reminders.log'));
 
 Schedule::command('results:sync')
     ->everyFiveMinutes()
