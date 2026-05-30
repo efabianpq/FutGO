@@ -27,7 +27,7 @@
         </form>
         <button type="button"
                 @click="exportOpen = true; fetch('{{ route('admin.codes.export') }}').then(r => r.text()).then(t => exportText = t)"
-                class="font-display font-bold text-[13px] uppercase tracking-wide-cta px-3.5 py-2 rounded-md bg-gol text-pitch hover:bg-gol-deep transition-all duration-fast">
+                class="font-display font-bold text-[13px] uppercase tracking-wide-cta px-3.5 py-2 rounded-md bg-gol text-on-green hover:bg-gol-deep transition-all duration-fast">
             📋 Exportar disponibles
         </button>
     </div>

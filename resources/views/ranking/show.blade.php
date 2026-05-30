@@ -8,7 +8,7 @@
         // Mantiene las 5 categorías distinguibles dentro del design system.
         function points_class($p) {
             return match ((int) $p) {
-                5 => 'bg-gol text-pitch border-gol-deep',
+                5 => 'bg-gol text-on-green border-gol-deep',
                 3 => 'bg-pitch text-bone border-pitch-deep',
                 2 => 'bg-pitch-mist text-pitch border-pitch',
                 1 => 'bg-gol/30 text-pitch-deep border-gol/50',

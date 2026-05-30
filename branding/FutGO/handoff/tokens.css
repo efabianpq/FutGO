@@ -1,0 +1,97 @@
+/* ============================================================
+   FutGO · Design Tokens
+   El sistema operativo del fútbol amateur
+   Dark-first. Light mode via [data-theme="light"] on <html>.
+   Importar en resources/css/app.css
+   ============================================================ */
+
+:root {
+  /* Brand */
+  --color-green:        #00e676;
+  --color-green-strong: #00c853;
+  --color-green-700:    #00a847;
+  --color-green-tint:   #0b2c1e;
+  --color-navy:         #12203a;
+  --color-on-green:     #052b1a;
+
+  /* Surfaces */
+  --color-bg:           #0b0f14;
+  --color-surface:      #11161d;
+  --color-surface-2:    #161e28;
+  --color-surface-3:    #1c2733;
+  --color-border:       #232f3d;
+  --color-border-soft:  #1a2330;
+
+  /* Text */
+  --color-text:         #e8ecf1;
+  --color-text-muted:   #9aa6b4;
+  --color-text-subtle:  #66727f;
+
+  /* Semantic */
+  --color-success:      #2ee37a;  --color-success-bg: #0e2a1c;
+  --color-warning:      #ffb020;  --color-warning-bg: #2c2009;
+  --color-danger:       #ff5a5f;  --color-danger-bg:  #2c1213;
+  --color-info:         #4d9bff;  --color-info-bg:    #0e1f33;
+
+  /* Type */
+  --font-display: "Archivo", system-ui, sans-serif;   /* use font-stretch:125% (Expanded) */
+  --font-ui:      "Inter", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radii */
+  --radius-xs: 6px; --radius-sm: 8px; --radius-md: 12px;
+  --radius-lg: 16px; --radius-xl: 24px; --radius-2xl: 32px; --radius-pill: 999px;
+
+  /* Spacing (base 4) */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
+  --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px; --sp-20:80px;
+
+  /* Effects */
+  --ring:     0 0 0 3px rgba(0,230,118,.28);
+  --glow:     0 0 28px rgba(0,230,118,.22);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-2: 0 8px 24px rgba(0,0,0,.45);
+  --shadow-3: 0 20px 60px rgba(0,0,0,.55);
+
+  color-scheme: dark;
+}
+
+/* ─── LIGHT THEME ─────────────────────────────────────── */
+[data-theme="light"] {
+  --color-green:        #00c853;
+  --color-green-strong: #00a847;
+  --color-green-700:    #00913c;
+  --color-green-tint:   #e6f9ee;
+  --color-on-green:     #ffffff;
+
+  --color-bg:           #f4f7fa;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f5f8fb;
+  --color-surface-3:    #eef2f7;
+  --color-border:       #e1e8f0;
+  --color-border-soft:  #eef2f7;
+
+  --color-text:         #0b0f14;
+  --color-text-muted:   #54616f;
+  --color-text-subtle:  #8593a3;
+
+  --color-success:      #16a34a;  --color-success-bg: #e7f7ee;
+  --color-warning:      #c77700;  --color-warning-bg: #fdf3e0;
+  --color-danger:       #e23b41;  --color-danger-bg:  #fdeaeb;
+  --color-info:         #2b73d8;  --color-info-bg:    #e8f1fd;
+
+  --ring:     0 0 0 3px rgba(0,200,83,.25);
+  --glow:     0 8px 24px rgba(0,200,83,.18);
+  --shadow-1: 0 1px 2px rgba(16,32,58,.06);
+  --shadow-2: 0 8px 24px rgba(16,32,58,.10);
+  --shadow-3: 0 20px 60px rgba(16,32,58,.14);
+
+  color-scheme: light;
+}
+
+/*
+  NOTA Tailwind: estas variables alimentan tailwind.config (ver snippet).
+  En clases usa: bg-bg, bg-surface, text-text, text-muted, border-border,
+  bg-green, text-on-green, etc. El modo oscuro/claro se controla con el
+  atributo data-theme en <html> — NO uses la estrategia 'media'.
+*/

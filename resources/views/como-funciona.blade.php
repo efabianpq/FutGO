@@ -92,7 +92,7 @@
             @php
                 $tablaPuntos = [
                     ['pts' => 5, 'stars' => '⭐⭐⭐⭐⭐', 'cond' => 'Marcador exacto',
-                     'ej' => 'Pronosticaste 2-1 → Resultado 2-1', 'class' => 'bg-gol text-pitch border-gol-deep'],
+                     'ej' => 'Pronosticaste 2-1 → Resultado 2-1', 'class' => 'bg-gol text-on-green border-gol-deep'],
                     ['pts' => 3, 'stars' => '⭐⭐⭐', 'cond' => 'Ganador correcto + un gol exacto',
                      'ej' => 'Pronosticaste 2-1 → Resultado 3-1 (acertaste al visitante)', 'class' => 'bg-pitch text-bone border-pitch-deep'],
                     ['pts' => 2, 'stars' => '⭐⭐', 'cond' => 'Solo el ganador correcto',
@@ -201,7 +201,7 @@
             </div>
 
             <div class="grid grid-cols-3 gap-2 sm:gap-3">
-                <div class="bg-gol text-pitch rounded-md p-3 text-center">
+                <div class="bg-gol text-on-green rounded-md p-3 text-center">
                     <p class="font-display font-bold text-[20px] sm:text-[28px] leading-none">🥇</p>
                     <p class="font-mono text-[10px] tracking-wide-label uppercase mt-1">60%</p>
                     <p class="font-display font-extrabold text-[15px] sm:text-[20px] mt-1 leading-none"

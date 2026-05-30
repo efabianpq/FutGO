@@ -145,7 +145,7 @@ $hasScheduledAt = $allMatches->whereNotNull('scheduled_at')->isNotEmpty();
 
                                 <div x-show="matchVisible('{{ $match->status }}', {{ $phase->id }}, {{ $match->home_team_id ?? 0 }}, {{ $match->away_team_id ?? 0 }})"
                                      x-transition
-                                     class="bg-white border {{ $isLive ? 'border-gol shadow-[0_0_0_2px_theme(colors.gol/30%)]' : 'border-line' }} rounded-md shadow-card-2 p-4">
+                                     class="bg-white border {{ $isLive ? 'border-green shadow-ring' : 'border-line' }} rounded-md shadow-card-2 p-4">
 
                                     <div class="flex flex-wrap items-center gap-3">
 

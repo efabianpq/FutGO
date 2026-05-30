@@ -4,7 +4,7 @@
     Alpine-driven. Espera `match` en el scope padre.
 
     Colorimetría unificada de puntos (también usada en ranking/show audit y modal):
-      5 → bg-gol text-pitch       (oro · exacto)
+      5 → bg-gol text-on-green       (oro · exacto)
       3 → bg-pitch text-bone      (verde fuerte · ganador + 1 exacto)
       2 → bg-pitch-mist text-pitch (verde pálido · solo ganador)
       1 → bg-gol/30 text-pitch-deep (oro tinte · un marcador)
@@ -21,7 +21,7 @@
         <div class="flex items-center justify-between px-4 py-2.5 font-mono text-[11px] tracking-wide-label uppercase"
              :class="match.status === 'live' || (match.is_locked && match.status !== 'finished') ? 'bg-alerta text-white' : 'bg-pitch text-bone'">
             <span class="flex items-center gap-2 min-w-0">
-                <span x-show="match.group_name" class="bg-gol text-pitch px-2 py-0.5 rounded-sm font-display font-bold text-[11px] shrink-0"
+                <span x-show="match.group_name" class="bg-gol text-on-green px-2 py-0.5 rounded-sm font-display font-bold text-[11px] shrink-0"
                       x-text="'Grupo ' + match.group_name"></span>
                 <span class="opacity-90 truncate" x-text="match.date_label"></span>
             </span>
@@ -29,7 +29,7 @@
             {{-- Badge de estado (siempre visible, claro) --}}
             <span class="flex items-center gap-2 shrink-0">
                 <template x-if="!match.is_locked && match.status !== 'finished'">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-gol text-pitch font-display font-bold text-[10.5px]">Abierto</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-gol text-on-green font-display font-bold text-[10.5px]">Abierto</span>
                 </template>
                 <template x-if="match.is_locked && match.status !== 'finished'">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-white/15 text-white font-display font-bold text-[10.5px]">
@@ -111,7 +111,7 @@
                 </div>
                 {{-- Badge de puntos con colorimetría unificada --}}
                 <span class="inline-flex items-center font-display font-bold border rounded-pill tracking-wide-label uppercase px-3 py-1.5 text-[12px] shrink-0"
-                      :class="(match.points_earned ?? 0) === 5 ? 'bg-gol text-pitch border-gol-deep' :
+                      :class="(match.points_earned ?? 0) === 5 ? 'bg-gol text-on-green border-gol-deep' :
                               ((match.points_earned ?? 0) === 3 ? 'bg-pitch text-bone border-pitch-deep' :
                               ((match.points_earned ?? 0) === 2 ? 'bg-pitch-mist text-pitch border-pitch' :
                               ((match.points_earned ?? 0) === 1 ? 'bg-gol/30 text-pitch-deep border-gol/50' :

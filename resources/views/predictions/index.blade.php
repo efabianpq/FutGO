@@ -119,7 +119,7 @@
                                     {{-- Mismas clases que match-card y ranking/show para coherencia visual --}}
                                     <template x-if="row.points_earned !== null">
                                         <span class="inline-flex items-center font-display font-bold border rounded-pill tracking-wide-label uppercase px-2.5 py-1 text-[11px]"
-                                              :class="row.points_earned === 5 ? 'bg-gol text-pitch border-gol-deep' :
+                                              :class="row.points_earned === 5 ? 'bg-gol text-on-green border-gol-deep' :
                                                       (row.points_earned === 3 ? 'bg-pitch text-bone border-pitch-deep' :
                                                       (row.points_earned === 2 ? 'bg-pitch-mist text-pitch border-pitch' :
                                                       (row.points_earned === 1 ? 'bg-gol/30 text-pitch-deep border-gol/50' :

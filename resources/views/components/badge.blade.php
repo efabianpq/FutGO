@@ -1,20 +1,23 @@
 @props([
-    'variant' => 'default',  // default, live, win, upcoming, points
+    'variant' => 'default',  // default, live, win, upcoming, points, info, warning
     'pulse' => false,
 ])
 
 @php
+    // Mapeo al sistema FutGO de badges.
     $classes = match ($variant) {
-        'live'     => 'bg-alerta text-white',
-        'win'      => 'bg-gol text-pitch',
-        'upcoming' => 'bg-line-soft text-ink-soft',
-        'points'   => 'bg-gol text-pitch',
-        default    => 'bg-pitch-mist text-pitch',
+        'live'     => 'badge-live',
+        'win'      => 'badge-green',
+        'points'   => 'badge-solid',
+        'info'     => 'badge-info',
+        'warning'  => 'badge-warning',
+        'upcoming' => '',
+        default    => '',
     };
 @endphp
 
-<span {{ $attributes->class(['inline-flex items-center gap-1.5 font-mono text-[10.5px] tracking-wide-label uppercase px-2.5 py-1 rounded-pill', $classes]) }}>
-    @if ($variant === 'live' || $pulse)
+<span {{ $attributes->class(['badge', $classes]) }}>
+    @if (($variant === 'live' && false) || ($pulse && $variant !== 'live'))
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-current animate-pulse-live"></span>
     @endif
     {{ $slot }}
