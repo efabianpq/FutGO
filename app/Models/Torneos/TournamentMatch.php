@@ -21,13 +21,29 @@ class TournamentMatch extends Model
         'status',
         'scheduled_at',
         'venue',
+        'observations',
         'match_number',
+        // Planilla oficial (acta del partido)
+        'referee',
+        'second_referee',
+        'third_referee',
+        'timekeeper',
+        'coordinator',
+        'referee_notes',
+        'home_score_ht',
+        'away_score_ht',
+        'home_score_et',
+        'away_score_et',
+        'home_penalties',
+        'away_penalties',
+        'match_sheet',
     ];
 
     protected function casts(): array
     {
         return [
             'scheduled_at' => 'datetime',
+            'match_sheet'  => 'array',
         ];
     }
 

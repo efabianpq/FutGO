@@ -134,47 +134,54 @@
                     </p>
                 </a>
 
-                {{-- Fixture --}}
-                <div class="bg-white border {{ $hasFixture ? 'border-pitch' : 'border-line' }} rounded-md p-4">
-                    <p class="font-display font-bold text-pitch uppercase text-[14px]">Fixture</p>
-                    <p class="text-[12px] text-ink-mute mt-1">Fases, grupos y calendario de partidos</p>
-                    @if ($hasFixture)
-                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2">Generado</p>
-                    @elseif ($canGenerate)
-                        <form method="POST" action="{{ route('admin.torneos.fixture.generate', $tournament) }}"
-                              x-data @submit="if (!confirm('¿Generar el fixture? Esta acción crea todas las fases y partidos.')) $event.preventDefault()"
-                              class="mt-3">
-                            @csrf
-                            <button type="submit"
-                                    class="w-full px-3 py-2 text-[12px] font-display font-bold uppercase tracking-wide-cta bg-pitch text-bone rounded-md hover:bg-pitch-deep transition-all duration-fast">
-                                Generar fixture
-                            </button>
-                        </form>
-                    @else
-                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">
-                            @if (! $tournament->isOpen())
-                                Requiere torneo en inscripción
-                            @else
-                                Faltan equipos aprobados
-                            @endif
-                        </p>
-                    @endif
-                </div>
+                {{-- Fixture / Calendario --}}
+                @if ($hasFixture)
+                    <a href="{{ route('torneos.cronograma.index', $tournament) }}"
+                       class="bg-white border border-pitch rounded-md p-4 hover:bg-pitch hover:text-bone transition-colors duration-fast group">
+                        <p class="font-display font-bold text-pitch uppercase text-[14px] group-hover:text-bone">Fixture</p>
+                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">Calendario completo por fase y grupo</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2 group-hover:text-gol">Ver calendario</p>
+                    </a>
+                @else
+                    <div class="bg-white border border-line rounded-md p-4">
+                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Fixture</p>
+                        <p class="text-[12px] text-ink-mute mt-1">Fases, grupos y calendario de partidos</p>
+                        @if ($canGenerate)
+                            <form method="POST" action="{{ route('admin.torneos.fixture.generate', $tournament) }}"
+                                  x-data @submit="if (!confirm('¿Generar el fixture? Esta acción crea todas las fases y partidos.')) $event.preventDefault()"
+                                  class="mt-3">
+                                @csrf
+                                <button type="submit"
+                                        class="w-full px-3 py-2 text-[12px] font-display font-bold uppercase tracking-wide-cta bg-pitch text-bone rounded-md hover:bg-pitch-deep transition-all duration-fast">
+                                    Generar fixture
+                                </button>
+                            </form>
+                        @else
+                            <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">
+                                @if (! $tournament->isOpen())
+                                    Requiere torneo en inscripción
+                                @else
+                                    Faltan equipos aprobados
+                                @endif
+                            </p>
+                        @endif
+                    </div>
+                @endif
 
                 {{-- Resultados: activo si hay fixture --}}
                 @if ($hasFixture)
                     <a href="{{ route('admin.torneos.partidos.index', $tournament) }}"
                        class="bg-white border border-pitch rounded-md p-4 hover:bg-pitch hover:text-bone transition-colors duration-fast group">
-                        <p class="font-display font-bold text-pitch uppercase text-[14px] group-hover:text-bone">Resultados</p>
-                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">Carga de marcadores y eventos</p>
+                        <p class="font-display font-bold text-pitch uppercase text-[14px] group-hover:text-bone">Partidos</p>
+                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">Programación, marcadores y eventos</p>
                         <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2 group-hover:text-gol">
                             {{ $stats['matches_played'] }} jugado{{ $stats['matches_played'] !== 1 ? 's' : '' }}
                         </p>
                     </a>
                 @else
                     <div class="bg-bone-soft border border-line rounded-md p-4 opacity-60">
-                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Resultados</p>
-                        <p class="text-[12px] text-ink-mute mt-1">Carga de marcadores y eventos</p>
+                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Partidos</p>
+                        <p class="text-[12px] text-ink-mute mt-1">Programación, marcadores y eventos</p>
                         <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">Requiere fixture</p>
                     </div>
                 @endif
@@ -197,12 +204,21 @@
                     </div>
                 @endif
 
-                {{-- Estadísticas: placeholder --}}
-                <div class="bg-bone-soft border border-line rounded-md p-4 opacity-60">
-                    <p class="font-display font-bold text-pitch uppercase text-[14px]">Estadísticas</p>
-                    <p class="text-[12px] text-ink-mute mt-1">Goleadores, tarjetas y posiciones</p>
-                    <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">Próximamente</p>
-                </div>
+                {{-- Estadísticas --}}
+                @if ($hasFixture)
+                    <a href="{{ route('torneos.estadisticas.index', $tournament) }}"
+                       class="bg-white border border-pitch rounded-md p-4 hover:bg-pitch hover:text-bone transition-colors duration-fast group">
+                        <p class="font-display font-bold text-pitch uppercase text-[14px] group-hover:text-bone">Estadísticas</p>
+                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">Goleadores, asistencias y tarjetas</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2 group-hover:text-gol">Ver estadísticas</p>
+                    </a>
+                @else
+                    <div class="bg-bone-soft border border-line rounded-md p-4 opacity-60">
+                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Estadísticas</p>
+                        <p class="text-[12px] text-ink-mute mt-1">Goleadores, tarjetas y posiciones</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">Requiere fixture</p>
+                    </div>
+                @endif
             </div>
         </div>
 

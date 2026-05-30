@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\Torneos\StandingsController;
 use App\Http\Controllers\Admin\Torneos\TeamAdminController;
 use App\Http\Controllers\Admin\Torneos\TournamentController;
 use App\Http\Controllers\Admin\UserController as AdminUsersController;
+use App\Http\Controllers\Torneos\CaptainDashboardController;
+use App\Http\Controllers\Torneos\MyTournamentsController;
+use App\Http\Controllers\Torneos\PlayerDashboardController;
 use App\Http\Controllers\Torneos\StatsController;
 use App\Http\Controllers\Torneos\TeamController;
 use App\Http\Controllers\Torneos\TeamHubController;
@@ -96,9 +99,8 @@ Route::middleware('auth')->group(function () {
             ->prefix('torneos')
             ->name('torneos.')
             ->group(function () {
-                Route::get('/', function () {
-                    return view('torneos.index');
-                })->name('index');
+                // Entrada principal del módulo: listado de torneos del usuario.
+                Route::get('/', [MyTournamentsController::class, 'index'])->name('index');
 
                 // Gestión de equipo (capitán / jugadores) — Centro de Gestión de Equipos
                 Route::prefix('{tournament}/mi-equipo')
@@ -137,6 +139,17 @@ Route::middleware('auth')->group(function () {
                 Route::get('/{tournament}', [TournamentHubController::class, 'index'])
                     ->middleware('ensure.tournament_participant')
                     ->name('hub');
+            });
+
+        // ─── Portales personales del módulo Torneos (rutas de nivel superior) ───
+        Route::middleware(['ensure.module:torneos'])
+            ->name('torneos.')
+            ->group(function () {
+                // Portal del Jugador: dashboard personal de actividad.
+                Route::get('/mi-actividad', [PlayerDashboardController::class, 'index'])->name('mi-actividad');
+
+                // Portal del Capitán: centro de control de sus equipos.
+                Route::get('/capitan', [CaptainDashboardController::class, 'index'])->name('capitan');
             });
 
         // ============ ADMIN TORNEOS ============
@@ -188,7 +201,10 @@ Route::middleware('auth')->group(function () {
                     ->name('partidos.')
                     ->group(function () {
                         Route::get('/', [MatchResultController::class, 'index'])->name('index');
+                        Route::get('/{match}/programar', [MatchResultController::class, 'editSchedule'])->name('programar');
+                        Route::patch('/{match}/programar', [MatchResultController::class, 'updateSchedule'])->name('programar.update');
                         Route::get('/{match}/resultado', [MatchResultController::class, 'show'])->name('resultado');
+                        Route::get('/{match}/pdf', [MatchResultController::class, 'pdf'])->name('pdf');
                         Route::post('/{match}/resultado', [MatchResultController::class, 'store'])->name('store');
                         Route::patch('/{match}/en-vivo', [MatchResultController::class, 'markLive'])->name('live');
                         Route::delete('/{match}/resultado', [MatchResultController::class, 'destroy'])->name('destroy');

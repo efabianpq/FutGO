@@ -14,17 +14,23 @@ if (($statsConfig['goals'] ?? true) === false) {
     else                                           $eventTypeDefault = 'substitution_in';
 }
 
-// Construir datos para Alpine
-$buildPlayers = function($players, $teamId, $teamName, $teamColor) use ($existingLineups) {
+// Construir datos para Alpine.
+// Autogeneración: si la planilla nunca se guardó (sin lineups), se pre-carga la
+// convocatoria completa con todo el roster activo como titular. El admin solo
+// destilda a los ausentes. En re-edición se respeta lo guardado.
+$freshSheet = $existingLineups->isEmpty();
+
+$buildPlayers = function($players, $teamId, $teamName, $teamColor, $captainId) use ($existingLineups, $freshSheet) {
     return $players->map(fn($p) => [
         'id'          => $p->id,
         'name'        => $p->user?->name ?? 'Jugador',
         'number'      => $p->jersey_number,
         'position'    => $p->position,
+        'is_captain'  => $captainId && $p->user_id === $captainId,
         'team_id'     => $teamId,
         'team_name'   => $teamName,
         'team_color'  => $teamColor,
-        'in_lineup'   => $existingLineups->has($p->id),
+        'in_lineup'   => $freshSheet ? true : $existingLineups->has($p->id),
         'started'     => $existingLineups->has($p->id) ? (bool)$existingLineups[$p->id]->started : true,
         'minute_out'  => $existingLineups->has($p->id) ? $existingLineups[$p->id]->minute_out : null,
         'minute_in'   => $existingLineups->has($p->id) ? $existingLineups[$p->id]->minute_in : 0,
@@ -32,9 +38,22 @@ $buildPlayers = function($players, $teamId, $teamName, $teamColor) use ($existin
 };
 
 $allPlayersData = array_merge(
-    $buildPlayers($homePlayers, $match->home_team_id, $match->homeTeam?->name ?? 'Local', $match->homeTeam?->color ?? '#1a1a2e'),
-    $buildPlayers($awayPlayers, $match->away_team_id, $match->awayTeam?->name ?? 'Visitante', $match->awayTeam?->color ?? '#4a4a6a'),
+    $buildPlayers($homePlayers, $match->home_team_id, $match->homeTeam?->name ?? 'Local', $match->homeTeam?->color ?? '#1a1a2e', $match->homeTeam?->captain_user_id),
+    $buildPlayers($awayPlayers, $match->away_team_id, $match->awayTeam?->name ?? 'Visitante', $match->awayTeam?->color ?? '#4a4a6a', $match->awayTeam?->captain_user_id),
 );
+
+// Datos del acta (planilla oficial) para pre-llenar en re-edición.
+$ms        = $match->match_sheet ?? [];
+$hSheet    = $ms['home'] ?? [];
+$aSheet    = $ms['away'] ?? [];
+$homeName  = $match->homeTeam?->name ?? 'Local';
+$awayName  = $match->awayTeam?->name ?? 'Visitante';
+
+// Categoría legible.
+$categoryLabels = [
+    'libre' => 'Libre', 'veteranos' => 'Veteranos', 'sub15' => 'Sub-15', 'sub17' => 'Sub-17',
+    'sub20' => 'Sub-20', 'femenino' => 'Femenino', 'mixto' => 'Mixto',
+];
 
 $formInit = [
     'homeScore'       => old('home_score', $match->home_score ?? ''),
@@ -66,13 +85,43 @@ $formInit = [
         <span class="text-pitch font-semibold">Partido #{{ $match->match_number }}</span>
     </nav>
 
-    <div class="mb-6">
-        <p class="eyebrow">{{ $tournament->name }}</p>
-        <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Ingresar Resultado</h1>
-        <p class="font-mono text-[12px] text-ink-mute mt-1">
-            {{ $match->phase->name }} · Partido #{{ $match->match_number }}
-        </p>
+    @php
+        $matchStatusMeta = [
+            'scheduled' => ['Programado', 'upcoming'],
+            'live'      => ['En vivo',   'live'],
+            'finished'  => ['Finalizado','win'],
+            'postponed' => ['Postpuesto','default'],
+        ];
+        [$mStatusLabel, $mStatusVariant] = $matchStatusMeta[$match->status] ?? [$match->status, 'default'];
+    @endphp
+
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+            <p class="eyebrow">{{ $tournament->name }}</p>
+            <div class="flex items-center gap-3 mt-1">
+                <h1 class="font-display font-bold text-display-m text-pitch uppercase">Planilla del Partido</h1>
+                <x-badge :variant="$mStatusVariant">{{ $mStatusLabel }}</x-badge>
+            </div>
+            <p class="font-mono text-[12px] text-ink-mute mt-1">
+                {{ $match->phase->name }} · Partido #{{ $match->match_number }}
+            </p>
+        </div>
+        <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="ghost" size="sm">⬇ Descargar PDF</x-btn>
     </div>
+
+    @unless ($canEdit)
+        <div class="mb-6 bg-pitch-mist border border-line rounded-md px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-[13px] text-ink-soft">
+                Este partido está <strong class="text-pitch">finalizado</strong>. La planilla quedó como documento oficial.
+                Para corregir datos, anulá el resultado y volvé a cargarlo.
+            </p>
+            <form method="POST" action="{{ route('admin.torneos.partidos.destroy', [$tournament, $match]) }}"
+                  x-data @submit.prevent="if (confirm('¿Anular el resultado para editar la planilla?')) $el.submit()">
+                @csrf @method('DELETE')
+                <x-btn type="submit" variant="danger" size="sm">Anular para editar</x-btn>
+            </form>
+        </div>
+    @endunless
 
     @if (session('error'))
         <div class="mb-4 bg-alerta/15 border border-alerta text-alerta-deep px-4 py-3 rounded-md font-display font-semibold">
@@ -96,9 +145,52 @@ $formInit = [
           @submit.prevent="submit($el)">
         @csrf
 
+        {{-- ─── Datos del partido (contexto de la planilla) ─── --}}
+        <div class="bg-pitch-mist border border-line rounded-md p-5 mb-6">
+            <p class="font-display font-bold text-pitch uppercase text-[13px] mb-3">Datos del partido</p>
+            <dl class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-[13px]">
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Torneo</dt><dd class="font-semibold text-pitch truncate">{{ $tournament->name }}</dd></div>
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Categoría</dt><dd class="font-semibold text-pitch">{{ $categoryLabels[$tournament->category] ?? ucfirst($tournament->category ?? '—') }}</dd></div>
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Fase</dt><dd class="font-semibold text-pitch">{{ $match->phase->name }}</dd></div>
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Grupo</dt><dd class="font-semibold text-pitch">{{ $match->group?->name ?? '—' }}</dd></div>
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Jornada / J. N°</dt><dd class="font-semibold text-pitch">#{{ $match->match_number }}</dd></div>
+                <div><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Escenario</dt><dd class="font-semibold text-pitch truncate">{{ $match->venue ?? '—' }}</dd></div>
+                <div class="col-span-2"><dt class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Fecha y hora</dt><dd class="font-semibold text-pitch">{{ $match->scheduled_at?->format('d/m/Y H:i') ?? 'Sin programar' }}</dd></div>
+            </dl>
+            <p class="text-[11px] text-ink-mute mt-2">Escenario y fecha se editan desde <a href="{{ route('admin.torneos.partidos.programar', [$tournament, $match]) }}" class="text-pitch underline">Programación</a>.</p>
+        </div>
+
+        {{-- ─── Cuerpo arbitral y mesa ─── --}}
+        <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6">
+            <p class="font-display font-bold text-pitch uppercase text-[15px] mb-4">Cuerpo arbitral y mesa</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach ([
+                    'referee'        => 'Árbitro',
+                    'second_referee' => 'Segundo árbitro',
+                    'third_referee'  => 'Tercer árbitro',
+                    'timekeeper'     => 'Cronometrador',
+                    'coordinator'    => 'Coordinador',
+                ] as $field => $label)
+                    <div>
+                        <label for="{{ $field }}" class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute block mb-1">{{ $label }}</label>
+                        <input type="text" id="{{ $field }}" name="{{ $field }}" maxlength="120"
+                               value="{{ old($field, $match->$field) }}"
+                               class="w-full border border-line rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-pitch">
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-4">
+                <label for="referee_notes" class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute block mb-1">Observaciones arbitrales</label>
+                <textarea id="referee_notes" name="referee_notes" rows="3" maxlength="1000"
+                          placeholder="Incidencias del partido reportadas por el árbitro (expulsiones, lesiones, reclamos, etc.)"
+                          class="w-full border border-line rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-pitch">{{ old('referee_notes', $match->referee_notes) }}</textarea>
+            </div>
+        </div>
+
         {{-- ─── Sección 1: Marcador ─── --}}
         <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6">
-            <p class="font-display font-bold text-pitch uppercase text-[15px] mb-4">Marcador</p>
+            <p class="font-display font-bold text-pitch uppercase text-[15px] mb-4">Resultado final</p>
             <div class="grid grid-cols-3 items-center gap-4">
                 <div class="text-center">
                     <div class="w-5 h-5 rounded-full mx-auto mb-1 border border-line"
@@ -120,6 +212,43 @@ $formInit = [
                            class="mt-3 w-24 mx-auto block text-center text-4xl font-display font-extrabold text-pitch border-2 border-pitch rounded-lg py-2 focus:outline-none focus:border-gol">
                 </div>
             </div>
+
+            {{-- Marcador por periodos (informativo) --}}
+            <div class="mt-6 border-t border-line-soft pt-4">
+                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute mb-3">Marcador por periodos</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full max-w-md text-[13px]">
+                        <thead>
+                            <tr class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">
+                                <th class="text-left py-1">Periodo</th>
+                                <th class="py-1 px-2 text-center truncate">{{ $homeName }}</th>
+                                <th class="py-1 px-2 text-center truncate">{{ $awayName }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-line-soft">
+                            @foreach ([
+                                ['1er tiempo', 'home_score_ht', 'away_score_ht'],
+                                ['Prórroga',   'home_score_et', 'away_score_et'],
+                                ['Penales',    'home_penalties', 'away_penalties'],
+                            ] as [$label, $hField, $aField])
+                                <tr>
+                                    <td class="py-1.5 font-display font-semibold text-pitch">{{ $label }}</td>
+                                    <td class="py-1.5 px-2 text-center">
+                                        <input type="number" name="{{ $hField }}" min="0" max="99"
+                                               value="{{ old($hField, $match->$hField) }}"
+                                               class="w-16 border border-line rounded px-2 py-1 text-center font-mono focus:outline-none focus:border-pitch">
+                                    </td>
+                                    <td class="py-1.5 px-2 text-center">
+                                        <input type="number" name="{{ $aField }}" min="0" max="99"
+                                               value="{{ old($aField, $match->$aField) }}"
+                                               class="w-16 border border-line rounded px-2 py-1 text-center font-mono focus:outline-none focus:border-pitch">
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         {{-- ─── Sección 2: Convocatoria (Lineup) ─── --}}
@@ -139,6 +268,7 @@ $formInit = [
                             <div class="flex items-center gap-2 w-44">
                                 <span class="font-mono text-[11px] text-ink-mute w-5 text-right" x-text="player.number ?? '—'"></span>
                                 <span class="font-display font-semibold text-pitch text-[13px]" x-text="player.name"></span>
+                                <span x-show="player.is_captain" class="font-mono text-[9px] text-gol-deep uppercase font-bold">©</span>
                             </div>
 
                             {{-- Checkbox participó --}}
@@ -243,6 +373,58 @@ $formInit = [
             </div>
         </template>
 
+        {{-- ─── Cuerpo técnico y disciplina por equipo ─── --}}
+        <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6">
+            <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1">Cuerpo técnico y disciplina</p>
+            <p class="font-mono text-[11px] text-ink-mute mb-4">Faltas acumulativas por tiempo y tiempos muertos (fútbol sala).</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                @foreach ([
+                    ['home', $homeName, $hSheet, $match->homeTeam?->color],
+                    ['away', $awayName, $aSheet, $match->awayTeam?->color],
+                ] as [$side, $teamName, $sd, $color])
+                    <div class="border border-line-soft rounded-md p-4" style="border-left:4px solid {{ $color ?? '#1a1a2e' }}">
+                        <p class="font-display font-bold text-pitch uppercase text-[13px] mb-3 truncate">{{ $teamName }}</p>
+                        <div class="space-y-3">
+                            @foreach ([
+                                'coach'     => 'D.T. (Director Técnico)',
+                                'assistant' => 'A. Técnico',
+                                'delegate'  => 'Delegado',
+                            ] as $key => $label)
+                                <div>
+                                    <label class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute block mb-1">{{ $label }}</label>
+                                    <input type="text" name="sheet[{{ $side }}][{{ $key }}]" maxlength="120"
+                                           value="{{ old('sheet.'.$side.'.'.$key, $sd[$key] ?? '') }}"
+                                           class="w-full border border-line rounded-md px-3 py-1.5 text-[13px] focus:outline-none focus:border-pitch">
+                                </div>
+                            @endforeach
+
+                            <div class="grid grid-cols-3 gap-2">
+                                @foreach ([
+                                    'fouls_1'  => 'Faltas 1ºT',
+                                    'fouls_2'  => 'Faltas 2ºT',
+                                    'timeouts' => 'T. muertos',
+                                ] as $key => $label)
+                                    <div>
+                                        <label class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute block mb-1">{{ $label }}</label>
+                                        <input type="number" name="sheet[{{ $side }}][{{ $key }}]" min="0" max="99"
+                                               value="{{ old('sheet.'.$side.'.'.$key, $sd[$key] ?? '') }}"
+                                               class="w-full border border-line rounded-md px-2 py-1.5 text-[13px] font-mono text-center focus:outline-none focus:border-pitch">
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <label class="flex items-center gap-2 cursor-pointer pt-1">
+                                <input type="checkbox" name="sheet[{{ $side }}][captain_signed]" value="1"
+                                       @checked(old('sheet.'.$side.'.captain_signed', $sd['captain_signed'] ?? false))
+                                       class="w-4 h-4 rounded border-line accent-pitch">
+                                <span class="font-mono text-[12px] text-ink">Firma del capitán</span>
+                            </label>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         {{-- Inputs ocultos generados en submit --}}
         <div id="events-hidden"></div>
 
@@ -266,31 +448,41 @@ $formInit = [
             </p>
         </div>
 
-        <div x-data="{ confirming: false }" class="flex items-center gap-3">
-            <template x-if="!confirming">
-                <button type="button" @click="confirming = true"
-                        class="px-6 py-3 font-display font-bold uppercase tracking-wide-cta text-[15px] bg-pitch text-bone rounded-md hover:bg-pitch-deep transition-all duration-fast">
-                    Guardar resultado
-                </button>
-            </template>
-            <template x-if="confirming">
-                <div class="flex items-center gap-3">
-                    <p class="text-[13px] text-ink">¿Confirmás? El partido pasará a finalizado.</p>
-                    <button type="submit"
-                            class="px-5 py-2.5 font-display font-bold uppercase text-[14px] bg-gol text-bone rounded-md hover:bg-gol-deep transition-all duration-fast">
-                        Sí, confirmar
+        @if ($canEdit)
+            <div x-data="{ confirming: false }" class="flex items-center gap-3">
+                <template x-if="!confirming">
+                    <button type="button" @click="confirming = true"
+                            class="px-6 py-3 font-display font-bold uppercase tracking-wide-cta text-[15px] bg-pitch text-bone rounded-md hover:bg-pitch-deep transition-all duration-fast">
+                        Guardar planilla
                     </button>
-                    <button type="button" @click="confirming = false"
-                            class="px-4 py-2 font-display font-bold uppercase text-[13px] text-pitch border border-pitch rounded-md hover:bg-pitch hover:text-bone transition-all duration-fast">
-                        Revisar
-                    </button>
-                </div>
-            </template>
-            <a href="{{ route('admin.torneos.partidos.index', $tournament) }}"
-               class="px-4 py-3 font-display font-semibold uppercase text-[13px] text-pitch hover:underline">
-                Cancelar
-            </a>
-        </div>
+                </template>
+                <template x-if="confirming">
+                    <div class="flex items-center gap-3">
+                        <p class="text-[13px] text-ink">¿Confirmás? El partido pasará a finalizado y se actualizarán estadísticas y posiciones.</p>
+                        <button type="submit"
+                                class="px-5 py-2.5 font-display font-bold uppercase text-[14px] bg-gol text-bone rounded-md hover:bg-gol-deep transition-all duration-fast">
+                            Sí, confirmar
+                        </button>
+                        <button type="button" @click="confirming = false"
+                                class="px-4 py-2 font-display font-bold uppercase text-[13px] text-pitch border border-pitch rounded-md hover:bg-pitch hover:text-bone transition-all duration-fast">
+                            Revisar
+                        </button>
+                    </div>
+                </template>
+                <a href="{{ route('admin.torneos.partidos.index', $tournament) }}"
+                   class="px-4 py-3 font-display font-semibold uppercase text-[13px] text-pitch hover:underline">
+                    Cancelar
+                </a>
+            </div>
+        @else
+            <div class="flex items-center gap-3">
+                <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="primary">⬇ Descargar planilla (PDF)</x-btn>
+                <a href="{{ route('admin.torneos.partidos.index', $tournament) }}"
+                   class="px-4 py-3 font-display font-semibold uppercase text-[13px] text-pitch hover:underline">
+                    Volver a partidos
+                </a>
+            </div>
+        @endif
     </form>
 </div>
 

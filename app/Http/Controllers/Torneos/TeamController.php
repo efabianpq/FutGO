@@ -79,19 +79,6 @@ class TeamController extends Controller
             ->with('status', 'Equipo inscripto. Esperá la aprobación del organizador.');
     }
 
-    public function show(Tournament $tournament): View|RedirectResponse
-    {
-        $team = $this->userTeamIn($tournament);
-
-        if (! $team) {
-            return redirect()->route('torneos.equipo.inscribir', $tournament);
-        }
-
-        $team->load(['players.user', 'captain']);
-
-        return view('torneos.equipo.show', compact('tournament', 'team'));
-    }
-
     public function addPlayer(Request $request, Tournament $tournament): RedirectResponse
     {
         if (! $tournament->isOpen()) {

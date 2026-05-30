@@ -97,6 +97,67 @@ class FixtureGeneratorService
         $this->assignBracket($nextPhase, $flat);
     }
 
+    /**
+     * Progresión automática de la eliminatoria al finalizar una ronda de knockout.
+     * Es defensiva: NO lanza excepciones (corre dentro de la transacción del
+     * resultado, no debe revertir el guardado). Solo avanza si todos los partidos
+     * de la ronda tienen ganador definido.
+     *
+     *  - Puebla el partido de Tercer Puesto con los perdedores de la semifinal.
+     *  - Asigna los ganadores a la ronda siguiente y la activa.
+     *
+     * @return bool true si la ronda fue la final (no hay ronda siguiente).
+     */
+    public function advanceKnockoutResults(TournamentPhase $completedPhase): bool
+    {
+        if ($completedPhase->type !== 'knockout') {
+            return false;
+        }
+
+        $tournament = $completedPhase->tournament;
+
+        $realMatches = $completedPhase->matches()
+            ->whereNotNull('home_team_id')
+            ->whereNotNull('away_team_id')
+            ->orderBy('match_number')
+            ->get();
+
+        // Si algún partido no tiene ganador (empate sin definición), no se avanza.
+        if ($realMatches->isEmpty() || $realMatches->contains(fn ($m) => ! $m->winner_team_id)) {
+            return false;
+        }
+
+        // Tercer puesto: perdedores de la semifinal (ronda de exactamente 2 partidos).
+        if ($realMatches->count() === 2) {
+            $third = $tournament->phases()->where('type', 'third_place')->first();
+            if ($third && $third->matches()->whereNotNull('home_team_id')->doesntExist()) {
+                $losers = $realMatches->map(fn ($m) => $m->winner_team_id === $m->home_team_id ? $m->away_team_id : $m->home_team_id)->all();
+                $this->assignBracket($third, $losers);
+                $third->status = 'active';
+                $third->is_active = true;
+                $third->save();
+            }
+        }
+
+        // Ganadores → ronda de eliminatoria siguiente.
+        $next = $tournament->phases()
+            ->where('type', 'knockout')
+            ->where('order', '>', $completedPhase->order)
+            ->orderBy('order')
+            ->first();
+
+        if (! $next) {
+            return true; // Era la final: no hay ronda posterior.
+        }
+
+        $this->assignBracket($next, $realMatches->pluck('winner_team_id')->all());
+        $next->status = 'active';
+        $next->is_active = true;
+        $next->save();
+
+        return false;
+    }
+
     // ───────────────────────── Generadores por formato ─────────────────────────
 
     private function generateGroupsAndKnockout(Tournament $tournament, Collection $approved): void

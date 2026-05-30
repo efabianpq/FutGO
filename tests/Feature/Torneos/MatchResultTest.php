@@ -418,4 +418,67 @@ class MatchResultTest extends TestCase
 
         $this->assertDatabaseCount('match_events', 1);
     }
+
+    public function test_se_guarda_la_planilla_oficial_completa(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament] = $this->setupRoundRobinWithFixture($admin, 4);
+
+        $match = $this->firstMatch($tournament);
+
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score'     => 3,
+            'away_score'     => 2,
+            'referee'        => 'Carlos Árbitro',
+            'second_referee' => 'Ana Asistente',
+            'timekeeper'     => 'Mesa Uno',
+            'coordinator'    => 'Coord. Zona',
+            'home_score_ht'  => 1,
+            'away_score_ht'  => 1,
+            'home_penalties' => 4,
+            'away_penalties' => 2,
+            'sheet' => [
+                'home' => ['coach' => 'Profe Juan', 'delegate' => 'Del. Local', 'fouls_1' => 3, 'fouls_2' => 5, 'timeouts' => 1, 'captain_signed' => '1'],
+                'away' => ['coach' => 'Profe Pedro', 'fouls_1' => 2],
+            ],
+        ])->assertRedirect(route('admin.torneos.partidos.index', $tournament));
+
+        $match->refresh();
+
+        $this->assertSame('Carlos Árbitro', $match->referee);
+        $this->assertSame('Ana Asistente', $match->second_referee);
+        $this->assertSame('Mesa Uno', $match->timekeeper);
+        $this->assertEquals(1, $match->home_score_ht);
+        $this->assertEquals(4, $match->home_penalties);
+
+        $this->assertSame('Profe Juan', $match->match_sheet['home']['coach']);
+        $this->assertSame(3, $match->match_sheet['home']['fouls_1']);
+        $this->assertTrue($match->match_sheet['home']['captain_signed']);
+        $this->assertFalse($match->match_sheet['away']['captain_signed']);
+        $this->assertSame('Profe Pedro', $match->match_sheet['away']['coach']);
+    }
+
+    public function test_anular_resultado_limpia_datos_de_planilla_pero_conserva_arbitros(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament] = $this->setupRoundRobinWithFixture($admin, 4);
+
+        $match = $this->firstMatch($tournament);
+
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score'    => 2,
+            'away_score'    => 0,
+            'referee'       => 'Carlos Árbitro',
+            'home_score_ht' => 1,
+            'sheet'         => ['home' => ['fouls_1' => 4]],
+        ]);
+
+        $this->actingAs($admin)->delete(route('admin.torneos.partidos.destroy', [$tournament, $match]));
+
+        $match->refresh();
+        $this->assertNull($match->home_score_ht);
+        $this->assertNull($match->match_sheet);
+        // Los árbitros asignados se conservan tras anular el resultado.
+        $this->assertSame('Carlos Árbitro', $match->referee);
+    }
 }

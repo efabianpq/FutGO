@@ -66,6 +66,22 @@
         @endif
     </div>
 
+    {{-- ══ Accesos rápidos del módulo Torneos (según rol) ═══════════════════ --}}
+    @if ($torneosAccess)
+        <div class="flex flex-wrap gap-2 mb-6">
+            <x-btn :href="route('torneos.index')" variant="primary" size="sm">🏆 Mis Torneos</x-btn>
+            @if ($user->isTorneoPlayerAnywhere())
+                <x-btn :href="route('torneos.mi-actividad')" variant="ghost" size="sm">Mi Actividad</x-btn>
+            @endif
+            @if ($user->isCaptainAnywhere())
+                <x-btn :href="route('torneos.capitan')" variant="ghost" size="sm">Panel Capitán</x-btn>
+            @endif
+            @if ($user->isTorneoAdmin())
+                <x-btn :href="route('admin.torneos.index')" variant="ghost" size="sm">⚙ Gestión Torneos</x-btn>
+            @endif
+        </div>
+    @endif
+
     {{-- ══ Bloques de Torneos ═══════════════════════════════════════════════ --}}
     @if ($torneosAccess)
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

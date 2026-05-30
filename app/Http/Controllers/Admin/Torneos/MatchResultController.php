@@ -9,18 +9,23 @@ use App\Models\Torneos\Team;
 use App\Models\Torneos\TeamPlayer;
 use App\Models\Torneos\Tournament;
 use App\Models\Torneos\TournamentMatch;
+use App\Services\Torneos\FixtureGeneratorService;
 use App\Services\Torneos\PlayerStatsCalculatorService;
 use App\Services\Torneos\StandingsCalculatorService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class MatchResultController extends Controller
 {
     public function __construct(
         private StandingsCalculatorService $standings,
         private PlayerStatsCalculatorService $playerStats,
+        private FixtureGeneratorService $fixture,
     ) {}
 
     public function index(Tournament $tournament): View
@@ -36,6 +41,98 @@ class MatchResultController extends Controller
             ->get();
 
         return view('admin.torneos.partidos.index', compact('tournament', 'phases'));
+    }
+
+    /** Pantalla de programación: fecha/hora, sede, estado y observaciones del partido. */
+    public function editSchedule(Tournament $tournament, TournamentMatch $match): View
+    {
+        $this->authorizeAccess($tournament);
+        $this->ensureBelongs($tournament, $match);
+
+        $match->load(['homeTeam', 'awayTeam', 'phase', 'group']);
+
+        return view('admin.torneos.partidos.programar', compact('tournament', 'match'));
+    }
+
+    /** Persiste la programación (no toca marcador ni eventos: eso va por el resultado). */
+    public function updateSchedule(Request $request, Tournament $tournament, TournamentMatch $match): RedirectResponse
+    {
+        $this->authorizeAccess($tournament);
+        $this->ensureBelongs($tournament, $match);
+
+        if ($match->phase->isCompleted()) {
+            return back()->with('error', 'La fase está cerrada: no se puede reprogramar.');
+        }
+
+        if ($match->isFinished()) {
+            return back()->with('error', 'El partido ya está finalizado. Anulá el resultado antes de reprogramarlo.');
+        }
+
+        $data = $request->validate([
+            'scheduled_at' => ['nullable', 'date'],
+            'venue'        => ['nullable', 'string', 'max:100'],
+            'status'       => ['required', Rule::in(['scheduled', 'live', 'postponed'])],
+            'observations' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $match->scheduled_at = $data['scheduled_at'] ?? null;
+        $match->venue        = $data['venue'] ?? null;
+        $match->status       = $data['status'];
+        $match->observations = $data['observations'] ?? null;
+        $match->save();
+
+        return redirect()
+            ->route('admin.torneos.partidos.index', $tournament)
+            ->with('status', "Programación del partido #{$match->match_number} actualizada.");
+    }
+
+    /** Exporta la planilla oficial del partido a PDF (documento maestro imprimible). */
+    public function pdf(Tournament $tournament, TournamentMatch $match): Response
+    {
+        $this->authorizeAccess($tournament);
+        $this->ensureBelongs($tournament, $match);
+
+        $match->load([
+            'homeTeam.players.user',
+            'awayTeam.players.user',
+            'phase',
+            'group',
+        ]);
+
+        $pdf = Pdf::loadView('admin.torneos.partidos.planilla-pdf', [
+            'tournament'  => $tournament,
+            'match'       => $match,
+            'homeRows'    => $this->sheetRows($match->homeTeam),
+            'awayRows'    => $this->sheetRows($match->awayTeam),
+            'sheet'       => $match->match_sheet ?? [],
+            'generatedAt' => now()->locale('es')->isoFormat('D MMM YYYY HH:mm'),
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("planilla-partido-{$match->match_number}.pdf");
+    }
+
+    /**
+     * Plantilla del equipo para la planilla imprimible: lista la nómina completa
+     * (titulares y suplentes inscritos) con su identidad. La captura en partido
+     * (S. inicial, goles, tarjetas) se llena físicamente sobre el impreso.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    private function sheetRows(?Team $team): array
+    {
+        if (! $team) {
+            return [];
+        }
+
+        return $team->players
+            ->whereIn('status', ['active', 'inactive'])
+            ->sortBy(fn ($p) => $p->jersey_number ?? 999)
+            ->map(fn ($p) => [
+                'ficha'      => $p->id,
+                'name'       => $p->user?->name ?? 'Jugador',
+                'number'     => $p->jersey_number,
+                'is_captain' => $p->user_id === $team->captain_user_id,
+            ])->values()->all();
     }
 
     public function show(Tournament $tournament, TournamentMatch $match): View
@@ -69,8 +166,12 @@ class MatchResultController extends Controller
         // Lineups existentes indexadas por team_player_id para pre-llenar el form
         $existingLineups = $match->lineups->keyBy('team_player_id');
 
+        // La planilla solo es editable si el partido está programado o en vivo.
+        // Un partido finalizado se consulta/exporta; para corregirlo hay que anularlo.
+        $canEdit = $match->isScheduled() || $match->isLive();
+
         return view('admin.torneos.partidos.resultado', compact(
-            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups'
+            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups', 'canEdit'
         ));
     }
 
@@ -90,6 +191,22 @@ class MatchResultController extends Controller
         $data = $request->validate([
             'home_score'                    => ['required', 'integer', 'min:0', 'max:99'],
             'away_score'                    => ['required', 'integer', 'min:0', 'max:99'],
+            // Planilla oficial: cuerpo arbitral y mesa.
+            'referee'                       => ['nullable', 'string', 'max:120'],
+            'second_referee'                => ['nullable', 'string', 'max:120'],
+            'third_referee'                 => ['nullable', 'string', 'max:120'],
+            'timekeeper'                    => ['nullable', 'string', 'max:120'],
+            'coordinator'                   => ['nullable', 'string', 'max:120'],
+            'referee_notes'                 => ['nullable', 'string', 'max:1000'],
+            // Marcador por periodos (informativo; el resultado final manda en standings).
+            'home_score_ht'                 => ['nullable', 'integer', 'min:0', 'max:99'],
+            'away_score_ht'                 => ['nullable', 'integer', 'min:0', 'max:99'],
+            'home_score_et'                 => ['nullable', 'integer', 'min:0', 'max:99'],
+            'away_score_et'                 => ['nullable', 'integer', 'min:0', 'max:99'],
+            'home_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
+            'away_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
+            // Datos por equipo del acta.
+            'sheet'                         => ['nullable', 'array'],
             'lineups'                       => ['nullable', 'array'],
             'lineups.*.team_player_id'      => ['required', 'integer', 'exists:team_players,id'],
             'lineups.*.team_id'             => ['required', 'integer', 'exists:teams,id'],
@@ -105,18 +222,45 @@ class MatchResultController extends Controller
         $homeScore = (int) $data['home_score'];
         $awayScore = (int) $data['away_score'];
 
+        // En empate, los penales (si se cargaron) definen el ganador — necesario
+        // para que la eliminatoria pueda avanzar.
+        $homePens = isset($data['home_penalties']) ? (int) $data['home_penalties'] : null;
+        $awayPens = isset($data['away_penalties']) ? (int) $data['away_penalties'] : null;
+
         $winnerId = match (true) {
             $homeScore > $awayScore => $match->home_team_id,
             $awayScore > $homeScore => $match->away_team_id,
+            $homePens !== null && $awayPens !== null && $homePens > $awayPens => $match->home_team_id,
+            $homePens !== null && $awayPens !== null && $awayPens > $homePens => $match->away_team_id,
             default                  => null,
         };
 
-        DB::transaction(function () use ($match, $homeScore, $awayScore, $winnerId, $data, $tournament) {
-            // 1-3. Actualizar partido
+        $sheet = $this->extractSheet($request);
+
+        DB::transaction(function () use ($match, $homeScore, $awayScore, $winnerId, $data, $sheet, $tournament) {
+            // 1-3. Actualizar partido + planilla oficial
             $match->home_score     = $homeScore;
             $match->away_score     = $awayScore;
             $match->winner_team_id = $winnerId;
             $match->status         = 'finished';
+
+            // Cuerpo arbitral y mesa.
+            $match->referee        = $data['referee'] ?? null;
+            $match->second_referee = $data['second_referee'] ?? null;
+            $match->third_referee  = $data['third_referee'] ?? null;
+            $match->timekeeper     = $data['timekeeper'] ?? null;
+            $match->coordinator    = $data['coordinator'] ?? null;
+            $match->referee_notes  = $data['referee_notes'] ?? null;
+
+            // Marcador por periodos.
+            $match->home_score_ht  = $data['home_score_ht'] ?? null;
+            $match->away_score_ht  = $data['away_score_ht'] ?? null;
+            $match->home_score_et  = $data['home_score_et'] ?? null;
+            $match->away_score_et  = $data['away_score_et'] ?? null;
+            $match->home_penalties = $data['home_penalties'] ?? null;
+            $match->away_penalties = $data['away_penalties'] ?? null;
+
+            $match->match_sheet    = $sheet;
             $match->save();
 
             // 4. Limpiar lineups y eventos previos (re-ingreso)
@@ -213,6 +357,15 @@ class MatchResultController extends Controller
             $match->away_score     = null;
             $match->winner_team_id = null;
             $match->status         = 'scheduled';
+
+            // Limpiar datos de resultado del acta (se conservan los árbitros asignados).
+            $match->home_score_ht  = null;
+            $match->away_score_ht  = null;
+            $match->home_score_et  = null;
+            $match->away_score_et  = null;
+            $match->home_penalties = null;
+            $match->away_penalties = null;
+            $match->match_sheet    = null;
             $match->save();
 
             $phase = $match->phase;
@@ -237,9 +390,25 @@ class MatchResultController extends Controller
         $total    = $phase->matches()->whereNotNull('home_team_id')->whereNotNull('away_team_id')->count();
         $finished = $phase->matches()->where('status', 'finished')->count();
 
-        if ($total > 0 && $total === $finished) {
-            $phase->is_active = false;
-            $phase->save();
+        if ($total === 0 || $total !== $finished) {
+            return;
+        }
+
+        $phase->is_active = false;
+        $phase->save();
+
+        // Progresión automática de la eliminatoria: avanza ganadores a la ronda
+        // siguiente, puebla el tercer puesto y, si fue la final, cierra el torneo.
+        if ($phase->type === 'knockout') {
+            $wasFinal = $this->fixture->advanceKnockoutResults($phase);
+
+            if ($wasFinal) {
+                $tournament = $phase->tournament;
+                if ($tournament->isInProgress()) {
+                    $tournament->status = 'finished';
+                    $tournament->save();
+                }
+            }
         }
     }
 
@@ -262,5 +431,52 @@ class MatchResultController extends Controller
     {
         $phaseIds = $tournament->phases()->pluck('id');
         abort_unless($phaseIds->contains($match->phase_id), 404);
+    }
+
+    /**
+     * Normaliza los datos por equipo del acta (cuerpo técnico, faltas acumulativas,
+     * tiempos muertos y firma del capitán) en una estructura JSON segura.
+     *
+     * @return array<string,array<string,mixed>>
+     */
+    private function extractSheet(Request $request): array
+    {
+        $raw   = (array) $request->input('sheet', []);
+        $sheet = [];
+
+        foreach (['home', 'away'] as $side) {
+            $s = is_array($raw[$side] ?? null) ? $raw[$side] : [];
+
+            $sheet[$side] = [
+                'coach'          => $this->cleanString($s['coach'] ?? null),
+                'assistant'      => $this->cleanString($s['assistant'] ?? null),
+                'delegate'       => $this->cleanString($s['delegate'] ?? null),
+                'fouls_1'        => $this->boundedInt($s['fouls_1'] ?? null),
+                'fouls_2'        => $this->boundedInt($s['fouls_2'] ?? null),
+                'timeouts'       => $this->boundedInt($s['timeouts'] ?? null),
+                'captain_signed' => filter_var($s['captain_signed'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ];
+        }
+
+        return $sheet;
+    }
+
+    private function cleanString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $value = trim((string) $value);
+
+        return $value === '' ? null : mb_substr($value, 0, 120);
+    }
+
+    private function boundedInt(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return max(0, min(99, (int) $value));
     }
 }

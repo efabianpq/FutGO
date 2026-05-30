@@ -12,6 +12,11 @@
     $pollaAccess   = $user?->hasPollaAccess() ?? false;
     $torneosAccess = $user?->hasTorneosAccess() ?? false;
 
+    // Roles contextuales del módulo Torneos (solo se consultan si hay acceso).
+    $isTorneoAdmin = $torneosAccess && ($user?->isTorneoAdmin() ?? false);
+    $isCaptain     = $torneosAccess && ($user?->isCaptainAnywhere() ?? false);
+    $isTorneoPlayer = $torneosAccess && ($user?->isTorneoPlayerAnywhere() ?? false);
+
     $navLinks = [
         ['route' => 'inicio', 'label' => 'Inicio', 'icon' => null, 'starts' => 'inicio', 'show' => true],
     ];
@@ -21,8 +26,20 @@
         $navLinks[] = ['route' => 'ranking.index',     'label' => 'Ranking',         'icon' => null, 'starts' => 'ranking',     'show' => true];
     }
 
+    // Navegación del módulo Torneos según el rol del usuario.
+    // Solo se muestran opciones que el usuario realmente puede utilizar.
     if ($torneosAccess) {
-        $navLinks[] = ['route' => 'torneos.index', 'label' => 'Mis Torneos', 'icon' => '🏆', 'starts' => 'torneos.', 'show' => true];
+        $navLinks[] = ['route' => 'torneos.index', 'label' => 'Mis Torneos', 'icon' => '🏆', 'starts' => 'torneos.index', 'show' => true];
+
+        if ($isTorneoPlayer) {
+            $navLinks[] = ['route' => 'torneos.mi-actividad', 'label' => 'Mi Actividad', 'icon' => null, 'starts' => 'torneos.mi-actividad', 'show' => true];
+        }
+        if ($isCaptain) {
+            $navLinks[] = ['route' => 'torneos.capitan', 'label' => 'Panel Capitán', 'icon' => null, 'starts' => 'torneos.capitan', 'show' => true];
+        }
+        if ($isTorneoAdmin) {
+            $navLinks[] = ['route' => 'admin.torneos.index', 'label' => 'Gestión Torneos', 'icon' => '⚙', 'starts' => 'admin.torneos', 'show' => true];
+        }
     }
 
     // Generales (siempre).

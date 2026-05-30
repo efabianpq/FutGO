@@ -11,6 +11,8 @@ $statusMeta = [
     'finished'  => ['Finalizado','win'],
     'postponed' => ['Postpuesto','default'],
 ];
+// Todos los grupos del torneo (para el filtro por grupo).
+$allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
@@ -61,6 +63,19 @@ $statusMeta = [
                     @endforeach
                 </select>
             </div>
+
+            @if ($allGroups->isNotEmpty())
+                <div>
+                    <label class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute mr-2">Grupo</label>
+                    <select x-model="filterGroup"
+                            class="border border-line rounded-md px-3 py-1.5 text-[13px] font-mono focus:outline-none focus:border-pitch">
+                        <option value="all">Todos</option>
+                        @foreach ($allGroups as $group)
+                            <option value="{{ $group->id }}">Grupo {{ $group->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
         </div>
 
         @foreach ($phases as $phase)
@@ -89,7 +104,8 @@ $statusMeta = [
                             <tbody class="divide-y divide-line-soft">
                                 @foreach ($phase->matches as $match)
                                     @php [$label, $variant] = $statusMeta[$match->status] ?? [$match->status, 'default']; @endphp
-                                    <tr class="hover:bg-bone-soft transition-colors duration-fast">
+                                    <tr class="hover:bg-bone-soft transition-colors duration-fast"
+                                        x-show="filterGroup === 'all' || filterGroup === '{{ $match->group_id }}'">
                                         <td class="px-4 py-3 font-mono text-[12px] text-ink-mute">{{ $match->match_number }}</td>
                                         <td class="px-4 py-3">
                                             <span class="font-display font-semibold text-pitch">
@@ -120,6 +136,21 @@ $statusMeta = [
                                             <x-badge :variant="$variant">{{ $label }}</x-badge>
                                         </td>
                                         <td class="px-4 py-3 text-right whitespace-nowrap space-x-2">
+                                            {{-- La planilla es el documento maestro del partido. --}}
+                                            @if ($match->homeTeam && $match->awayTeam)
+                                                <a href="{{ route('admin.torneos.partidos.resultado', [$tournament, $match]) }}"
+                                                   class="text-[13px] font-display font-semibold uppercase text-pitch hover:underline">
+                                                    Planilla
+                                                </a>
+                                                <a href="{{ route('admin.torneos.partidos.pdf', [$tournament, $match]) }}"
+                                                   class="text-[12px] font-mono text-pitch hover:underline">PDF</a>
+                                            @endif
+
+                                            @unless ($match->isFinished())
+                                                <a href="{{ route('admin.torneos.partidos.programar', [$tournament, $match]) }}"
+                                                   class="text-[12px] font-mono text-pitch hover:underline">Programar</a>
+                                            @endunless
+
                                             @if ($match->isScheduled() && $match->homeTeam && $match->awayTeam)
                                                 <form method="POST"
                                                       action="{{ route('admin.torneos.partidos.live', [$tournament, $match]) }}"
@@ -132,18 +163,7 @@ $statusMeta = [
                                                 </form>
                                             @endif
 
-                                            @if (($match->isScheduled() || $match->isLive()) && $match->homeTeam && $match->awayTeam)
-                                                <a href="{{ route('admin.torneos.partidos.resultado', [$tournament, $match]) }}"
-                                                   class="text-[13px] font-display font-semibold uppercase text-pitch hover:underline">
-                                                    Ingresar resultado
-                                                </a>
-                                            @endif
-
                                             @if ($match->isFinished())
-                                                <a href="{{ route('admin.torneos.partidos.resultado', [$tournament, $match]) }}"
-                                                   class="text-[13px] font-display font-semibold uppercase text-pitch hover:underline">
-                                                    Ver / Editar
-                                                </a>
                                                 <form method="POST"
                                                       action="{{ route('admin.torneos.partidos.destroy', [$tournament, $match]) }}"
                                                       class="inline"

@@ -220,6 +220,37 @@ $matchStatusMeta = [
         {{-- Columna lateral --}}
         <div class="space-y-6">
 
+            {{-- ══ BASES DEL TORNEO ════════════════════════════════════════════ --}}
+            @php
+                $formatLabels = [
+                    'groups_and_knockout' => 'Grupos + Eliminación',
+                    'knockout_only'       => 'Solo eliminación',
+                    'round_robin'         => 'Todos contra todos',
+                ];
+            @endphp
+            <section class="bg-white border border-line rounded-md shadow-card-2 p-5">
+                <p class="font-display font-bold text-pitch uppercase text-[15px] mb-3">Bases del torneo</p>
+                <dl class="space-y-2 text-[13px]">
+                    <div class="flex justify-between gap-3"><dt class="text-ink-mute">Formato</dt><dd class="font-semibold text-pitch text-right">{{ $formatLabels[$tournament->format] ?? $tournament->format }}</dd></div>
+                    @if ($tournament->venue)
+                        <div class="flex justify-between gap-3"><dt class="text-ink-mute">Sede</dt><dd class="font-semibold text-pitch text-right">{{ $tournament->venue }}</dd></div>
+                    @endif
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-ink-mute">Inscripción</dt>
+                        <dd class="font-semibold text-pitch text-right">{{ (int) $tournament->registration_fee > 0 ? '$' . number_format($tournament->registration_fee, 0, ',', '.') : 'Gratuita' }}</dd>
+                    </div>
+                    @if ($tournament->prize_description)
+                        <div class="flex justify-between gap-3"><dt class="text-ink-mute">Premio</dt><dd class="font-semibold text-pitch text-right">{{ $tournament->prize_description }}</dd></div>
+                    @endif
+                </dl>
+                @if ($tournament->rules)
+                    <details class="mt-3 group">
+                        <summary class="cursor-pointer font-mono text-[11px] uppercase tracking-wide-label text-pitch hover:underline">Ver reglamento</summary>
+                        <p class="text-[12px] text-ink-soft mt-2 whitespace-pre-line">{{ $tournament->rules }}</p>
+                    </details>
+                @endif
+            </section>
+
             {{-- ══ 5. TOP GOLEADORES ═══════════════════════════════════════════ --}}
             <section class="bg-white border border-line rounded-md shadow-card-2 p-5">
                 <div class="flex items-center justify-between mb-4">

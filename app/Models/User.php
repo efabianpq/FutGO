@@ -72,4 +72,16 @@ class User extends Authenticatable
     {
         return $this->role === 'torneo_admin' || $this->isAdmin();
     }
+
+    /** ¿Es capitán de al menos un equipo en cualquier torneo? */
+    public function isCaptainAnywhere(): bool
+    {
+        return \App\Models\Torneos\Team::where('captain_user_id', $this->id)->exists();
+    }
+
+    /** ¿Está inscrito como jugador (titular/suplente) en algún equipo? */
+    public function isTorneoPlayerAnywhere(): bool
+    {
+        return \App\Models\Torneos\TeamPlayer::where('user_id', $this->id)->exists();
+    }
 }
