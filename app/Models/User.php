@@ -25,6 +25,7 @@ class User extends Authenticatable
         'invitation_code',
         'is_active',
         'role',
+        'modules',
         'notifications_enabled',
         'email_verified_at',
     ];
@@ -47,5 +48,28 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    // --- Módulo Torneos ---
+
+    public function hasModuleAccess(string $module): bool
+    {
+        if ($this->isAdmin()) return true;
+        return $this->modules === 'full' || $this->modules === $module;
+    }
+
+    public function hasPollaAccess(): bool
+    {
+        return $this->hasModuleAccess('polla');
+    }
+
+    public function hasTorneosAccess(): bool
+    {
+        return $this->hasModuleAccess('torneos');
+    }
+
+    public function isTorneoAdmin(): bool
+    {
+        return $this->role === 'torneo_admin' || $this->isAdmin();
     }
 }

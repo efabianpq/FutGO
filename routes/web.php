@@ -5,8 +5,20 @@ use App\Http\Controllers\Admin\FixtureController as AdminFixtureController;
 use App\Http\Controllers\Admin\InvitationCodeController as AdminCodesController;
 use App\Http\Controllers\Admin\ResultsController as AdminResultsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\Torneos\FixtureController;
+use App\Http\Controllers\Admin\Torneos\MatchResultController;
+use App\Http\Controllers\Admin\Torneos\PhaseController;
+use App\Http\Controllers\Admin\Torneos\StandingsController;
+use App\Http\Controllers\Admin\Torneos\TeamAdminController;
+use App\Http\Controllers\Admin\Torneos\TournamentController;
 use App\Http\Controllers\Admin\UserController as AdminUsersController;
+use App\Http\Controllers\Torneos\StatsController;
+use App\Http\Controllers\Torneos\TeamController;
+use App\Http\Controllers\Torneos\TeamHubController;
+use App\Http\Controllers\Torneos\TournamentHubController;
+use App\Http\Controllers\Torneos\TournamentScheduleController;
 use App\Http\Controllers\AuditExportController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -66,10 +78,123 @@ Route::middleware('auth')->group(function () {
         Route::get('/auditoria/exportar/csv', [AuditExportController::class, 'csv'])->name('audit.csv');
         Route::get('/auditoria/exportar/pdf', [AuditExportController::class, 'pdf'])->name('audit.pdf');
 
-        // Alias compatible
-        Route::get('/dashboard', fn () => redirect()->route('predictions.index'))->name('dashboard');
+        // Dashboard principal modular (tarjetas según módulos del usuario)
+        Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio');
 
-        // ============ ADMIN ============
+        // Alias compatible: los usuarios exclusivos de torneos aterrizan en el
+        // dashboard modular; el resto mantiene la compatibilidad con polla.
+        Route::get('/dashboard', function () {
+            $user = auth()->user();
+            if ($user->hasTorneosAccess() && ! $user->hasPollaAccess()) {
+                return redirect()->route('inicio');
+            }
+            return redirect()->route('predictions.index');
+        })->name('dashboard');
+
+        // ─── Módulo Torneos ──────────────────────────────────────────────
+        Route::middleware(['ensure.module:torneos'])
+            ->prefix('torneos')
+            ->name('torneos.')
+            ->group(function () {
+                Route::get('/', function () {
+                    return view('torneos.index');
+                })->name('index');
+
+                // Gestión de equipo (capitán / jugadores) — Centro de Gestión de Equipos
+                Route::prefix('{tournament}/mi-equipo')
+                    ->name('equipo.')
+                    ->group(function () {
+                        Route::get('/inscribir', [TeamController::class, 'inscribir'])->name('inscribir');
+                        Route::post('/inscribir', [TeamController::class, 'store'])->name('store');
+                        Route::get('/', [TeamHubController::class, 'index'])->name('show');
+                        Route::post('/jugadores', [TeamController::class, 'addPlayer'])->name('players.add');
+                        Route::delete('/jugadores/{teamPlayer}', [TeamController::class, 'removePlayer'])->name('players.remove');
+
+                        // Aprobación/rechazo de solicitudes (capitán/torneo_admin) — protegido por ensure.team_member
+                        Route::post('/players/{player}/approve', [TeamHubController::class, 'approvePlayer'])
+                            ->middleware('ensure.team_member')->name('players.approve');
+                        Route::post('/players/{player}/reject', [TeamHubController::class, 'rejectPlayer'])
+                            ->middleware('ensure.team_member')->name('players.reject');
+                    });
+
+                // Cronograma público del torneo
+                Route::prefix('{tournament}/cronograma')
+                    ->name('cronograma.')
+                    ->group(function () {
+                        Route::get('/', [TournamentScheduleController::class, 'index'])->name('index');
+                        Route::get('/equipo/{team}', [TournamentScheduleController::class, 'team'])->name('team');
+                    });
+
+                // Estadísticas públicas del torneo
+                Route::prefix('{tournament}/estadisticas')
+                    ->name('estadisticas.')
+                    ->group(function () {
+                        Route::get('/', [StatsController::class, 'index'])->name('index');
+                        Route::get('/jugador/{teamPlayer}', [StatsController::class, 'jugador'])->name('jugador');
+                    });
+
+                // Centro de información del torneo (hub) — solo participantes del torneo
+                Route::get('/{tournament}', [TournamentHubController::class, 'index'])
+                    ->middleware('ensure.tournament_participant')
+                    ->name('hub');
+            });
+
+        // ============ ADMIN TORNEOS ============
+        Route::middleware(['ensure.torneo_admin'])
+            ->prefix('admin/torneos')
+            ->name('admin.torneos.')
+            ->group(function () {
+                Route::get('/', [TournamentController::class, 'index'])->name('index');
+                Route::get('/crear', [TournamentController::class, 'create'])->name('create');
+                Route::post('/', [TournamentController::class, 'store'])->name('store');
+                Route::get('/{tournament}', [TournamentController::class, 'show'])->name('show');
+                Route::get('/{tournament}/editar', [TournamentController::class, 'edit'])->name('edit');
+                Route::patch('/{tournament}', [TournamentController::class, 'update'])->name('update');
+                Route::patch('/{tournament}/estado', [TournamentController::class, 'updateStatus'])->name('status');
+                Route::delete('/{tournament}', [TournamentController::class, 'destroy'])->name('destroy');
+
+                // Gestión de equipos (torneo_admin)
+                Route::prefix('/{tournament}/equipos')
+                    ->name('equipos.')
+                    ->group(function () {
+                        Route::get('/', [TeamAdminController::class, 'index'])->name('index');
+                        Route::get('/{team}', [TeamAdminController::class, 'show'])->name('show');
+                        Route::patch('/{team}/aprobar', [TeamAdminController::class, 'approve'])->name('approve');
+                        Route::patch('/{team}/rechazar', [TeamAdminController::class, 'reject'])->name('reject');
+                    });
+
+                // Generación de fixture (torneo_admin)
+                Route::post('/{tournament}/fixture/generar', [FixtureController::class, 'generate'])
+                    ->name('fixture.generate');
+
+                // Cierre de fase y generación de eliminatoria (torneo_admin)
+                Route::prefix('/{tournament}/phases')
+                    ->name('phases.')
+                    ->group(function () {
+                        Route::get('/{phase}/close', [PhaseController::class, 'close'])->name('close');
+                        Route::post('/{phase}/close', [PhaseController::class, 'doClose'])->name('close.execute');
+                    });
+
+                // Tabla de posiciones (torneo_admin)
+                Route::prefix('/{tournament}/standings')
+                    ->name('standings.')
+                    ->group(function () {
+                        Route::get('/', [StandingsController::class, 'index'])->name('index');
+                        Route::post('/recalculate', [StandingsController::class, 'recalculate'])->name('recalculate');
+                    });
+
+                // Resultados de partidos (torneo_admin)
+                Route::prefix('/{tournament}/partidos')
+                    ->name('partidos.')
+                    ->group(function () {
+                        Route::get('/', [MatchResultController::class, 'index'])->name('index');
+                        Route::get('/{match}/resultado', [MatchResultController::class, 'show'])->name('resultado');
+                        Route::post('/{match}/resultado', [MatchResultController::class, 'store'])->name('store');
+                        Route::patch('/{match}/en-vivo', [MatchResultController::class, 'markLive'])->name('live');
+                        Route::delete('/{match}/resultado', [MatchResultController::class, 'destroy'])->name('destroy');
+                    });
+            });
+
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 

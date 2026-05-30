@@ -5,6 +5,33 @@
 @php
     $routeName = request()->route()?->getName() ?? '';
     $isActive = fn ($needle) => str_starts_with($routeName, $needle);
+
+    // Navegación modular: solo se muestran enlaces de módulos habilitados.
+    // Cada enlace apunta a rutas siempre accesibles para el usuario (sin {param}
+    // contextual) para no generar 403/302/páginas inaccesibles desde el navbar.
+    $pollaAccess   = $user?->hasPollaAccess() ?? false;
+    $torneosAccess = $user?->hasTorneosAccess() ?? false;
+
+    $navLinks = [
+        ['route' => 'inicio', 'label' => 'Inicio', 'icon' => null, 'starts' => 'inicio', 'show' => true],
+    ];
+
+    if ($pollaAccess) {
+        $navLinks[] = ['route' => 'predictions.index', 'label' => 'Mis Pronósticos', 'icon' => null, 'starts' => 'predictions', 'show' => true];
+        $navLinks[] = ['route' => 'ranking.index',     'label' => 'Ranking',         'icon' => null, 'starts' => 'ranking',     'show' => true];
+    }
+
+    if ($torneosAccess) {
+        $navLinks[] = ['route' => 'torneos.index', 'label' => 'Mis Torneos', 'icon' => '🏆', 'starts' => 'torneos.', 'show' => true];
+    }
+
+    // Generales (siempre).
+    if ($pollaAccess) {
+        $navLinks[] = ['route' => 'audit.index', 'label' => 'Auditoría', 'icon' => '↓', 'starts' => 'audit', 'show' => true];
+    }
+    $navLinks[] = ['route' => 'profile.show', 'label' => 'Perfil', 'icon' => null, 'starts' => 'profile', 'show' => true];
+
+    $homeRoute = route('inicio');
 @endphp
 
 @if ($user)
@@ -14,20 +41,14 @@
             <div class="flex items-center justify-between h-16 gap-6">
 
                 {{-- Brand --}}
-                <a href="{{ route('predictions.index') }}" class="font-display font-extrabold text-[20px] uppercase tracking-[.04em] shrink-0">
+                <a href="{{ $homeRoute }}" class="font-display font-extrabold text-[20px] uppercase tracking-[.04em] shrink-0">
                     <span class="text-gol">@</span>SoyPachon
                 </a>
 
                 {{-- Desktop nav --}}
                 <nav class="hidden md:flex items-center gap-6 font-display font-semibold text-[13px] uppercase tracking-wide-label">
-                    @foreach ([
-                        'predictions.index' => ['label' => 'Mis Pronósticos', 'icon' => null,  'starts' => 'predictions'],
-                        'how-it-works'      => ['label' => '¿Cómo funciona?', 'icon' => null, 'starts' => 'how-it-works'],
-                        'ranking.index'     => ['label' => 'Ranking',          'icon' => null, 'starts' => 'ranking'],
-                        'audit.index'       => ['label' => 'Auditoría',        'icon' => '↓',  'starts' => 'audit'],
-                        'profile.show'      => ['label' => 'Perfil',           'icon' => null, 'starts' => 'profile'],
-                    ] as $route => $meta)
-                        <a href="{{ route($route) }}"
+                    @foreach ($navLinks as $meta)
+                        <a href="{{ route($meta['route']) }}"
                            class="pb-1 border-b-2 transition-all duration-fast {{ $isActive($meta['starts']) ? 'border-gol opacity-100' : 'border-transparent opacity-70 hover:opacity-100' }}">
                             @if ($meta['icon']) <span class="text-gol">{{ $meta['icon'] }}</span> @endif{{ $meta['label'] }}
                         </a>
@@ -66,11 +87,12 @@
 
             {{-- Mobile menu --}}
             <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1 font-display font-semibold text-[13px] uppercase tracking-wide-label">
-                <a href="{{ route('predictions.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Mis Pronósticos</a>
+                @foreach ($navLinks as $meta)
+                    <a href="{{ route($meta['route']) }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">
+                        @if ($meta['icon']) <span class="text-gol">{{ $meta['icon'] }}</span> @endif{{ $meta['label'] }}
+                    </a>
+                @endforeach
                 <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">¿Cómo funciona?</a>
-                <a href="{{ route('ranking.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Ranking</a>
-                <a href="{{ route('audit.index') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10"><span class="text-gol">↓</span> Auditoría</a>
-                <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md hover:bg-bone/10">Perfil</a>
                 @if ($user->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md bg-gol text-pitch">⚙ Admin</a>
                 @endif
