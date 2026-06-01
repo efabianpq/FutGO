@@ -48,7 +48,7 @@
             <x-theme-toggle />
             @guest
                 <a href="{{ route('login') }}"    class="hidden sm:inline-flex btn btn-secondary btn-sm">Iniciar sesión</a>
-                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Empezar gratis</a>
+                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Crear cuenta</a>
             @else
                 <a href="{{ route('inicio') }}" class="btn btn-primary btn-sm">Mi panel</a>
             @endguest
@@ -70,7 +70,7 @@
             @guest
                 <div class="pt-2 grid grid-cols-2 gap-2">
                     <a href="{{ route('login') }}"    class="btn btn-secondary btn-block">Iniciar sesión</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-block">Empezar gratis</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary btn-block">Crear cuenta</a>
                 </div>
             @else
                 <a href="{{ route('inicio') }}" class="btn btn-primary btn-block mt-2">Mi panel</a>
