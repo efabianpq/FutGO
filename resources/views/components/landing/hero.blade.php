@@ -1,107 +1,143 @@
 {{--
-    Hero A · Split
-    Izquierda: eyebrow → H1 → subtítulo → CTAs → trust bar
-    Derecha  : mock browser con partido en vivo + stats
+    Hero B · Centrado
+    Eyebrow centrado → H1 display grande → subtítulo → CTAs centrados
+    → banda de 4 métricas → mock ancho con tabla de posiciones
 --}}
-<section class="relative overflow-hidden py-16 lg:py-20">
+<section class="relative overflow-hidden py-20 pb-16 text-center">
 
-    {{-- Glow de fondo --}}
+    {{-- Glow superior centrado --}}
     <div class="pointer-events-none absolute inset-0 -z-10"
-         style="background: radial-gradient(70% 90% at 80% -10%, rgba(0,230,118,.16), transparent 55%);"></div>
+         style="background: radial-gradient(60% 60% at 50% 0%, rgba(0,230,118,.14), transparent 60%);"></div>
 
-    <div class="max-w-[1200px] mx-auto px-6
-                grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr]
-                gap-12 items-center">
+    <div class="max-w-[1200px] mx-auto px-6">
 
-        {{-- ── IZQUIERDA ───────────────────────────── --}}
-        <div>
-            <span class="eyebrow">El sistema operativo del fútbol amateur</span>
+        {{-- Eyebrow centrado --}}
+        <span class="eyebrow" style="justify-content:center">
+            Donde crece el fútbol amateur
+        </span>
 
-            <h1 class="font-display-x font-black text-text leading-[0.92] tracking-[-0.03em] mt-5"
-                style="font-size: clamp(48px, 6.5vw, 84px)">
-                Organiza torneos<br>
-                como un <em class="not-italic text-green">profesional.</em>
-            </h1>
+        {{-- H1 display --}}
+        <h1 class="font-display-x font-black text-text mx-auto mt-5"
+            style="font-size: clamp(52px, 8.5vw, 116px); line-height: .86; letter-spacing: -.035em; max-width: 14ch;">
+            El fútbol amateur<br>
+            tiene un nuevo <em class="not-italic text-green">hogar.</em>
+        </h1>
 
-            <p class="text-[19px] text-muted mt-6 max-w-[46ch] leading-relaxed">
-                FutGO reúne torneos, equipos, estadísticas y reservas de cancha
-                en un solo lugar. Vos organizás; nosotros calculamos tablas,
-                calendarios y goleo en automático.
-            </p>
+        {{-- Subtítulo --}}
+        <p class="text-[20px] text-muted mx-auto mt-6 leading-relaxed"
+           style="max-width: 54ch">
+            Una sola plataforma para gestionar torneos, equipos, estadísticas
+            y canchas. FutGO se está convirtiendo en el sistema operativo
+            del fútbol base.
+        </p>
 
-            {{-- CTAs --}}
-            <div class="flex flex-wrap gap-3 mt-8">
-                @guest
-                    <a href="{{ route('register') }}"   class="btn btn-primary btn-lg">Crear mi torneo</a>
-                    <a href="{{ route('how-it-works') }}" class="btn btn-secondary btn-lg">Ver demo</a>
-                @else
-                    <a href="{{ route('admin.torneos.index') }}" class="btn btn-primary btn-lg">Mis torneos</a>
-                    <a href="{{ route('how-it-works') }}"        class="btn btn-secondary btn-lg">Ver demo</a>
-                @endguest
-            </div>
-
-            {{-- Trust bar --}}
-            <div class="flex flex-wrap gap-7 mt-9 pt-6 border-t border-border">
-                <div>
-                    <div class="font-display-x font-extrabold text-[26px] tabular-nums text-text">2,400+</div>
-                    <div class="text-[12.5px] text-subtle mt-0.5">torneos creados</div>
-                </div>
-                <div>
-                    <div class="font-display-x font-extrabold text-[26px] tabular-nums text-text">38K</div>
-                    <div class="text-[12.5px] text-subtle mt-0.5">jugadores activos</div>
-                </div>
-                <div>
-                    <div class="font-display-x font-extrabold text-[26px] tabular-nums text-text">94%</div>
-                    <div class="text-[12.5px] text-subtle mt-0.5">renuevan temporada</div>
-                </div>
-            </div>
+        {{-- CTAs --}}
+        <div class="flex flex-wrap gap-3 mt-9 justify-center">
+            @guest
+                <a href="{{ route('register') }}"     class="btn btn-primary btn-lg">Empezar gratis</a>
+                <a href="{{ route('how-it-works') }}" class="btn btn-outline btn-lg">Hablar con ventas</a>
+            @else
+                <a href="{{ route('inicio') }}"       class="btn btn-primary btn-lg">Ir a mi panel</a>
+                <a href="{{ route('how-it-works') }}" class="btn btn-outline btn-lg">Ver demo</a>
+            @endguest
         </div>
 
-        {{-- ── DERECHA: mock browser ────────────────── --}}
-        <div class="bg-surface border border-border rounded-2xl p-4 shadow-float">
+        {{-- Banda de métricas --}}
+        <div class="flex justify-center mt-12
+                    border border-border rounded-lg overflow-hidden bg-surface
+                    flex-wrap">
+            @foreach([
+                ['2,400+', 'torneos'],
+                ['38K',    'jugadores'],
+                ['540',    'canchas conectadas'],
+                ['11',     'países'],
+            ] as [$n, $l])
+                <div class="flex-1 min-w-[120px] px-8 py-5
+                            border-r border-border-soft last:border-r-0">
+                    <div class="font-display-x font-extrabold text-[32px] tabular-nums text-text leading-none">
+                        {{ $n }}
+                    </div>
+                    <div class="text-[12.5px] text-subtle mt-1">{{ $l }}</div>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- Mock ancho: tabla de posiciones --}}
+        <div class="mt-12 mx-auto bg-surface border border-border rounded-2xl p-4 shadow-float text-left"
+             style="max-width: 880px">
 
             {{-- Chrome del navegador --}}
             <div class="flex items-center gap-2 px-1.5 pb-3.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
                 <span class="w-2.5 h-2.5 rounded-full bg-border"></span>
-                <span class="ml-auto font-mono text-[11px] text-subtle">futgo.app / copa-pachon</span>
+                <span class="ml-auto font-mono text-[11px] text-subtle">futgo.app / liga-nocturna / tabla</span>
             </div>
 
-            {{-- Partido en vivo --}}
-            <div class="match" style="background: var(--color-surface-2)">
-                <div class="top">
-                    <span class="league">Copa Pachón · MD07</span>
-                    <span class="badge badge-live">67'</span>
-                </div>
-                <div class="teams">
-                    <div class="side">
-                        <span class="crest">RR</span>
-                        <span class="tn">Real Roma</span>
-                    </div>
-                    <div class="score">2<span class="x">:</span>1</div>
-                    <div class="side away">
-                        <span class="crest">DV</span>
-                        <span class="tn">Dep. Valle</span>
-                    </div>
-                </div>
-            </div>
+            {{-- Tabla de posiciones --}}
+            <table class="fg-table" style="border:none">
+                <thead>
+                    <tr>
+                        <th style="text-align:center">#</th>
+                        <th>Equipo</th>
+                        <th style="text-align:center">PJ</th>
+                        <th>Forma</th>
+                        <th style="text-align:right">Pts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="me">
+                        <td class="num r1">1</td>
+                        <td>
+                            <div class="team-cell">
+                                <span class="crest"
+                                      style="background:var(--color-green-tint);color:var(--color-green);border-color:transparent">RR</span>
+                                Real Roma
+                            </div>
+                        </td>
+                        <td style="text-align:center" class="tabular-nums">7</td>
+                        <td>
+                            <span class="form">
+                                <i class="w">G</i><i class="w">G</i><i class="d">E</i><i class="w">G</i>
+                            </span>
+                        </td>
+                        <td class="pts">15</td>
+                    </tr>
+                    <tr>
+                        <td class="num">2</td>
+                        <td>
+                            <div class="team-cell">
+                                <span class="crest">LU</span>
+                                Lobos FC
+                            </div>
+                        </td>
+                        <td style="text-align:center" class="tabular-nums">7</td>
+                        <td>
+                            <span class="form">
+                                <i class="w">G</i><i class="l">P</i><i class="w">G</i><i class="w">G</i>
+                            </span>
+                        </td>
+                        <td class="pts">13</td>
+                    </tr>
+                    <tr>
+                        <td class="num">3</td>
+                        <td>
+                            <div class="team-cell">
+                                <span class="crest">AT</span>
+                                Atlético 22
+                            </div>
+                        </td>
+                        <td style="text-align:center" class="tabular-nums">7</td>
+                        <td>
+                            <span class="form">
+                                <i class="d">E</i><i class="w">G</i><i class="d">E</i><i class="w">G</i>
+                            </span>
+                        </td>
+                        <td class="pts">11</td>
+                    </tr>
+                </tbody>
+            </table>
 
-            {{-- Mini stats --}}
-            <div class="grid grid-cols-2 gap-3.5 mt-3.5">
-                <div class="stat" style="background: var(--color-surface-2)">
-                    <div class="lbl">Goleo líder</div>
-                    <div class="val tabular-nums" style="font-size: 30px">12</div>
-                    <div class="text-[12px] text-subtle mt-1">A. Soto · #9</div>
-                </div>
-                <div class="stat" style="background: var(--color-surface-2)">
-                    <div class="lbl">Inscripción</div>
-                    <div class="val tabular-nums" style="font-size: 30px">68%</div>
-                    <div class="progress mt-2">
-                        <i style="width: 68%"></i>
-                    </div>
-                </div>
-            </div>
         </div>
 
     </div>
