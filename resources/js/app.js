@@ -6,7 +6,7 @@ import Alpine from 'alpinejs';
 // gestiona el toggle en runtime y mantiene la preferencia sincronizada.
 document.addEventListener('alpine:init', () => {
     Alpine.store('theme', {
-        mode: document.documentElement.getAttribute('data-theme') || 'dark',
+        mode: document.documentElement.getAttribute('data-theme') || 'light',
         toggle() {
             this.mode = this.mode === 'light' ? 'dark' : 'light';
             localStorage.setItem('futgo-theme', this.mode);

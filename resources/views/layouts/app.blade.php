@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Anti-FOUC del tema: aplicar data-theme antes de pintar --}}
+    {{-- Anti-FOUC del tema: aplica tema antes de pintar (default: light) --}}
     <script>
         (function () {
-            var t = localStorage.getItem('futgo-theme') || 'dark';
+            var t = localStorage.getItem('futgo-theme') || 'light';
             document.documentElement.setAttribute('data-theme', t);
         })();
     </script>
