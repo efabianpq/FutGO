@@ -427,19 +427,14 @@ class MatchResultTest extends TestCase
         $match = $this->firstMatch($tournament);
 
         $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
-            'home_score'     => 3,
-            'away_score'     => 2,
+            'home_score'     => 1,
+            'away_score'     => 0,
             'referee'        => 'Carlos Árbitro',
             'second_referee' => 'Ana Asistente',
-            'timekeeper'     => 'Mesa Uno',
-            'coordinator'    => 'Coord. Zona',
-            'home_score_ht'  => 1,
-            'away_score_ht'  => 1,
-            'home_penalties' => 4,
-            'away_penalties' => 2,
+            'referee_notes'  => 'Sin incidencias',
             'sheet' => [
-                'home' => ['coach' => 'Profe Juan', 'delegate' => 'Del. Local', 'fouls_1' => 3, 'fouls_2' => 5, 'timeouts' => 1, 'captain_signed' => '1'],
-                'away' => ['coach' => 'Profe Pedro', 'fouls_1' => 2],
+                'home' => ['delegate' => 'Del. Local', 'fouls_1' => 3, 'fouls_2' => 5, 'captain_signed' => '1'],
+                'away' => ['delegate' => 'Del. Visita', 'fouls_1' => 2],
             ],
         ])->assertRedirect(route('admin.torneos.partidos.index', $tournament));
 
@@ -447,15 +442,14 @@ class MatchResultTest extends TestCase
 
         $this->assertSame('Carlos Árbitro', $match->referee);
         $this->assertSame('Ana Asistente', $match->second_referee);
-        $this->assertSame('Mesa Uno', $match->timekeeper);
-        $this->assertEquals(1, $match->home_score_ht);
-        $this->assertEquals(4, $match->home_penalties);
+        $this->assertSame('Sin incidencias', $match->referee_notes);
 
-        $this->assertSame('Profe Juan', $match->match_sheet['home']['coach']);
+        $this->assertSame('Del. Local', $match->match_sheet['home']['delegate']);
         $this->assertSame(3, $match->match_sheet['home']['fouls_1']);
+        $this->assertSame(5, $match->match_sheet['home']['fouls_2']);
         $this->assertTrue($match->match_sheet['home']['captain_signed']);
         $this->assertFalse($match->match_sheet['away']['captain_signed']);
-        $this->assertSame('Profe Pedro', $match->match_sheet['away']['coach']);
+        $this->assertSame('Del. Visita', $match->match_sheet['away']['delegate']);
     }
 
     public function test_anular_resultado_limpia_datos_de_planilla_pero_conserva_arbitros(): void
@@ -466,19 +460,104 @@ class MatchResultTest extends TestCase
         $match = $this->firstMatch($tournament);
 
         $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
-            'home_score'    => 2,
-            'away_score'    => 0,
-            'referee'       => 'Carlos Árbitro',
-            'home_score_ht' => 1,
-            'sheet'         => ['home' => ['fouls_1' => 4]],
+            'home_score' => 2,
+            'away_score' => 0,
+            'referee'    => 'Carlos Árbitro',
+            'sheet'      => ['home' => ['fouls_1' => 4]],
         ]);
+
+        $this->assertNotNull($match->fresh()->match_sheet);
 
         $this->actingAs($admin)->delete(route('admin.torneos.partidos.destroy', [$tournament, $match]));
 
         $match->refresh();
-        $this->assertNull($match->home_score_ht);
         $this->assertNull($match->match_sheet);
         // Los árbitros asignados se conservan tras anular el resultado.
         $this->assertSame('Carlos Árbitro', $match->referee);
+    }
+
+    public function test_marcador_consistente_con_goles_de_jugadores(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament] = $this->setupRoundRobinWithFixture($admin, 4);
+
+        $match    = $this->firstMatch($tournament);
+        $homeTeam = Team::find($match->home_team_id);
+        $player   = $homeTeam->players()->where('status', 'active')->first();
+
+        // El formulario envía el marcador igual a la suma de goles de jugadores,
+        // junto con un evento por cada gol (minuto opcional).
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score' => 2,
+            'away_score' => 0,
+            'lineups' => [
+                ['team_player_id' => $player->id, 'team_id' => $match->home_team_id, 'started' => 1, 'minute_in' => 0, 'minute_out' => ''],
+            ],
+            'events' => [
+                ['team_player_id' => $player->id, 'type' => 'goal', 'minute' => 12],
+                ['team_player_id' => $player->id, 'type' => 'goal', 'minute' => null],
+            ],
+        ]);
+
+        $match->refresh();
+        $this->assertEquals(2, $match->home_score);
+        $this->assertDatabaseCount('match_events', 2);
+        // El segundo gol no trae minuto: se guarda como null (amateur).
+        $this->assertDatabaseHas('match_events', [
+            'match_id' => $match->id, 'type' => 'goal', 'minute' => null,
+        ]);
+    }
+
+    public function test_partido_ganado_por_walkover(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament] = $this->setupRoundRobinWithFixture($admin, 4);
+
+        $match = $this->firstMatch($tournament);
+
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score'      => 3,
+            'away_score'      => 0,
+            'is_walkover'     => 1,
+            'walkover_winner' => 'home',
+        ])->assertRedirect(route('admin.torneos.partidos.index', $tournament));
+
+        $match->refresh();
+        $this->assertTrue($match->is_walkover);
+        $this->assertEquals('finished', $match->status);
+        $this->assertEquals(3, $match->home_score);
+        $this->assertEquals(0, $match->away_score);
+        $this->assertEquals($match->home_team_id, $match->winner_team_id);
+
+        // W.O. no carga goles ni convocatoria.
+        $this->assertDatabaseCount('match_events', 0);
+        $this->assertDatabaseCount('match_lineups', 0);
+
+        // El ganador recibe los puntos de victoria en la tabla.
+        $phase = $tournament->phases()->where('type', 'groups')->first();
+        $standing = Standing::where('phase_id', $phase->id)
+            ->where('team_id', $match->home_team_id)
+            ->first();
+        $this->assertEquals(3, $standing->points);
+        $this->assertEquals(3, $standing->goals_for);
+    }
+
+    public function test_walkover_sin_equipo_ganador_falla(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament] = $this->setupRoundRobinWithFixture($admin, 4);
+
+        $match = $this->firstMatch($tournament);
+
+        $response = $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score'  => 0,
+            'away_score'  => 0,
+            'is_walkover' => 1,
+            // sin walkover_winner
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertEquals('scheduled', $match->fresh()->status);
     }
 }

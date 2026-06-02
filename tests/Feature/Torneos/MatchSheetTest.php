@@ -89,7 +89,7 @@ class MatchSheetTest extends TestCase
         // En una planilla nueva (sin lineups guardados) los jugadores se pre-cargan
         // como convocados (asistencia automática desde el roster). El JSON va dentro
         // de un atributo x-data, por eso se busca con el escaping HTML por defecto.
-        $response->assertSee('"in_lineup":true');
+        $response->assertSee('"played":true');
     }
 
     // ─── Observaciones arbitrales ──────────────────────────────────────────────

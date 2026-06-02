@@ -22,6 +22,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MatchResultController extends Controller
 {
+    /** Marcador convencional para un partido ganado por W.O. (no presentación). */
+    private const WALKOVER_WIN_SCORE  = 3;
+    private const WALKOVER_LOSE_SCORE = 0;
+
     public function __construct(
         private StandingsCalculatorService $standings,
         private PlayerStatsCalculatorService $playerStats,
@@ -191,18 +195,14 @@ class MatchResultController extends Controller
         $data = $request->validate([
             'home_score'                    => ['required', 'integer', 'min:0', 'max:99'],
             'away_score'                    => ['required', 'integer', 'min:0', 'max:99'],
-            // Planilla oficial: cuerpo arbitral y mesa.
+            // W.O. (un equipo no se presentó).
+            'is_walkover'                   => ['nullable', 'boolean'],
+            'walkover_winner'               => ['nullable', 'in:home,away'],
+            // Cuerpo arbitral (solo principal, secundario y observaciones).
             'referee'                       => ['nullable', 'string', 'max:120'],
             'second_referee'                => ['nullable', 'string', 'max:120'],
-            'third_referee'                 => ['nullable', 'string', 'max:120'],
-            'timekeeper'                    => ['nullable', 'string', 'max:120'],
-            'coordinator'                   => ['nullable', 'string', 'max:120'],
             'referee_notes'                 => ['nullable', 'string', 'max:1000'],
-            // Marcador por periodos (informativo; el resultado final manda en standings).
-            'home_score_ht'                 => ['nullable', 'integer', 'min:0', 'max:99'],
-            'away_score_ht'                 => ['nullable', 'integer', 'min:0', 'max:99'],
-            'home_score_et'                 => ['nullable', 'integer', 'min:0', 'max:99'],
-            'away_score_et'                 => ['nullable', 'integer', 'min:0', 'max:99'],
+            // Penales: definen el ganador en empates de eliminatoria.
             'home_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
             'away_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
             // Datos por equipo del acta.
@@ -216,16 +216,26 @@ class MatchResultController extends Controller
             'events'                        => ['nullable', 'array'],
             'events.*.team_player_id'       => ['required', 'integer', 'exists:team_players,id'],
             'events.*.type'                 => ['required', 'string', 'in:goal,own_goal,assist,yellow_card,red_card,substitution_in,substitution_out'],
-            'events.*.minute'               => ['required', 'integer', 'min:1', 'max:120'],
+            // Minuto opcional: en fútbol amateur no siempre se registra.
+            'events.*.minute'               => ['nullable', 'integer', 'min:1', 'max:120'],
         ]);
 
+        // ── Rama W.O.: hay ganador pero no se cargan goles a jugadores ──────────
+        if (filter_var($data['is_walkover'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+            return $this->storeWalkover($request, $tournament, $match, $data);
+        }
+
+        // ── Resultado normal ────────────────────────────────────────────────────
+        // El marcador se construye en el formulario a partir de los goles de los
+        // jugadores (cada gol es un evento). El backend confía en ese marcador,
+        // que llega ya consistente con la sumatoria de goles.
         $homeScore = (int) $data['home_score'];
         $awayScore = (int) $data['away_score'];
 
         // En empate, los penales (si se cargaron) definen el ganador — necesario
         // para que la eliminatoria pueda avanzar.
-        $homePens = isset($data['home_penalties']) ? (int) $data['home_penalties'] : null;
-        $awayPens = isset($data['away_penalties']) ? (int) $data['away_penalties'] : null;
+        $homePens = isset($data['home_penalties']) && $data['home_penalties'] !== null ? (int) $data['home_penalties'] : null;
+        $awayPens = isset($data['away_penalties']) && $data['away_penalties'] !== null ? (int) $data['away_penalties'] : null;
 
         $winnerId = match (true) {
             $homeScore > $awayScore => $match->home_team_id,
@@ -237,28 +247,30 @@ class MatchResultController extends Controller
 
         $sheet = $this->extractSheet($request);
 
-        DB::transaction(function () use ($match, $homeScore, $awayScore, $winnerId, $data, $sheet, $tournament) {
+        DB::transaction(function () use ($match, $homeScore, $awayScore, $winnerId, $homePens, $awayPens, $data, $sheet, $tournament) {
             // 1-3. Actualizar partido + planilla oficial
+            $match->is_walkover    = false;
             $match->home_score     = $homeScore;
             $match->away_score     = $awayScore;
             $match->winner_team_id = $winnerId;
             $match->status         = 'finished';
 
-            // Cuerpo arbitral y mesa.
+            // Cuerpo arbitral (principal, secundario, observaciones).
             $match->referee        = $data['referee'] ?? null;
             $match->second_referee = $data['second_referee'] ?? null;
-            $match->third_referee  = $data['third_referee'] ?? null;
-            $match->timekeeper     = $data['timekeeper'] ?? null;
-            $match->coordinator    = $data['coordinator'] ?? null;
             $match->referee_notes  = $data['referee_notes'] ?? null;
+            // Roles retirados de la planilla: se limpian si quedaban de un guardado previo.
+            $match->third_referee  = null;
+            $match->timekeeper     = null;
+            $match->coordinator    = null;
 
-            // Marcador por periodos.
-            $match->home_score_ht  = $data['home_score_ht'] ?? null;
-            $match->away_score_ht  = $data['away_score_ht'] ?? null;
-            $match->home_score_et  = $data['home_score_et'] ?? null;
-            $match->away_score_et  = $data['away_score_et'] ?? null;
-            $match->home_penalties = $data['home_penalties'] ?? null;
-            $match->away_penalties = $data['away_penalties'] ?? null;
+            // Periodos retirados de la planilla; los penales se conservan para desempate.
+            $match->home_score_ht  = null;
+            $match->away_score_ht  = null;
+            $match->home_score_et  = null;
+            $match->away_score_et  = null;
+            $match->home_penalties = $homePens;
+            $match->away_penalties = $awayPens;
 
             $match->match_sheet    = $sheet;
             $match->save();
@@ -285,7 +297,7 @@ class MatchResultController extends Controller
                     'match_id'       => $match->id,
                     'team_player_id' => $ev['team_player_id'],
                     'type'           => $ev['type'],
-                    'minute'         => $ev['minute'],
+                    'minute'         => isset($ev['minute']) && $ev['minute'] !== '' ? (int) $ev['minute'] : null,
                 ]);
 
                 // Red card → jugador pasa a inactive automáticamente
@@ -316,6 +328,77 @@ class MatchResultController extends Controller
         return redirect()
             ->route('admin.torneos.partidos.index', $tournament)
             ->with('status', "Resultado del partido #{$match->match_number} guardado correctamente.");
+    }
+
+    /**
+     * Registra un partido ganado por W.O. (un equipo no se presentó):
+     * asigna un marcador convencional y un ganador, sin convocatoria ni eventos.
+     */
+    private function storeWalkover(Request $request, Tournament $tournament, TournamentMatch $match, array $data): RedirectResponse
+    {
+        $side = $data['walkover_winner'] ?? null;
+
+        if (! in_array($side, ['home', 'away'], true)) {
+            return back()->withInput()
+                ->with('error', 'Indicá qué equipo se presentó para registrar el W.O.');
+        }
+
+        if (! $match->home_team_id || ! $match->away_team_id) {
+            return back()->with('error', 'No se puede registrar W.O. sin ambos equipos definidos.');
+        }
+
+        $win  = self::WALKOVER_WIN_SCORE;
+        $lose = self::WALKOVER_LOSE_SCORE;
+
+        $homeScore = $side === 'home' ? $win : $lose;
+        $awayScore = $side === 'home' ? $lose : $win;
+        $winnerId  = $side === 'home' ? $match->home_team_id : $match->away_team_id;
+
+        $sheet = $this->extractSheet($request);
+
+        DB::transaction(function () use ($match, $homeScore, $awayScore, $winnerId, $data, $sheet, $tournament) {
+            $match->is_walkover    = true;
+            $match->home_score     = $homeScore;
+            $match->away_score     = $awayScore;
+            $match->winner_team_id = $winnerId;
+            $match->status         = 'finished';
+
+            $match->referee        = $data['referee'] ?? null;
+            $match->second_referee = $data['second_referee'] ?? null;
+            $match->referee_notes  = $data['referee_notes'] ?? null;
+            $match->third_referee  = null;
+            $match->timekeeper     = null;
+            $match->coordinator    = null;
+            $match->home_score_ht  = null;
+            $match->away_score_ht  = null;
+            $match->home_score_et  = null;
+            $match->away_score_et  = null;
+            $match->home_penalties = null;
+            $match->away_penalties = null;
+            $match->match_sheet    = $sheet;
+            $match->save();
+
+            // W.O.: no hay convocatoria ni eventos de jugadores.
+            $match->lineups()->delete();
+            $match->events()->delete();
+
+            $phase = $match->phase;
+            if ($phase->isGroups()) {
+                $this->standings->recalculate($phase);
+            }
+            if ($match->home_team_id) {
+                $this->playerStats->recalculate($tournament, Team::find($match->home_team_id));
+            }
+            if ($match->away_team_id) {
+                $this->playerStats->recalculate($tournament, Team::find($match->away_team_id));
+            }
+
+            $this->maybeCompletePhase($phase);
+        });
+
+        return redirect()
+            ->route('admin.torneos.partidos.index', $tournament)
+            ->with('status', "Partido #{$match->match_number} registrado como W.O.");
     }
 
     public function markLive(Tournament $tournament, TournamentMatch $match): RedirectResponse
@@ -356,6 +439,7 @@ class MatchResultController extends Controller
             $match->home_score     = null;
             $match->away_score     = null;
             $match->winner_team_id = null;
+            $match->is_walkover    = false;
             $match->status         = 'scheduled';
 
             // Limpiar datos de resultado del acta (se conservan los árbitros asignados).
@@ -434,8 +518,8 @@ class MatchResultController extends Controller
     }
 
     /**
-     * Normaliza los datos por equipo del acta (cuerpo técnico, faltas acumulativas,
-     * tiempos muertos y firma del capitán) en una estructura JSON segura.
+     * Normaliza los datos por equipo del acta (delegado, faltas acumulativas por
+     * tiempo y firma del capitán) en una estructura JSON segura.
      *
      * @return array<string,array<string,mixed>>
      */
@@ -448,12 +532,9 @@ class MatchResultController extends Controller
             $s = is_array($raw[$side] ?? null) ? $raw[$side] : [];
 
             $sheet[$side] = [
-                'coach'          => $this->cleanString($s['coach'] ?? null),
-                'assistant'      => $this->cleanString($s['assistant'] ?? null),
                 'delegate'       => $this->cleanString($s['delegate'] ?? null),
                 'fouls_1'        => $this->boundedInt($s['fouls_1'] ?? null),
                 'fouls_2'        => $this->boundedInt($s['fouls_2'] ?? null),
-                'timeouts'       => $this->boundedInt($s['timeouts'] ?? null),
                 'captain_signed' => filter_var($s['captain_signed'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }

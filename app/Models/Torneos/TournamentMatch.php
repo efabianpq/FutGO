@@ -16,6 +16,7 @@ class TournamentMatch extends Model
         'home_team_id',
         'away_team_id',
         'winner_team_id',
+        'is_walkover',
         'home_score',
         'away_score',
         'status',
@@ -44,6 +45,7 @@ class TournamentMatch extends Model
         return [
             'scheduled_at' => 'datetime',
             'match_sheet'  => 'array',
+            'is_walkover'  => 'boolean',
         ];
     }
 
@@ -105,5 +107,10 @@ class TournamentMatch extends Model
     public function hasResult(): bool
     {
         return $this->home_score !== null && $this->away_score !== null;
+    }
+
+    public function isWalkover(): bool
+    {
+        return (bool) $this->is_walkover;
     }
 }
