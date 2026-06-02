@@ -61,7 +61,7 @@
     </div>
 
     {{-- Lista de jugadores --}}
-    <div class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
+    <div class="bg-white border border-line rounded-md shadow-card-2 overflow-x-auto">
         <div class="bg-pitch-mist border-b border-line px-4 py-3">
             <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Jugadores</p>
         </div>
@@ -69,7 +69,7 @@
         @if ($team->players->isEmpty())
             <div class="p-8 text-center text-ink-soft">Sin jugadores registrados.</div>
         @else
-            <table class="w-full text-left">
+            <table class="w-full min-w-[400px] text-left">
                 <thead>
                     <tr class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute border-b border-line-soft">
                         <th class="px-4 py-2">#</th>

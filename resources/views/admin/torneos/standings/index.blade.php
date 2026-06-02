@@ -77,8 +77,8 @@
                                 Sin resultados registrados para este grupo.
                             </div>
                         @else
-                            <div class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
-                                <table class="w-full text-left">
+                            <div class="bg-white border border-line rounded-md shadow-card-2 overflow-x-auto">
+                                <table class="w-full min-w-[560px] text-left">
                                     <thead class="bg-pitch-mist border-b border-line">
                                         <tr class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">
                                             <th class="px-3 py-3 w-8">#</th>

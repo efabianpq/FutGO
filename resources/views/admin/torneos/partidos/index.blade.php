@@ -90,8 +90,8 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
                 @if ($phase->matches->isEmpty())
                     <p class="text-ink-mute text-[13px] mb-4">Sin partidos en esta fase.</p>
                 @else
-                    <div class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-6">
-                        <table class="w-full text-left">
+                    <div class="bg-white border border-line rounded-md shadow-card-2 overflow-x-auto mb-6">
+                        <table class="w-full min-w-[520px] text-left">
                             <thead class="bg-pitch-mist border-b border-line">
                                 <tr class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">
                                     <th class="px-4 py-3 w-10">#</th>
