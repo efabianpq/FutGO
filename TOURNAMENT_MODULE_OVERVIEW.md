@@ -42,8 +42,13 @@ Final → el torneo pasa a finished
 |-----|-------------------|---------|
 | **Administrador global** (`role=admin`) | Columna `users.role` | Ve y gestiona todo |
 | **Administrador de torneo** (`role=torneo_admin`) | Columna `users.role` | Gestiona los torneos donde es `tournament_admin` |
-| **Capitán** | Es `teams.captain_user_id` de algún equipo | Gestiona su equipo y plantilla |
-| **Jugador** | Tiene registro en `team_players` | Consulta su actividad y la de sus torneos |
+| **Capitán** | Es `teams.captain_user_id` de algún equipo (en sincronía con `team_players.is_captain`) | Gestiona su(s) equipo(s) y plantilla(s) |
+| **Jugador** | Tiene registro en `team_players` (con o sin `user_id`) | Consulta su actividad y la de sus torneos |
+
+> La condición de capitán se deriva **por equipo**, nunca de un rol global en `users`. Un mismo usuario
+> puede capitanear varios equipos en torneos distintos y, a la vez, ser jugador no-capitán en otros.
+> Los **jugadores no registrados** (sin cuenta) existen como `team_players` con `user_id` NULL,
+> `verification_status='por_verificar'` y datos básicos (`full_name`, `document`).
 
 El acceso al módulo se controla con `users.modules` (`polla`, `torneos`, `full`) vía middleware `ensure.module:torneos`.
 
@@ -68,8 +73,10 @@ El acceso al módulo se controla con `users.modules` (`polla`, `torneos`, `full`
 - **Objetivo:** inscribir equipos (capitán) y construir la plantilla; aprobar/rechazar equipos (admin).
 - **Quién:** capitán (inscribe, agrega jugadores por email); admin (aprueba/rechaza).
 - **Dependencias:** torneo en estado `open`.
-- **Rutas:** `torneos.equipo.{inscribir,store,show,players.add,players.remove,players.approve,players.reject}`, `admin.torneos.equipos.{index,show,approve,reject}`.
-- **Reglas:** un usuario no puede estar en dos equipos del mismo torneo; el capitán queda como jugador activo; no se puede quitar al capitán.
+- **Rutas:** `torneos.equipo.{inscribir,store,show,players.add,players.addGuest,players.remove,players.approve,players.reject}`, `admin.torneos.equipos.{index,show,approve,reject}`.
+- **Reglas:** un usuario no puede estar en dos equipos del mismo torneo; el capitán queda como jugador activo marcado `is_captain`; no se puede quitar al capitán.
+- **Jugadores no registrados:** el capitán puede dar de alta jugadores reales sin cuenta (`addGuestPlayer`): se guardan con `user_id` NULL, `full_name`, `document` opcional y `verification_status='por_verificar'`. Anti-duplicados dentro del torneo por `user_id` (registrados) y por `document` (no registrados).
+- **"Mis Equipos" (`torneos.mis-equipos`):** índice central de todos los equipos que el usuario capitanea, across torneos, con conteos y accesos a la plantilla.
 
 ### 4. Centro de Gestión de Equipos (Team Hub)
 - **Objetivo:** panel del equipo del usuario: plantilla, solicitudes pendientes, partidos y récord.
@@ -148,10 +155,22 @@ El acceso al módulo se controla con `users.modules` (`polla`, `torneos`, `full`
 - **Dependencias:** ser capitán de ≥1 equipo (403 si no).
 - **Ruta:** `torneos.capitan`.
 
-### 16. Navegación por roles
+### 16. Hoja de vida deportiva del jugador (`/torneos/mi-carrera`)
+- **Objetivo:** trayectoria PERMANENTE del jugador across torneos — acumulado total (PJ, goles, asistencias, tarjetas, MVP, minutos, V/E/D, vallas invictas), Mis torneos, Mis equipos y Mi historial (detalle por torneo).
+- **Quién:** jugadores.
+- **Dependencias:** participación como jugador; foto de perfil opcional (`/perfil` → POST `/perfil/foto`).
+- **Persistencia:** tabla agregada `player_career_stats` (1 fila/usuario), consolidada por `PlayerCareerStatsService` tras cada recalc de stats y al finalizar el torneo. Lectura O(1).
+
+### 17. Perfil permanente del club (`/torneos/clubes/{club}`)
+- **Objetivo:** identidad del equipo que persiste entre torneos — escudo, historial de participaciones por torneo, estadísticas acumuladas y jugadores/goleadores históricos.
+- **Quién:** todos (lectura); creador del club o admin (subir escudo).
+- **Modelo:** `clubs` agrupa las inscripciones (`teams.club_id`). Cada `Team` es la participación del club en un torneo. Stats del club agregadas en lectura sobre partidos finalizados.
+- **Rutas:** `torneos.clubes.show`, `torneos.clubes.shield`.
+
+### 18. Navegación por roles
 - **Objetivo:** navbar y accesos rápidos que muestran solo lo que el usuario puede usar.
 - **Quién:** todos.
-- **Lógica:** Mis Torneos (siempre); Mi Actividad (jugadores); Panel Capitán (capitanes); Gestión Torneos (admin de torneo).
+- **Lógica:** Mis Torneos (siempre); Mi Actividad + Mi Carrera (jugadores); Mis Equipos + Panel Capitán (capitanes); Gestión Torneos (admin de torneo).
 
 ---
 

@@ -29,14 +29,13 @@
     // Navegación del módulo Torneos según el rol del usuario.
     // Solo se muestran opciones que el usuario realmente puede utilizar.
     if ($torneosAccess) {
+        // Menús unificados: Mis Torneos (participación), Mis Equipos (equipos
+        // permanentes que dirijo o donde juego, + crear), Mi Carrera (toda mi
+        // actividad y trayectoria como jugador).
         $navLinks[] = ['route' => 'torneos.index', 'label' => 'Mis Torneos', 'icon' => '🏆', 'starts' => 'torneos.index', 'show' => true];
+        $navLinks[] = ['route' => 'torneos.mis-equipos', 'label' => 'Mis Equipos', 'icon' => '🛡️', 'starts' => 'torneos.mis-equipos', 'show' => true];
+        $navLinks[] = ['route' => 'torneos.mi-carrera', 'label' => 'Mi Carrera', 'icon' => null, 'starts' => 'torneos.mi-carrera', 'show' => true];
 
-        if ($isTorneoPlayer) {
-            $navLinks[] = ['route' => 'torneos.mi-actividad', 'label' => 'Mi Actividad', 'icon' => null, 'starts' => 'torneos.mi-actividad', 'show' => true];
-        }
-        if ($isCaptain) {
-            $navLinks[] = ['route' => 'torneos.capitan', 'label' => 'Panel Capitán', 'icon' => null, 'starts' => 'torneos.capitan', 'show' => true];
-        }
         if ($isTorneoAdmin) {
             $navLinks[] = ['route' => 'admin.torneos.index', 'label' => 'Gestión Torneos', 'icon' => '⚙', 'starts' => 'admin.torneos', 'show' => true];
         }

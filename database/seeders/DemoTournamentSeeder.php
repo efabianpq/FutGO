@@ -131,6 +131,9 @@ class DemoTournamentSeeder extends Seeder
             $this->command?->info('🏅 Generando eliminatorias desde standings...');
             $this->advanceToKnockout($tournament, $groupPhase);
 
+            $this->command?->info('🪪 Consolidando acumulado histórico de jugadores...');
+            app(\App\Services\Torneos\PlayerCareerStatsService::class)->refreshForTournament($tournament);
+
             $this->command?->info('✅ Demo generada correctamente.');
             $this->printSummary($tournament, $teams, $torneoAdmin);
         });
@@ -165,7 +168,10 @@ class DemoTournamentSeeder extends Seeder
         // Borrar usuarios generados por el seeder (no el admin principal)
         $captainIds = $teams = Team::where('tournament_id', $tournament->id)
             ->pluck('captain_user_id');
+        $clubIds = Team::where('tournament_id', $tournament->id)->pluck('club_id')->filter()->unique();
         Team::where('tournament_id', $tournament->id)->delete();
+        \App\Models\Torneos\Club::whereIn('id', $clubIds)->delete();
+        \App\Models\Torneos\PlayerCareerStat::whereIn('user_id', $captainIds)->delete();
 
         DB::table('tournament_admins')->where('tournament_id', $tournament->id)->delete();
         $tournament->delete();
@@ -248,21 +254,30 @@ class DemoTournamentSeeder extends Seeder
                 ]
             );
 
+            // Club = equipo PERMANENTE (identidad entre torneos); el capitán es permanente.
+            $club = \App\Models\Torneos\Club::updateOrCreate(
+                ['slug' => \Illuminate\Support\Str::slug($teamName)],
+                ['name' => $teamName, 'color' => $color, 'created_by_user_id' => $captain->id, 'captain_user_id' => $captain->id]
+            );
+
             $team = Team::create([
                 'tournament_id'   => $tournament->id,
+                'club_id'         => $club->id,
                 'captain_user_id' => $captain->id,
                 'name'            => $teamName,
                 'color'           => $color,
                 'status'          => 'approved',
             ]);
 
-            // Capitán como primer jugador
+            // Capitán como primer jugador (marcado is_captain).
             TeamPlayer::create([
-                'team_id'        => $team->id,
-                'user_id'        => $captain->id,
-                'jersey_number'  => '10',
-                'position'       => 'Mediocampista',
-                'status'         => 'active',
+                'team_id'             => $team->id,
+                'user_id'            => $captain->id,
+                'is_captain'         => true,
+                'verification_status' => 'registrado',
+                'jersey_number'      => '10',
+                'position'           => 'Mediocampista',
+                'status'             => 'active',
             ]);
 
             // 17 jugadores adicionales (total 18)
@@ -292,6 +307,41 @@ class DemoTournamentSeeder extends Seeder
                     'jersey_number'  => (string) ($p + 1),
                     'position'       => self::POSITIONS[$p % count(self::POSITIONS)],
                     'status'         => 'active',
+                ]);
+            }
+
+            // Jugadores reales SIN cuenta (por verificar) — solo en el primer equipo,
+            // para demostrar el flujo de jugadores no registrados.
+            if ($teamIdx === 0) {
+                foreach ([
+                    ['Invitado Pérez',   'INV-1001', '19', 'Defensa'],
+                    ['Invitado Gómez',   'INV-1002', '20', 'Delantero'],
+                ] as [$guestName, $guestDoc, $guestNumber, $guestPos]) {
+                    TeamPlayer::create([
+                        'team_id'             => $team->id,
+                        'user_id'            => null,
+                        'full_name'          => $guestName,
+                        'document'           => $guestDoc,
+                        'verification_status' => 'por_verificar',
+                        'jersey_number'      => $guestNumber,
+                        'position'           => $guestPos,
+                        'status'             => 'active',
+                    ]);
+                }
+            }
+
+            // Plantilla PERMANENTE del club (club_players) = espejo de la inscripción.
+            foreach ($team->players()->get() as $tp) {
+                \App\Models\Torneos\ClubPlayer::create([
+                    'club_id'             => $club->id,
+                    'user_id'             => $tp->user_id,
+                    'is_captain'          => $tp->is_captain,
+                    'full_name'           => $tp->full_name,
+                    'document'            => $tp->document,
+                    'verification_status' => $tp->verification_status,
+                    'jersey_number'       => $tp->jersey_number,
+                    'position'            => $tp->position,
+                    'status'              => 'active',
                 ]);
             }
 

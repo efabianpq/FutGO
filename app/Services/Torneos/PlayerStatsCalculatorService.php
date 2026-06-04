@@ -79,6 +79,7 @@ class PlayerStatsCalculatorService
                 $draws         = 0;
                 $losses        = 0;
                 $cleanSheets   = 0;
+                $mvps          = 0;
 
                 // Estadísticas de participación basadas en lineup
                 foreach ($lineups as $lineup) {
@@ -89,6 +90,11 @@ class PlayerStatsCalculatorService
 
                     $matchesPlayed++;
                     $minutesPlayed += $lineup->minutesPlayed($matchDuration);
+
+                    // Figura del partido (MVP)
+                    if ((int) $match->mvp_team_player_id === (int) $player->id) {
+                        $mvps++;
+                    }
 
                     // Resultado del equipo
                     $teamScore  = (int) ($match->home_team_id === $team->id ? $match->home_score : $match->away_score);
@@ -134,6 +140,7 @@ class PlayerStatsCalculatorService
                         'draws'              => $draws,
                         'losses'             => $losses,
                         'clean_sheets'       => $cleanSheets,
+                        'mvps'               => $mvps,
                         'last_calculated_at' => now(),
                     ]
                 );
@@ -157,6 +164,7 @@ class PlayerStatsCalculatorService
                 'draws'              => 0,
                 'losses'             => 0,
                 'clean_sheets'       => 0,
+                'mvps'               => 0,
                 'last_calculated_at' => now(),
             ]);
     }

@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\Torneos\TeamAdminController;
 use App\Http\Controllers\Admin\Torneos\TournamentController;
 use App\Http\Controllers\Admin\UserController as AdminUsersController;
 use App\Http\Controllers\Torneos\CaptainDashboardController;
+use App\Http\Controllers\Torneos\ClubController;
+use App\Http\Controllers\Torneos\PlayerCareerController;
+use App\Http\Controllers\Torneos\MyTeamsController;
 use App\Http\Controllers\Torneos\MyTournamentsController;
 use App\Http\Controllers\Torneos\PlayerDashboardController;
 use App\Http\Controllers\Torneos\StatsController;
@@ -75,6 +78,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/perfil/foto', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
 
         // Auditoría exportable (usuarios activos)
         Route::get('/auditoria/exportar',     [AuditExportController::class, 'index'])->name('audit.index');
@@ -102,21 +106,34 @@ Route::middleware('auth')->group(function () {
                 // Entrada principal del módulo: listado de torneos del usuario.
                 Route::get('/', [MyTournamentsController::class, 'index'])->name('index');
 
-                // Gestión de equipo (capitán / jugadores) — Centro de Gestión de Equipos
+                // "Mis Equipos" (unificado con el antiguo Panel Capitán): equipos
+                // permanentes donde el usuario es capitán o miembro + crear nuevo.
+                // Debe ir ANTES de la ruta comodín /{tournament}.
+                Route::get('/mis-equipos', [MyTeamsController::class, 'index'])->name('mis-equipos');
+
+                // Hoja de vida deportiva: trayectoria permanente del jugador across torneos.
+                Route::get('/mi-carrera', [PlayerCareerController::class, 'show'])->name('mi-carrera');
+
+                // ── Equipos PERMANENTES (clubs) — identidad transversal a torneos ──
+                Route::post('/equipos', [ClubController::class, 'store'])->name('equipos.store');
+                Route::prefix('clubes/{club}')->name('clubes.')->group(function () {
+                    Route::get('/', [ClubController::class, 'show'])->name('show');
+                    Route::get('/gestionar', [ClubController::class, 'manage'])->name('manage');
+                    Route::patch('/', [ClubController::class, 'update'])->name('update');
+                    Route::post('/escudo', [ClubController::class, 'updateShield'])->name('shield');
+                    Route::post('/jugadores', [ClubController::class, 'addPlayer'])->name('players.add');
+                    Route::post('/jugadores-invitado', [ClubController::class, 'addGuestPlayer'])->name('players.addGuest');
+                    Route::delete('/jugadores/{clubPlayer}', [ClubController::class, 'removePlayer'])->name('players.remove');
+                    Route::patch('/capitan', [ClubController::class, 'setCaptain'])->name('captain');
+                });
+
+                // Inscripción a un torneo = enrolar un equipo permamente existente.
                 Route::prefix('{tournament}/mi-equipo')
                     ->name('equipo.')
                     ->group(function () {
                         Route::get('/inscribir', [TeamController::class, 'inscribir'])->name('inscribir');
                         Route::post('/inscribir', [TeamController::class, 'store'])->name('store');
                         Route::get('/', [TeamHubController::class, 'index'])->name('show');
-                        Route::post('/jugadores', [TeamController::class, 'addPlayer'])->name('players.add');
-                        Route::delete('/jugadores/{teamPlayer}', [TeamController::class, 'removePlayer'])->name('players.remove');
-
-                        // Aprobación/rechazo de solicitudes (capitán/torneo_admin) — protegido por ensure.team_member
-                        Route::post('/players/{player}/approve', [TeamHubController::class, 'approvePlayer'])
-                            ->middleware('ensure.team_member')->name('players.approve');
-                        Route::post('/players/{player}/reject', [TeamHubController::class, 'rejectPlayer'])
-                            ->middleware('ensure.team_member')->name('players.reject');
                     });
 
                 // Cronograma público del torneo
@@ -141,15 +158,13 @@ Route::middleware('auth')->group(function () {
                     ->name('hub');
             });
 
-        // ─── Portales personales del módulo Torneos (rutas de nivel superior) ───
+        // ─── Compatibilidad: los portales se unificaron ───────────────────────
+        // Mi Actividad → Mi Carrera; Panel Capitán → Mis Equipos.
         Route::middleware(['ensure.module:torneos'])
             ->name('torneos.')
             ->group(function () {
-                // Portal del Jugador: dashboard personal de actividad.
-                Route::get('/mi-actividad', [PlayerDashboardController::class, 'index'])->name('mi-actividad');
-
-                // Portal del Capitán: centro de control de sus equipos.
-                Route::get('/capitan', [CaptainDashboardController::class, 'index'])->name('capitan');
+                Route::get('/mi-actividad', fn () => redirect()->route('torneos.mi-carrera'))->name('mi-actividad');
+                Route::get('/capitan', fn () => redirect()->route('torneos.mis-equipos'))->name('capitan');
             });
 
         // ============ ADMIN TORNEOS ============
@@ -174,6 +189,9 @@ Route::middleware('auth')->group(function () {
                         Route::get('/{team}', [TeamAdminController::class, 'show'])->name('show');
                         Route::patch('/{team}/aprobar', [TeamAdminController::class, 'approve'])->name('approve');
                         Route::patch('/{team}/rechazar', [TeamAdminController::class, 'reject'])->name('reject');
+                        // Aprobación de jugadores agregados con el torneo en curso.
+                        Route::patch('/{team}/jugadores/{teamPlayer}/aprobar', [TeamAdminController::class, 'approvePlayer'])->name('players.approve');
+                        Route::patch('/{team}/jugadores/{teamPlayer}/rechazar', [TeamAdminController::class, 'rejectPlayer'])->name('players.reject');
                     });
 
                 // Generación de fixture (torneo_admin)

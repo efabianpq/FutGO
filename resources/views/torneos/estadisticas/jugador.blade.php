@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', ($teamPlayer->user?->name ?? 'Jugador') . ' · Estadísticas · ' . $tournament->name)
+@section('title', ($teamPlayer->displayName()) . ' · Estadísticas · ' . $tournament->name)
 
 @section('content')
 
@@ -20,15 +20,17 @@ $eventLabels = [
     <nav class="flex items-center gap-2 font-mono text-[12px] text-ink-mute mb-5">
         <a href="{{ route('torneos.estadisticas.index', $tournament) }}" class="hover:text-pitch">Estadísticas</a>
         <span>›</span>
-        <span class="text-pitch font-semibold">{{ $teamPlayer->user?->name ?? 'Jugador' }}</span>
+        <span class="text-pitch font-semibold">{{ $teamPlayer->displayName() }}</span>
     </nav>
 
     {{-- Encabezado del jugador --}}
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div class="flex items-start gap-4">
+            <x-avatar :user="$teamPlayer->user" :name="$teamPlayer->displayName()" size="lg" />
+            <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
             <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">
-                {{ $teamPlayer->user?->name ?? 'Jugador' }}
+                {{ $teamPlayer->displayName() }}
             </h1>
             <div class="flex items-center gap-3 mt-2 flex-wrap">
                 <div class="flex items-center gap-1.5">
@@ -47,6 +49,7 @@ $eventLabels = [
                 @if ($teamPlayer->isInactive())
                     <x-badge variant="default">Inactivo</x-badge>
                 @endif
+            </div>
             </div>
         </div>
     </div>

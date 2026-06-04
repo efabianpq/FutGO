@@ -86,9 +86,9 @@ class PlayerDashboardTest extends TestCase
         [$tournament, $teams] = $this->makeScenario();
 
         $this->actingAs($this->playerOf($teams[0]))
-            ->get(route('torneos.mi-actividad'))
+            ->get(route('torneos.mi-carrera'))
             ->assertOk()
-            ->assertSee('Mi Actividad');
+            ->assertSee('Hoja de vida deportiva');
     }
 
     public function test_mi_actividad_muestra_torneos_del_jugador(): void
@@ -96,7 +96,7 @@ class PlayerDashboardTest extends TestCase
         [$tournament, $teams] = $this->makeScenario();
 
         $this->actingAs($this->playerOf($teams[0]))
-            ->get(route('torneos.mi-actividad'))
+            ->get(route('torneos.mi-carrera'))
             ->assertOk()
             ->assertSee($tournament->name);
     }
@@ -116,7 +116,7 @@ class PlayerDashboardTest extends TestCase
         ]);
 
         $this->actingAs($player)
-            ->get(route('torneos.mi-actividad'))
+            ->get(route('torneos.mi-carrera'))
             ->assertOk()
             ->assertSee('Goles')
             ->assertSee('5');
@@ -142,11 +142,10 @@ class PlayerDashboardTest extends TestCase
         $teamPlayer->update(['status' => 'inactive']);
 
         $this->actingAs($player)
-            ->get(route('torneos.mi-actividad'))
+            ->get(route('torneos.mi-carrera'))
             ->assertOk()
-            ->assertSee('Suspensiones activas')
-            ->assertSee('roja vigente')
-            ->assertSee('Historial disciplinario');
+            ->assertSee('Disciplina')
+            ->assertSee('suspensión');
     }
 
     // ─── Autorización / menú ────────────────────────────────────────────────────
@@ -156,7 +155,7 @@ class PlayerDashboardTest extends TestCase
         $pollaUser = $this->makeUser(['modules' => 'polla']);
 
         $this->actingAs($pollaUser)
-            ->get(route('torneos.mi-actividad'))
+            ->get(route('torneos.mi-carrera'))
             ->assertRedirect(route('predictions.index'));
     }
 
@@ -167,7 +166,7 @@ class PlayerDashboardTest extends TestCase
         $this->actingAs($this->playerOf($teams[0]))
             ->get(route('inicio'))
             ->assertOk()
-            ->assertSee('Mi Actividad')
+            ->assertSee('Mi Carrera')
             ->assertDontSee('Gestión Torneos');
     }
 }

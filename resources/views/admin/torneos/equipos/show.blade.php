@@ -76,6 +76,7 @@
                         <th class="px-4 py-2">Jugador</th>
                         <th class="px-4 py-2">Posición</th>
                         <th class="px-4 py-2 text-center">Estado</th>
+                        <th class="px-4 py-2 text-center">Acción</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line-soft">
@@ -85,19 +86,50 @@
                                 {{ $tp->jersey_number ?? '—' }}
                             </td>
                             <td class="px-4 py-3">
-                                <p class="font-semibold text-[14px]">{{ $tp->user->name }}</p>
-                                <p class="font-mono text-[11px] text-ink-mute">{{ $tp->user->email }}</p>
-                                @if ($tp->user_id === $team->captain_user_id)
-                                    <x-badge variant="win" class="mt-1">Capitán</x-badge>
-                                @endif
+                                <p class="font-semibold text-[14px]">{{ $tp->displayName() }}</p>
+                                <p class="font-mono text-[11px] text-ink-mute">
+                                    {{ $tp->user?->email ?? ($tp->document ? 'Doc: ' . $tp->document : 'Sin cuenta') }}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-1 mt-1">
+                                    @if ($tp->isCaptain())
+                                        <x-badge variant="win">Capitán</x-badge>
+                                    @endif
+                                    @if ($tp->isPorVerificar())
+                                        <x-badge variant="upcoming">Por verificar</x-badge>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-[13px] text-ink-soft capitalize">
                                 {{ $tp->position ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <x-badge :variant="$tp->isActive() ? 'win' : 'upcoming'">
-                                    {{ $tp->isActive() ? 'Activo' : 'Inactivo' }}
-                                </x-badge>
+                                @php
+                                    $estadoMeta = [
+                                        'active'   => ['Activo',    'win'],
+                                        'inactive' => ['Inactivo',  'default'],
+                                        'pending'  => ['Pendiente', 'upcoming'],
+                                        'rejected' => ['Rechazado', 'default'],
+                                    ];
+                                    [$eLbl, $eVar] = $estadoMeta[$tp->status] ?? [$tp->status, 'default'];
+                                @endphp
+                                <x-badge :variant="$eVar">{{ $eLbl }}</x-badge>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                @if ($tp->isPending())
+                                    <div class="flex items-center justify-center gap-2">
+                                        <form method="POST" action="{{ route('admin.torneos.equipos.players.approve', [$tournament, $team, $tp]) }}">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="font-display font-bold text-[12px] uppercase text-gol-deep hover:underline tracking-wide-cta">Aprobar</button>
+                                        </form>
+                                        <span class="text-ink-mute">·</span>
+                                        <form method="POST" action="{{ route('admin.torneos.equipos.players.reject', [$tournament, $team, $tp]) }}">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="font-display font-bold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Rechazar</button>
+                                        </form>
+                                    </div>
+                                @else
+                                    <span class="text-ink-mute">—</span>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

@@ -135,6 +135,11 @@ class TournamentController extends Controller
         $tournament->status = $data['status'];
         $tournament->save();
 
+        // Al finalizar, consolidar el histórico de todos los jugadores del torneo.
+        if ($tournament->status === 'finished') {
+            app(\App\Services\Torneos\PlayerCareerStatsService::class)->refreshForTournament($tournament);
+        }
+
         return back()->with('status', 'Estado actualizado a "' . $data['status'] . '".');
     }
 

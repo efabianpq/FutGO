@@ -30,6 +30,7 @@ class MatchResultController extends Controller
         private StandingsCalculatorService $standings,
         private PlayerStatsCalculatorService $playerStats,
         private FixtureGeneratorService $fixture,
+        private \App\Services\Torneos\PlayerCareerStatsService $careerStats,
     ) {}
 
     public function index(Tournament $tournament): View
@@ -205,6 +206,8 @@ class MatchResultController extends Controller
             // Penales: definen el ganador en empates de eliminatoria.
             'home_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
             'away_penalties'                => ['nullable', 'integer', 'min:0', 'max:99'],
+            // Figura del partido (MVP), opcional.
+            'mvp_team_player_id'            => ['nullable', 'integer', 'exists:team_players,id'],
             // Datos por equipo del acta.
             'sheet'                         => ['nullable', 'array'],
             'lineups'                       => ['nullable', 'array'],
@@ -253,6 +256,7 @@ class MatchResultController extends Controller
             $match->home_score     = $homeScore;
             $match->away_score     = $awayScore;
             $match->winner_team_id = $winnerId;
+            $match->mvp_team_player_id = $data['mvp_team_player_id'] ?? null;
             $match->status         = 'finished';
 
             // Cuerpo arbitral (principal, secundario, observaciones).
@@ -313,12 +317,16 @@ class MatchResultController extends Controller
                 $this->standings->recalculate($phase);
             }
 
-            // 7. Recalcular player_stats para ambos equipos
+            // 7. Recalcular player_stats para ambos equipos + consolidar acumulado histórico
             if ($match->home_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->home_team_id));
+                $home = Team::find($match->home_team_id);
+                $this->playerStats->recalculate($tournament, $home);
+                $this->careerStats->refreshForTeam($home);
             }
             if ($match->away_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->away_team_id));
+                $away = Team::find($match->away_team_id);
+                $this->playerStats->recalculate($tournament, $away);
+                $this->careerStats->refreshForTeam($away);
             }
 
             // 8. Si todos los partidos de la fase están finished, marcar fase completada
@@ -387,10 +395,14 @@ class MatchResultController extends Controller
                 $this->standings->recalculate($phase);
             }
             if ($match->home_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->home_team_id));
+                $home = Team::find($match->home_team_id);
+                $this->playerStats->recalculate($tournament, $home);
+                $this->careerStats->refreshForTeam($home);
             }
             if ($match->away_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->away_team_id));
+                $away = Team::find($match->away_team_id);
+                $this->playerStats->recalculate($tournament, $away);
+                $this->careerStats->refreshForTeam($away);
             }
 
             $this->maybeCompletePhase($phase);
@@ -439,6 +451,7 @@ class MatchResultController extends Controller
             $match->home_score     = null;
             $match->away_score     = null;
             $match->winner_team_id = null;
+            $match->mvp_team_player_id = null;
             $match->is_walkover    = false;
             $match->status         = 'scheduled';
 
@@ -457,10 +470,14 @@ class MatchResultController extends Controller
                 $this->standings->recalculate($phase);
             }
             if ($match->home_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->home_team_id));
+                $home = Team::find($match->home_team_id);
+                $this->playerStats->recalculate($tournament, $home);
+                $this->careerStats->refreshForTeam($home);
             }
             if ($match->away_team_id) {
-                $this->playerStats->recalculate($tournament, Team::find($match->away_team_id));
+                $away = Team::find($match->away_team_id);
+                $this->playerStats->recalculate($tournament, $away);
+                $this->careerStats->refreshForTeam($away);
             }
         });
 
@@ -491,6 +508,9 @@ class MatchResultController extends Controller
                 if ($tournament->isInProgress()) {
                     $tournament->status = 'finished';
                     $tournament->save();
+
+                    // Consolidación final: el histórico de cada jugador queda al día.
+                    $this->careerStats->refreshForTournament($tournament);
                 }
             }
         }

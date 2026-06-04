@@ -172,7 +172,105 @@ php artisan serve --port=8001 (alternativa si el vhost no responde)
   ✅ Dashboard show.blade.php: tarjeta resumen de fase de grupos abierta (estado, finalizados/total, pendientes, clasificados proyectados, fase siguiente, acción de cierre o alerta) — TournamentController::groupPhaseSummary()
   ✅ 12 tests en PhaseClosureTest (pendientes bloquea, cierra cuando todos finished, marca completed, clasifica por classifies_per_group, genera+activa siguiente ronda, cruces A1vB2/B1vA2, no cierra dos veces, no modifica resultados tras cierre, no recalcula fase cerrada, tercer puesto habilitado, pantalla accesible, cierre vía HTTP)
   ✅ 236 tests passing
-- Próximo paso: Prompt 12 — flujo de resultados de eliminatoria (avanzar ganadores ronda a ronda, poblar tercer puesto, cerrar torneo)
+- Módulo Torneos — Sesión A completa — Unificación identidad jugador/capitán + jugadores no registrados:
+  ✅ DECISIÓN DE MODELO: la condición de capitán se deriva POR EQUIPO, nunca de un rol global en users.
+     - Se CONSERVA teams.captain_user_id como puntero denormalizado (FK a users, O(1), usado en ~45 archivos).
+     - Se AGREGA team_players.is_captain como marcador autoritativo a nivel de membresía. Ambos se mantienen
+       en sincronía (al inscribir equipo, el TeamPlayer del capitán queda is_captain=true).
+     - Importante: NO existía ni se creó rol global de "capitán" en users; el módulo ya derivaba capitán por equipo.
+  ✅ Migración 2026_06_04_000019: team_players + is_captain (bool), full_name (120), document (40, indexado),
+     verification_status enum('registrado','por_verificar'); user_id pasa a NULLABLE (jugador sin cuenta);
+     backfill portátil is_captain=true para capitanes existentes.
+  ✅ Jugadores no registrados: user_id NULL + full_name + document opcional + verification_status='por_verificar'.
+     Preparado el "reclamo" futuro (al registrarse se vinculará user_id y pasará a 'registrado'); flujo completo pendiente (Sesión B).
+  ✅ Modelos: TeamPlayer (fillable+cast is_captain, helpers isCaptain/isRegistered/isPorVerificar/displayName, scope captains);
+     Team (captainPlayer(), isCaptainedBy(User)); User (captainTeams() HasMany).
+  ✅ "Mis Equipos": ruta GET /torneos/mis-equipos (torneos.mis-equipos) bajo ['auth','ensure.active','ensure.module:torneos'];
+     MyTeamsController lista solo equipos donde el usuario es capitán across torneos (torneo, estado, conteos jugadores/solicitudes/por-verificar,
+     accesos a gestionar plantilla); vista torneos/mis-equipos.blade.php; link en nav para capitanes.
+  ✅ Alta de jugador no registrado: TeamController::addGuestPlayer + ruta POST /torneos/{tournament}/mi-equipo/jugadores-invitado
+     (torneos.equipo.players.addGuest); Team Hub con selector de modo "Con cuenta / Sin cuenta (por verificar)" (Alpine).
+  ✅ Anti-duplicados dentro del torneo: por user_id (registrados, ya existía) y por document (no registrados, nuevo) con mensajes claros en español.
+  ✅ Impacto ajustado: vistas equipos/hub y admin/equipos/show usan displayName() y badge "Por verificar" (eran null-unsafe con user null);
+     estadisticas/jugador usa displayName(); seeder de demo marca is_captain y agrega 2 jugadores por_verificar al primer equipo.
+  ✅ 9 tests nuevos en UnifiedCaptainPlayerTest (capitán en X + jugador no-capitán en Y; Mis Equipos solo capitaneados;
+     alta sin cuenta por_verificar; anti-dup por user_id y por documento; por_verificar no es usuario registrado pero está en plantilla;
+     capitán marcado is_captain; no se puede quitar al capitán).
+  ✅ 335 tests passing (baseline 326 + 9). Guía de prueba en navegador en SESION_A_GUIA_PRUEBA.md.
+  ⚠ Riesgos/limitaciones detectados: (1) anular un partido de eliminatoria ya avanzada no revierte rondas siguientes (preexistente);
+     (2) el flujo de "reclamo" de perfil de jugador por_verificar quedó preparado en el modelo pero sin UI (Sesión B);
+     (3) /capitan (Panel Capitán) y /torneos/mis-equipos coexisten: el primero es el portal rico, el segundo el índice ligero pedido.
+- Módulo Torneos — Sesión B completa — Perfil permanente (jugador + club) + foto de perfil + acumulado histórico:
+  ✅ DECISIÓN identidad de equipo permanente: enfoque (b) — tabla `clubs` + `teams.club_id` (nullable FK).
+     `teams` pasa a ser "la inscripción de un club en un torneo"; el club es la identidad que persiste.
+     Por qué (b): deja intactas TODAS las FKs a teams.id (standings, matches, group_teams, player_stats, team_players) →
+     migración sin tocar datos históricos. Backfill (en transacción) deduplica por (captain + nombre normalizado).
+  ✅ DECISIÓN acumulado del jugador: TABLA persistente `player_career_stats` (1 fila por user_id), NO cache.
+     Razón: durable (sobrevive flush), consultable/ordenable (rankings futuros), se consolida en el pipeline de escritura
+     (recalc de stats) → lectura O(1) en el perfil. Es derivado: siempre reconstruible desde player_stats.
+  ✅ Migraciones: 000020 clubs + teams.club_id (+backfill); 000021 users.avatar_url; 000022 tournament_matches.mvp_team_player_id
+     + player_stats.mvps; 000023 player_career_stats.
+  ✅ Foto de perfil: ProfileController::updatePhoto + ruta POST /perfil/foto; valida image mimes jpg/png/webp máx 2 MB;
+     guarda en disco public (storage/app/public/avatars), expone URL; borra la anterior. Componente <x-avatar> (foto o iniciales)
+     usado en perfil, mi-carrera, club y estadisticas/jugador.
+  ✅ Modelos: Club (creator, teams, tournamentsCount); PlayerCareerStat; Team (club(), shieldUrl()); TournamentMatch (mvp());
+     PlayerStat (+mvps); User (careerStat(), initials(), avatar_url fillable).
+  ✅ PlayerCareerStatsService: refreshForUser/refreshForTeam/refreshForTournament (suma player_stats across torneos vía
+     team_players.user_id; cuenta torneos/equipos distintos). Solo jugadores registrados (user_id no nulo).
+  ✅ MVP: PlayerStatsCalculatorService cuenta mvps desde tournament_matches.mvp_team_player_id; MatchResultController store
+     acepta mvp_team_player_id; destroy lo limpia. (Selector de MVP en la planilla = mejora de UI pendiente.)
+  ✅ Consolidación al finalizar: MatchResultController refresca career tras cada recalc (store/walkover/destroy) y
+     refreshForTournament al cerrar la final (auto) y en TournamentController::updateStatus → finished (manual).
+     Las player_stats NUNCA se borran al finalizar (verificado por test).
+  ✅ Perfil permanente del jugador: PlayerCareerController + vista torneos/mi-carrera (acumulado total, Mis torneos,
+     Mis equipos, Mi historial por torneo). Ruta GET /torneos/mi-carrera (torneos.mi-carrera). Link en nav para jugadores.
+  ✅ Perfil permanente del club: ClubController show + updateShield (creador/admin). Vista torneos/clubes/show
+     (escudo, historial de participaciones, stats acumuladas en lectura, goleadores e históricos de jugadores).
+     Rutas GET /torneos/clubes/{club} + POST /escudo.
+  ✅ Inscripción (TeamController::store) ahora resuelve/crea el club del capitán (find-or-create por nombre) → mismo equipo
+     en varios torneos comparte un único club (historial cross-torneo natural).
+  ✅ Seeder demo: crea clubs por equipo, setea club_id, consolida career al final; cleanup borra clubs+career del demo.
+  ✅ 7 tests nuevos en CareerAndProfileTest (acumulado suma 2 torneos; foto sube/recupera; validación rechaza inválidos;
+     club muestra historial; finalizar conserva+consolida; jugador en 2 equipos ve ambos; inscripción reutiliza club).
+  ✅ 342 tests passing (335 + 7). Guía en SESION_B_GUIA_PRUEBA.md.
+  ⚠ Riesgos/limitaciones: (1) stats del club se agregan en lectura (sin tabla; ok a escala amateur, futuro club_career_stats);
+     (2) captura de MVP en la planilla sin UI (modelo/pipeline listos); (3) fotos en disco local (S3 en prod);
+     (4) reclamo de perfil por_verificar sigue sin UI (Sesión A); (5) backfill no fusiona clubes homónimos de capitanes distintos (correcto).
+- Módulo Torneos — Refactor "Equipo permanente transversal" + unificación de menús (hallazgos post-Sesión B):
+  ✅ MODELO: el EQUIPO ahora es permanente y transversal a torneos = entidad `clubs` (+ `clubs.captain_user_id` y
+     plantilla propia `club_players`). `teams` pasa a ser la PARTICIPACIÓN del equipo en un torneo; `team_players` es un
+     snapshot copiado al enrolar. Un jugador pertenece al equipo permanente, no a un equipo-por-torneo.
+  ✅ Migración 2026_06_04_000024: clubs.captain_user_id + tabla club_players (user_id nullable, is_captain, full_name,
+     document, verification_status, jersey, position, status); backfill en transacción (capitán = del team más reciente;
+     plantilla permanente = unión deduplicada de los team_players por club).
+  ✅ Modelos: Club (captain, players()=club_players, isCaptainedBy, isInActiveTournament, shieldUrl); ClubPlayer (helpers
+     isCaptain/isRegistered/isPorVerificar/displayName); User (captainClubs, isCaptainAnywhere ahora sobre clubs).
+  ✅ ClubMembershipService: enroll(club,torneo) copia plantilla (todos 'active'); syncMemberAdded (open→active,
+     in_progress→'pending' para aprobación admin); syncMemberRemoved (open→delete, in_progress→inactive);
+     changeCaptain (propaga a participaciones no finalizadas).
+  ✅ Crear equipo standalone: POST /torneos/equipos (ClubController::store) — el creador queda capitán; sin interfaz
+     distinta jugador/capitán. Gestión permanente: /torneos/clubes/{club}/gestionar (agregar/retirar jugadores
+     registrados+invitados con anti-dup, cambiar nombre/color/escudo SOLO si no participa en torneo activo, cambiar capitán).
+  ✅ Inscripción = enrolar equipo permanente existente: GET/POST /torneos/{tournament}/mi-equipo/inscribir
+     (TeamController elige club y llama enroll). Se eliminó el alta de equipo dentro del torneo y la gestión de plantilla
+     por torneo (era TeamController addPlayer/removePlayer + TeamHub approve/reject del capitán).
+  ✅ Aprobación de jugadores tardíos: la hace el ADMIN del torneo —
+     PATCH /admin/torneos/{tournament}/equipos/{team}/jugadores/{teamPlayer}/{aprobar|rechazar} (TeamAdminController);
+     la vista admin/equipos/show muestra estado + botones para pendientes. Primera inscripción: todos aprobados.
+  ✅ UNIFICACIÓN DE MENÚS: "Mi Actividad" + "Mi Carrera" → solo **Mi Carrera** (absorbe próximos/resultados/disciplina);
+     "Mis Equipos" + "Panel Capitán" → solo **Mis Equipos** (equipos que dirijo + donde juego + crear). Rutas viejas
+     /mi-actividad y /capitan redirigen a /mi-carrera y /mis-equipos. Nav: Mis Torneos · Mis Equipos · Mi Carrera · (admin) Gestión.
+  ✅ Hub del equipo por torneo (torneos.equipo.show): ahora es lectura del snapshot + link a "Gestionar equipo" (permanente)
+     + aviso de pendientes; ya no gestiona plantilla.
+  ✅ Seeder demo: crea clubs con capitán + plantilla permanente (club_players) espejo de cada inscripción.
+  ✅ Tests reescritos al nuevo modelo (TeamsTest=enrolar+aprobación equipo; UnifiedCaptainPlayerTest=equipo permanente,
+     capitanía, plantilla, anti-dup, enrolar, pendiente-en-curso, edición bloqueada; CaptainDashboardTest=gestión del club;
+     TeamHubTest=aprobación admin; PlayerDashboardTest→mi-carrera; CareerAndProfileTest ajustado).
+  ✅ 337 tests passing.
+  ⚠ Riesgos/limitaciones: (1) editar nombre/escudo bloqueado si el equipo está en torneo open o in_progress; (2) quitar un
+     miembro con el torneo en curso lo marca inactive en ese torneo (preserva stats), no lo borra; (3) cambiar capitán
+     propaga solo a torneos no finalizados; (4) reclamo de perfil por_verificar sigue sin UI.
+- Próximo paso: Sesión C.
 
 ## 7. Convenciones (igual que v1)
 - Español, voseo

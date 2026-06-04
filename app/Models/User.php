@@ -22,6 +22,7 @@ class User extends Authenticatable
         'password',
         'google_id',
         'phone_whatsapp',
+        'avatar_url',
         'invitation_code',
         'is_active',
         'role',
@@ -73,10 +74,37 @@ class User extends Authenticatable
         return $this->role === 'torneo_admin' || $this->isAdmin();
     }
 
-    /** ¿Es capitán de al menos un equipo en cualquier torneo? */
+    /** Inscripciones por torneo (participaciones) que este usuario capitanea. */
+    public function captainTeams(): HasMany
+    {
+        return $this->hasMany(\App\Models\Torneos\Team::class, 'captain_user_id');
+    }
+
+    /** Equipos PERMANENTES que este usuario capitanea. */
+    public function captainClubs(): HasMany
+    {
+        return $this->hasMany(\App\Models\Torneos\Club::class, 'captain_user_id');
+    }
+
+    /** ¿Es capitán de al menos un equipo permanente? */
     public function isCaptainAnywhere(): bool
     {
-        return \App\Models\Torneos\Team::where('captain_user_id', $this->id)->exists();
+        return $this->captainClubs()->exists();
+    }
+
+    /** Acumulado histórico del jugador (hoja de vida deportiva). */
+    public function careerStat(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Torneos\PlayerCareerStat::class);
+    }
+
+    /** Iniciales para el avatar de respaldo cuando no hay foto. */
+    public function initials(): string
+    {
+        $parts = preg_split('/\s+/', trim($this->name ?? ''));
+        $first = mb_substr($parts[0] ?? '', 0, 1);
+        $last  = count($parts) > 1 ? mb_substr(end($parts), 0, 1) : '';
+        return mb_strtoupper($first . $last) ?: '?';
     }
 
     /** ¿Está inscrito como jugador (titular/suplente) en algún equipo? */

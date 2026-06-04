@@ -104,89 +104,9 @@ class TeamHubTest extends TestCase
             ->assertRedirect(route('torneos.equipo.inscribir', $t));
     }
 
-    // ─── Gestión de plantilla ────────────────────────────────────────────────
+    // ─── Aprobación de jugadores tardíos (la hace el ADMIN del torneo) ─────────
 
-    public function test_capitan_no_puede_gestionar_otro_equipo(): void
-    {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
-        $t     = $this->makeTournament($admin);
-
-        $capA = $this->makeUser();
-        $capB = $this->makeUser();
-        $teamA = $this->makeTeam($t, $capA);
-        $teamB = $this->makeTeam($t, $capB);
-
-        // Jugador pendiente en el equipo B
-        $pendingB = TeamPlayer::create([
-            'team_id' => $teamB->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
-        ]);
-
-        // El capitán A intenta aprobar al pendiente de B → 403 (ensure.team_member)
-        $this->actingAs($capA)
-            ->post(route('torneos.equipo.players.approve', [$t, $pendingB]))
-            ->assertForbidden();
-
-        $this->assertEquals('pending', $pendingB->fresh()->status);
-    }
-
-    public function test_aprobar_jugador_funciona(): void
-    {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
-        $captain = $this->makeUser();
-        $t       = $this->makeTournament($admin);
-        $team    = $this->makeTeam($t, $captain);
-
-        $pending = TeamPlayer::create([
-            'team_id' => $team->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
-        ]);
-
-        $this->actingAs($captain)
-            ->post(route('torneos.equipo.players.approve', [$t, $pending]))
-            ->assertRedirect();
-
-        $this->assertEquals('active', $pending->fresh()->status);
-    }
-
-    public function test_rechazar_jugador_funciona(): void
-    {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
-        $captain = $this->makeUser();
-        $t       = $this->makeTournament($admin);
-        $team    = $this->makeTeam($t, $captain);
-
-        $pending = TeamPlayer::create([
-            'team_id' => $team->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
-        ]);
-
-        $this->actingAs($captain)
-            ->post(route('torneos.equipo.players.reject', [$t, $pending]))
-            ->assertRedirect();
-
-        $this->assertEquals('rejected', $pending->fresh()->status);
-    }
-
-    public function test_jugador_raso_no_puede_aprobar(): void
-    {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
-        $captain = $this->makeUser();
-        $player  = $this->makeUser();
-        $t       = $this->makeTournament($admin);
-        $team    = $this->makeTeam($t, $captain);
-        TeamPlayer::create(['team_id' => $team->id, 'user_id' => $player->id, 'status' => 'active']);
-
-        $pending = TeamPlayer::create([
-            'team_id' => $team->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
-        ]);
-
-        // El jugador raso es miembro (pasa ensure.team_member) pero no es capitán → 403 en el controlador
-        $this->actingAs($player)
-            ->post(route('torneos.equipo.players.approve', [$t, $pending]))
-            ->assertForbidden();
-
-        $this->assertEquals('pending', $pending->fresh()->status);
-    }
-
-    public function test_torneo_admin_puede_aprobar_jugador(): void
+    public function test_admin_del_torneo_aprueba_jugador_pendiente(): void
     {
         $admin   = $this->makeUser(['role' => 'torneo_admin']);
         $captain = $this->makeUser();
@@ -198,10 +118,47 @@ class TeamHubTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->post(route('torneos.equipo.players.approve', [$t, $pending]))
+            ->patch(route('admin.torneos.equipos.players.approve', [$t, $team, $pending]))
             ->assertRedirect();
 
         $this->assertEquals('active', $pending->fresh()->status);
+    }
+
+    public function test_admin_del_torneo_rechaza_jugador_pendiente(): void
+    {
+        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $captain = $this->makeUser();
+        $t       = $this->makeTournament($admin);
+        $team    = $this->makeTeam($t, $captain);
+
+        $pending = TeamPlayer::create([
+            'team_id' => $team->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.torneos.equipos.players.reject', [$t, $team, $pending]))
+            ->assertRedirect();
+
+        $this->assertEquals('rejected', $pending->fresh()->status);
+    }
+
+    public function test_admin_ajeno_no_puede_aprobar_jugador(): void
+    {
+        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $otro    = $this->makeUser(['role' => 'torneo_admin']);
+        $captain = $this->makeUser();
+        $t       = $this->makeTournament($admin);
+        $team    = $this->makeTeam($t, $captain);
+
+        $pending = TeamPlayer::create([
+            'team_id' => $team->id, 'user_id' => $this->makeUser()->id, 'status' => 'pending',
+        ]);
+
+        $this->actingAs($otro)
+            ->patch(route('admin.torneos.equipos.players.approve', [$t, $team, $pending]))
+            ->assertForbidden();
+
+        $this->assertEquals('pending', $pending->fresh()->status);
     }
 
     // ─── Dashboard ───────────────────────────────────────────────────────────
@@ -216,7 +173,7 @@ class TeamHubTest extends TestCase
         $this->actingAs($captain)
             ->get(route('torneos.equipo.show', $t))
             ->assertOk()
-            ->assertSee('Plantilla')
+            ->assertSee('Plantilla en este torneo')
             ->assertSee('Próximos partidos')
             ->assertSee('PJ');
     }
@@ -235,7 +192,7 @@ class TeamHubTest extends TestCase
             ->assertOk();
     }
 
-    public function test_solicitudes_pendientes_visibles_para_capitan(): void
+    public function test_aviso_de_pendientes_visible_en_el_hub(): void
     {
         $admin   = $this->makeUser(['role' => 'torneo_admin']);
         $captain = $this->makeUser();
@@ -248,7 +205,6 @@ class TeamHubTest extends TestCase
         $this->actingAs($captain)
             ->get(route('torneos.equipo.show', $t))
             ->assertOk()
-            ->assertSee('Solicitudes pendientes')
-            ->assertSee('Solicitante Pepe');
+            ->assertSee('pendiente(s) de aprobación del organizador');
     }
 }

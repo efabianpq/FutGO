@@ -16,6 +16,7 @@ class TournamentMatch extends Model
         'home_team_id',
         'away_team_id',
         'winner_team_id',
+        'mvp_team_player_id',
         'is_walkover',
         'home_score',
         'away_score',
@@ -72,6 +73,12 @@ class TournamentMatch extends Model
     public function winner(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'winner_team_id');
+    }
+
+    /** Figura del partido (MVP). */
+    public function mvp(): BelongsTo
+    {
+        return $this->belongsTo(TeamPlayer::class, 'mvp_team_player_id');
     }
 
     public function events(): HasMany

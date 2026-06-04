@@ -2,13 +2,16 @@
 
 namespace Tests\Feature\Torneos;
 
-use App\Models\Torneos\Team;
-use App\Models\Torneos\TeamPlayer;
-use App\Models\Torneos\Tournament;
+use App\Models\Torneos\Club;
+use App\Models\Torneos\ClubPlayer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Gestión del equipo permanente por su capitán (antes "Panel del Capitán",
+ * ahora unificado en "Mis Equipos" + gestión del club).
+ */
 class CaptainDashboardTest extends TestCase
 {
     use RefreshDatabase;
@@ -21,132 +24,68 @@ class CaptainDashboardTest extends TestCase
         ));
     }
 
-    /**
-     * Torneo abierto con un equipo aprobado cuyo capitán es $captain.
-     *
-     * @return array{0:Tournament,1:Team,2:User}
-     */
-    private function makeScenario(): array
+    /** Equipo permanente con su capitán y plantilla mínima. */
+    private function makeClub(User $captain): Club
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
-
-        $tournament = Tournament::create([
-            'name'                 => 'Copa ' . uniqid(),
-            'slug'                 => 'copa-' . uniqid(),
-            'sport'                => 'futbol',
-            'status'               => 'open',
-            'format'               => 'round_robin',
-            'groups_count'         => 1,
-            'teams_per_group'      => 4,
-            'classifies_per_group' => 1,
-            'max_teams'            => 4,
-            'third_place_match'    => false,
-            'points_win'           => 3,
-            'points_draw'          => 1,
-            'points_loss'          => 0,
-            'match_duration'       => 90,
-            'min_players_per_team' => 5,
-            'max_players_per_team' => 12,
-            'category'             => 'libre',
-            'visibility'           => 'public',
-            'created_by_user_id'   => $admin->id,
+        $club = Club::create([
+            'name'               => 'Los Cracks',
+            'slug'               => 'los-cracks-' . uniqid(),
+            'created_by_user_id' => $captain->id,
+            'captain_user_id'    => $captain->id,
         ]);
-        $tournament->tournamentAdmins()->create(['user_id' => $admin->id]);
-
-        $captain = $this->makeUser(['name' => 'Capitán Demo']);
-        $team = Team::create([
-            'tournament_id'   => $tournament->id,
-            'captain_user_id' => $captain->id,
-            'name'            => 'Los Cracks',
-            'status'          => 'approved',
+        ClubPlayer::create([
+            'club_id' => $club->id, 'user_id' => $captain->id, 'is_captain' => true, 'status' => 'active',
         ]);
-        TeamPlayer::create(['team_id' => $team->id, 'user_id' => $captain->id, 'status' => 'active']);
-
-        return [$tournament, $team, $captain];
+        return $club;
     }
 
-    private function addPlayer(Team $team, string $status, string $name): TeamPlayer
+    public function test_capitan_ve_su_equipo_en_mis_equipos(): void
     {
-        $user = $this->makeUser(['name' => $name]);
-
-        return TeamPlayer::create([
-            'team_id' => $team->id,
-            'user_id' => $user->id,
-            'status'  => $status,
-        ]);
-    }
-
-    // ─── Acceso ────────────────────────────────────────────────────────────────
-
-    public function test_capitan_accede_a_su_panel(): void
-    {
-        [$tournament, $team, $captain] = $this->makeScenario();
+        $captain = $this->makeUser();
+        $club    = $this->makeClub($captain);
 
         $this->actingAs($captain)
-            ->get(route('torneos.capitan'))
+            ->get(route('torneos.mis-equipos'))
             ->assertOk()
-            ->assertSee('Panel del Capitán')
-            ->assertSee($team->name);
+            ->assertSee('Mis Equipos')
+            ->assertSee($club->name);
     }
 
-    public function test_panel_muestra_plantilla_y_solicitudes(): void
+    public function test_capitan_puede_gestionar_plantilla(): void
     {
-        [$tournament, $team, $captain] = $this->makeScenario();
-        $this->addPlayer($team, 'pending', 'Solicitante Pendiente');
+        $captain = $this->makeUser();
+        $club    = $this->makeClub($captain);
+        ClubPlayer::create([
+            'club_id' => $club->id, 'user_id' => $this->makeUser(['name' => 'Jugador Plantilla'])->id, 'status' => 'active',
+        ]);
 
         $this->actingAs($captain)
-            ->get(route('torneos.capitan'))
+            ->get(route('torneos.clubes.manage', $club))
             ->assertOk()
-            ->assertSee('Gestión de jugadores')
-            ->assertSee('Pendientes')
-            ->assertSee('Solicitante Pendiente');
+            ->assertSee('Plantilla')
+            ->assertSee('Jugador Plantilla');
     }
 
-    public function test_panel_muestra_estadisticas_del_equipo(): void
+    public function test_no_capitan_no_puede_gestionar_equipo_ajeno(): void
     {
-        [$tournament, $team, $captain] = $this->makeScenario();
+        $captain = $this->makeUser();
+        $club    = $this->makeClub($captain);
 
-        $this->actingAs($captain)
-            ->get(route('torneos.capitan'))
-            ->assertOk()
-            ->assertSee('PJ')
-            ->assertSee('GF');
-    }
+        $otro = $this->makeUser(['name' => 'Ajeno']);
 
-    public function test_no_capitan_recibe_403(): void
-    {
-        $this->makeScenario(); // existe un torneo, pero este usuario no capitanea nada
-
-        $randomUser = $this->makeUser(['name' => 'Sin Equipo']);
-
-        $this->actingAs($randomUser)
-            ->get(route('torneos.capitan'))
+        $this->actingAs($otro)
+            ->get(route('torneos.clubes.manage', $club))
             ->assertForbidden();
     }
 
-    // ─── Acción de gestión desde el panel ───────────────────────────────────────
-
-    public function test_capitan_puede_aprobar_jugador_desde_panel(): void
+    public function test_navbar_muestra_mis_equipos(): void
     {
-        [$tournament, $team, $captain] = $this->makeScenario();
-        $pending = $this->addPlayer($team, 'pending', 'Aspirante');
-
-        $this->actingAs($captain)
-            ->post(route('torneos.equipo.players.approve', [$tournament, $pending]))
-            ->assertRedirect();
-
-        $this->assertSame('active', $pending->fresh()->status);
-    }
-
-    // ─── Menú por rol ────────────────────────────────────────────────────────────
-
-    public function test_navbar_capitan_muestra_panel(): void
-    {
-        [$tournament, $team, $captain] = $this->makeScenario();
+        $captain = $this->makeUser();
+        $this->makeClub($captain);
 
         $this->actingAs($captain)
             ->get(route('inicio'))
             ->assertOk()
-            ->assertSee('Panel Capitán');
+            ->assertSee('Mis Equipos');
     }
 }

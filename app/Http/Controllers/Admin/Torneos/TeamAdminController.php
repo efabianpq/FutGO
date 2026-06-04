@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Torneos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Torneos\Team;
+use App\Models\Torneos\TeamPlayer;
 use App\Models\Torneos\Tournament;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -54,6 +55,36 @@ class TeamAdminController extends Controller
         $team->save();
 
         return back()->with('status', "Equipo \"{$team->name}\" rechazado.");
+    }
+
+    /** Aprueba un jugador agregado a la plantilla con el torneo en curso. */
+    public function approvePlayer(Tournament $tournament, Team $team, TeamPlayer $teamPlayer): RedirectResponse
+    {
+        $this->authorizeAccess($tournament);
+        abort_unless($team->tournament_id === $tournament->id && $teamPlayer->team_id === $team->id, 404);
+
+        if (! $teamPlayer->isPending()) {
+            return back()->with('error', 'Solo se pueden aprobar jugadores pendientes.');
+        }
+
+        $teamPlayer->update(['status' => 'active']);
+
+        return back()->with('status', $teamPlayer->displayName() . ' aprobado para el torneo.');
+    }
+
+    /** Rechaza un jugador agregado a la plantilla con el torneo en curso. */
+    public function rejectPlayer(Tournament $tournament, Team $team, TeamPlayer $teamPlayer): RedirectResponse
+    {
+        $this->authorizeAccess($tournament);
+        abort_unless($team->tournament_id === $tournament->id && $teamPlayer->team_id === $team->id, 404);
+
+        if (! $teamPlayer->isPending()) {
+            return back()->with('error', 'Solo se pueden rechazar jugadores pendientes.');
+        }
+
+        $teamPlayer->update(['status' => 'rejected']);
+
+        return back()->with('status', $teamPlayer->displayName() . ' rechazado para el torneo.');
     }
 
     private function authorizeAccess(Tournament $tournament): void

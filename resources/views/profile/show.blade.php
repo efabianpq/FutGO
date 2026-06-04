@@ -7,6 +7,29 @@
     <p class="eyebrow">Mi cuenta</p>
     <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-3 mb-6">Mi perfil</h1>
 
+    @if (session('status'))
+        <div class="mb-4 bg-gol/20 border border-gol text-pitch-deep px-4 py-3 rounded-md font-display font-semibold">{{ session('status') }}</div>
+    @endif
+
+    {{-- Foto de perfil --}}
+    <div class="bg-white border border-line rounded-md shadow-card p-6 sm:p-8 mb-6">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+            <x-avatar :user="auth()->user()" size="xl" />
+            <div class="flex-1 w-full">
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Foto de perfil</p>
+                <p class="text-[13px] text-ink-soft mt-1">JPG, PNG o WEBP · máximo 2 MB.</p>
+                <form method="POST" action="{{ route('profile.photo') }}" enctype="multipart/form-data"
+                      class="mt-3 flex flex-wrap items-center gap-3">
+                    @csrf
+                    <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" required
+                           class="text-[13px] file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-pitch file:text-bone file:font-display file:font-semibold file:uppercase file:text-[12px] file:cursor-pointer">
+                    <x-btn type="submit" variant="primary" size="sm">Subir foto</x-btn>
+                </form>
+                @error('avatar')<p class="text-[12px] text-alerta mt-2">{{ $message }}</p>@enderror
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white border border-line rounded-md shadow-card p-6 sm:p-8 space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-5 border-b border-line-soft">
             <div>

@@ -20,6 +20,7 @@ class PlayerStat extends Model
         'draws',
         'losses',
         'clean_sheets',
+        'mvps',
         'last_calculated_at',
     ];
 

@@ -82,121 +82,50 @@
         {{-- ══ 2. PLANTILLA ═════════════════════════════════════════════════ --}}
         <div class="lg:col-span-2 space-y-6">
 
-            {{-- Solicitudes pendientes (capitán) --}}
-            @if ($isCaptain && $pendingPlayers->isNotEmpty())
-                <section class="bg-white border border-gol/40 rounded-md shadow-card-2 overflow-hidden">
-                    <div class="bg-gol/10 border-b border-line px-4 py-3">
-                        <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">
-                            Solicitudes pendientes ({{ $pendingPlayers->count() }})
-                        </p>
-                    </div>
-                    <ul class="divide-y divide-line-soft">
-                        @foreach ($pendingPlayers as $tp)
-                            <li class="flex items-center justify-between px-4 py-3">
-                                <div>
-                                    <p class="font-semibold text-[14px]">{{ $tp->user?->name ?? '—' }}</p>
-                                    <p class="font-mono text-[11px] text-ink-mute">{{ $tp->position ?? 'Sin posición' }}</p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <form method="POST" action="{{ route('torneos.equipo.players.approve', [$tournament, $tp]) }}">
-                                        @csrf
-                                        <button type="submit" class="font-display font-bold text-[12px] uppercase text-gol-deep hover:underline tracking-wide-cta">Aprobar</button>
-                                    </form>
-                                    <span class="text-ink-mute">·</span>
-                                    <form method="POST" action="{{ route('torneos.equipo.players.reject', [$tournament, $tp]) }}">
-                                        @csrf
-                                        <button type="submit" class="font-display font-bold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Rechazar</button>
-                                    </form>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
-
-            {{-- Plantilla activa --}}
-            <section x-data="{ showAddForm: false }" class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
-                <div class="bg-pitch-mist border-b border-line px-4 py-3 flex items-center justify-between">
+            {{-- Plantilla en este torneo (snapshot) — la gestión es del equipo permanente --}}
+            <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
+                <div class="bg-pitch-mist border-b border-line px-4 py-3 flex items-center justify-between gap-3">
                     <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">
-                        Plantilla ({{ $activePlayers->count() }})
+                        Plantilla en este torneo ({{ $activePlayers->count() }})
                     </p>
-                    @if ($canManage)
-                        <button type="button" @click="showAddForm = !showAddForm"
-                                class="font-display font-bold text-[13px] uppercase text-pitch hover:underline tracking-wide-cta">
-                            + Agregar jugador
-                        </button>
+                    @if ($isCaptain && $team->club_id)
+                        <a href="{{ route('torneos.clubes.manage', $team->club_id) }}"
+                           class="font-display font-bold text-[12px] uppercase text-pitch hover:underline tracking-wide-cta">Gestionar equipo</a>
                     @endif
                 </div>
 
-                {{-- Form agregar (capitán, torneo abierto) --}}
-                @if ($canManage)
-                    <div x-show="showAddForm" x-cloak class="border-b border-line-soft bg-bone-soft px-4 py-4">
-                        <form method="POST" action="{{ route('torneos.equipo.players.add', $tournament) }}" class="flex flex-wrap items-end gap-3">
-                            @csrf
-                            <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
-                                <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Email del jugador *</label>
-                                <input type="email" name="email" required value="{{ old('email') }}" placeholder="jugador@email.com"
-                                       class="h-[40px] px-3 bg-white border-[1.5px] {{ $errors->has('email') ? 'border-alerta' : 'border-line' }} rounded-md text-[14px] focus:border-pitch focus:ring-0">
-                                @error('email') <p class="text-[12px] text-alerta">{{ $message }}</p> @enderror
-                            </div>
-                            <div class="flex flex-col gap-1 w-20">
-                                <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Dorsal</label>
-                                <input type="number" name="jersey_number" min="1" max="99" value="{{ old('jersey_number') }}"
-                                       class="h-[40px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px] font-mono focus:border-pitch focus:ring-0">
-                            </div>
-                            <div class="flex flex-col gap-1 w-32">
-                                <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Posición</label>
-                                <input type="text" name="position" maxlength="30" value="{{ old('position') }}" placeholder="Delantero"
-                                       class="h-[40px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px] focus:border-pitch focus:ring-0">
-                            </div>
-                            <x-btn type="submit" variant="primary" size="sm">Agregar</x-btn>
-                        </form>
+                @if ($pendingPlayers->isNotEmpty())
+                    <div class="border-b border-line-soft bg-bone-soft px-4 py-2">
+                        <p class="font-mono text-[11px] text-ink-soft">{{ $pendingPlayers->count() }} jugador(es) pendiente(s) de aprobación del organizador para este torneo.</p>
                     </div>
                 @endif
 
-                {{-- Lista --}}
                 @if ($activePlayers->isEmpty())
                     <div class="p-8 text-center text-ink-soft">Sin jugadores activos.</div>
                 @else
                     <ul class="divide-y divide-line-soft">
                         @foreach ($activePlayers as $tp)
                             @php [$psLabel, $psVariant] = $playerStatusMeta[$tp->status] ?? [$tp->status, 'default']; @endphp
-                            <li x-data="{ confirming: false }" class="flex items-center justify-between px-4 py-3 hover:bg-bone-soft">
+                            <li class="flex items-center justify-between px-4 py-3 hover:bg-bone-soft">
                                 <div class="flex items-center gap-3 min-w-0">
                                     <span class="font-mono text-[13px] text-ink-mute w-8 text-right shrink-0">{{ $tp->jersey_number ? '#' . $tp->jersey_number : '—' }}</span>
+                                    <x-avatar :user="$tp->user" :name="$tp->displayName()" size="sm" />
                                     <div class="min-w-0">
                                         <a href="{{ route('torneos.estadisticas.jugador', [$tournament, $tp]) }}"
-                                           class="font-semibold text-[14px] text-pitch hover:underline">{{ $tp->user?->name ?? '—' }}</a>
+                                           class="font-semibold text-[14px] text-pitch hover:underline">{{ $tp->displayName() }}</a>
                                         <p class="font-mono text-[11px] text-ink-mute flex items-center gap-1.5">
                                             {{ $tp->position ?? '' }}
-                                            @if ($tp->user_id === $team->captain_user_id)
+                                            @if ($tp->isCaptain())
                                                 <x-badge variant="win">Capitán</x-badge>
                                             @elseif ($tp->status !== 'active')
                                                 <x-badge :variant="$psVariant">{{ $psLabel }}</x-badge>
                                             @endif
+                                            @if ($tp->isPorVerificar())
+                                                <x-badge variant="upcoming">Por verificar</x-badge>
+                                            @endif
                                         </p>
                                     </div>
                                 </div>
-
-                                @if ($canManage && $tp->user_id !== $team->captain_user_id)
-                                    <div class="shrink-0">
-                                        <template x-if="!confirming">
-                                            <button type="button" @click="confirming = true"
-                                                    class="font-display font-semibold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Quitar</button>
-                                        </template>
-                                        <template x-if="confirming">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[12px] text-ink-soft">¿Quitar?</span>
-                                                <form method="POST" action="{{ route('torneos.equipo.players.remove', [$tournament, $tp]) }}">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="font-display font-bold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Sí</button>
-                                                </form>
-                                                <button type="button" @click="confirming = false"
-                                                        class="font-display font-semibold text-[12px] uppercase text-pitch hover:underline tracking-wide-cta">No</button>
-                                            </div>
-                                        </template>
-                                    </div>
-                                @endif
                             </li>
                         @endforeach
                     </ul>
