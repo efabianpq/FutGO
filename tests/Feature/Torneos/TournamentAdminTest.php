@@ -72,13 +72,24 @@ class TournamentAdminTest extends TestCase
         ], $overrides);
     }
 
+    public function test_admin_torneos_index_redirige_a_vista_unificada(): void
+    {
+        // H3: "Gestión Torneos" se consolidó con "Mis Torneos" (torneos.index).
+        $admin = $this->torneoAdmin();
+
+        $this->actingAs($admin)
+             ->get(route('admin.torneos.index'))
+             ->assertRedirect(route('torneos.index'));
+    }
+
     public function test_torneo_admin_ve_listado_de_sus_torneos(): void
     {
         $admin = $this->torneoAdmin();
         $t = $this->makeTournamentFor($admin, ['name' => 'Liga Propia']);
 
+        // Vista unificada (H3): muestra la tarjeta con acciones Ver/Editar.
         $this->actingAs($admin)
-             ->get(route('admin.torneos.index'))
+             ->get(route('torneos.index'))
              ->assertOk()
              ->assertSee('Liga Propia');
     }
@@ -91,7 +102,7 @@ class TournamentAdminTest extends TestCase
         $this->makeTournamentFor($adminA, ['name' => 'Torneo Ajeno']);
 
         $this->actingAs($adminB)
-             ->get(route('admin.torneos.index'))
+             ->get(route('torneos.index'))
              ->assertOk()
              ->assertDontSee('Torneo Ajeno');
     }
@@ -103,10 +114,46 @@ class TournamentAdminTest extends TestCase
 
         $global = $this->globalAdmin();
 
+        // El admin de plataforma ve TODOS los torneos en la vista unificada.
         $this->actingAs($global)
-             ->get(route('admin.torneos.index'))
+             ->get(route('torneos.index'))
              ->assertOk()
              ->assertSee('Torneo De A');
+    }
+
+    public function test_vista_unificada_muestra_acciones_ver_y_editar_para_admin(): void
+    {
+        // H3: los botones Ver/Editar aparecen solo si el usuario administra el torneo.
+        $admin = $this->torneoAdmin();
+        $this->makeTournamentFor($admin, ['name' => 'Torneo Gestionado']);
+
+        $this->actingAs($admin)
+             ->get(route('torneos.index'))
+             ->assertOk()
+             ->assertSee('Torneo Gestionado')
+             ->assertSee('Editar');
+    }
+
+    public function test_jugador_no_ve_acciones_de_administracion(): void
+    {
+        // Un jugador (no admin del torneo) ve la tarjeta sin botón Editar.
+        $admin  = $this->torneoAdmin();
+        $player = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+
+        $t = $this->makeTournamentFor($admin, ['name' => 'Torneo Jugado', 'status' => 'open']);
+        $team = \App\Models\Torneos\Team::create([
+            'tournament_id' => $t->id, 'captain_user_id' => $player->id,
+            'name' => 'Equipo Jugador', 'status' => 'approved',
+        ]);
+        \App\Models\Torneos\TeamPlayer::create([
+            'team_id' => $team->id, 'user_id' => $player->id, 'is_captain' => true, 'status' => 'active',
+        ]);
+
+        $this->actingAs($player)
+             ->get(route('torneos.index'))
+             ->assertOk()
+             ->assertSee('Torneo Jugado')
+             ->assertDontSee('Editar');
     }
 
     public function test_se_puede_crear_torneo_con_datos_validos(): void
@@ -132,6 +179,71 @@ class TournamentAdminTest extends TestCase
              ->assertSessionHasErrors('name');
 
         $this->assertDatabaseMissing('tournaments', ['sport' => 'futbol', 'name' => 'ab']);
+    }
+
+    // ─── H4: logo y banner como imagen adjunta ──────────────────────────────────
+
+    public function test_se_puede_subir_logo_y_banner_como_imagen(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = $this->torneoAdmin();
+
+        $payload = $this->validPayload([
+            'name'   => 'Copa Con Logo',
+            'logo'   => \Illuminate\Http\UploadedFile::fake()->image('logo.png', 200, 200),
+            'banner' => \Illuminate\Http\UploadedFile::fake()->image('banner.jpg', 800, 300),
+        ]);
+
+        $this->actingAs($admin)
+             ->post(route('admin.torneos.store'), $payload)
+             ->assertRedirect();
+
+        $tournament = Tournament::where('name', 'Copa Con Logo')->firstOrFail();
+
+        // Las URLs apuntan al disco público y los archivos existen.
+        $this->assertNotNull($tournament->logo_url);
+        $this->assertNotNull($tournament->banner_url);
+        $this->assertStringStartsWith('/storage/torneos/', $tournament->logo_url);
+
+        \Illuminate\Support\Facades\Storage::disk('public')
+            ->assertExists(str_replace('/storage/', '', $tournament->logo_url));
+        \Illuminate\Support\Facades\Storage::disk('public')
+            ->assertExists(str_replace('/storage/', '', $tournament->banner_url));
+    }
+
+    public function test_logo_rechaza_archivo_que_no_es_imagen(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = $this->torneoAdmin();
+
+        $payload = $this->validPayload([
+            'name' => 'Copa Mal Logo',
+            'logo' => \Illuminate\Http\UploadedFile::fake()->create('documento.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->actingAs($admin)
+             ->post(route('admin.torneos.store'), $payload)
+             ->assertSessionHasErrors('logo');
+    }
+
+    // ─── H5: valor de inscripción en formato divisa ─────────────────────────────
+
+    public function test_registration_fee_se_guarda_como_entero_limpio(): void
+    {
+        $admin = $this->torneoAdmin();
+
+        // El input formatea visualmente ($ 50.000) pero el hidden envía el entero limpio.
+        $this->actingAs($admin)
+             ->post(route('admin.torneos.store'), $this->validPayload([
+                 'name'             => 'Copa Con Costo',
+                 'registration_fee' => 50000,
+             ]))
+             ->assertRedirect();
+
+        $this->assertDatabaseHas('tournaments', [
+            'name'             => 'Copa Con Costo',
+            'registration_fee' => 50000,
+        ]);
     }
 
     public function test_el_slug_se_genera_automaticamente(): void
@@ -162,16 +274,33 @@ class TournamentAdminTest extends TestCase
         ]);
     }
 
-    public function test_no_se_puede_eliminar_torneo_que_no_esta_en_draft(): void
+    public function test_no_se_puede_eliminar_torneo_en_in_progress_ni_finished(): void
     {
+        // H8: se amplió la eliminación a draft y open; in_progress y finished siguen bloqueados.
+        $admin = $this->torneoAdmin();
+
+        foreach (['in_progress', 'finished'] as $status) {
+            $t = $this->makeTournamentFor($admin, ['status' => $status]);
+
+            $this->actingAs($admin)
+                 ->delete(route('admin.torneos.destroy', $t))
+                 ->assertRedirect();
+
+            $this->assertDatabaseHas('tournaments', ['id' => $t->id]);
+        }
+    }
+
+    public function test_se_puede_eliminar_torneo_en_open(): void
+    {
+        // H8: ahora también se puede eliminar torneos en estado "open" (inscripción).
         $admin = $this->torneoAdmin();
         $t = $this->makeTournamentFor($admin, ['status' => 'open']);
 
         $this->actingAs($admin)
              ->delete(route('admin.torneos.destroy', $t))
-             ->assertRedirect();
+             ->assertRedirect(route('admin.torneos.index'));
 
-        $this->assertDatabaseHas('tournaments', ['id' => $t->id]);
+        $this->assertDatabaseMissing('tournaments', ['id' => $t->id]);
     }
 
     public function test_se_puede_eliminar_torneo_en_draft(): void

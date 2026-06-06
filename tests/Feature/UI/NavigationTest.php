@@ -24,14 +24,16 @@ class NavigationTest extends TestCase
 
     public function test_usuario_solo_polla_ve_menu_polla_y_no_torneos(): void
     {
+        // H2/H17: el label cambió de "Mis Pronósticos" → "Pronósticos"
         $user = $this->userWithModules('polla');
 
         $this->actingAs($user)
             ->get(route('inicio'))
             ->assertOk()
-            ->assertSee('Mis Pronósticos')
-            ->assertSee('Ranking')
-            ->assertDontSee('Mis Torneos');
+            ->assertSee('Pronósticos')      // nuevo label (sin "Mis")
+            ->assertSee('Auditoría')        // discriminador exclusivo de la polla
+            ->assertDontSee('Mis Torneos')
+            ->assertDontSee('Mi Carrera');
     }
 
     public function test_usuario_solo_torneos_ve_menu_torneos_y_no_polla(): void
@@ -41,9 +43,12 @@ class NavigationTest extends TestCase
         $this->actingAs($user)
             ->get(route('inicio'))
             ->assertOk()
+            ->assertSee('Mi Carrera')
+            ->assertSee('Mis Equipos')
             ->assertSee('Mis Torneos')
-            ->assertDontSee('Mis Pronósticos')
-            ->assertDontSee('Ranking');
+            ->assertSee('Ranking')          // el módulo Torneos tiene su propio ranking
+            ->assertDontSee('Pronósticos')
+            ->assertDontSee('Auditoría');   // discriminador exclusivo de la polla
     }
 
     public function test_usuario_con_ambos_modulos_ve_ambos_menus(): void
@@ -53,8 +58,10 @@ class NavigationTest extends TestCase
         $this->actingAs($user)
             ->get(route('inicio'))
             ->assertOk()
-            ->assertSee('Mis Pronósticos')
-            ->assertSee('Mis Torneos');
+            ->assertSee('Pronósticos')      // polla
+            ->assertSee('Auditoría')        // polla
+            ->assertSee('Mi Carrera')       // torneos
+            ->assertSee('Mis Torneos');     // torneos
     }
 
     public function test_usuario_sin_modulos_no_ve_menus_de_modulo(): void
@@ -64,10 +71,10 @@ class NavigationTest extends TestCase
         $this->actingAs($user)
             ->get(route('inicio'))
             ->assertOk()
-            ->assertDontSee('Mis Pronósticos')
+            ->assertDontSee('Pronósticos')
             ->assertDontSee('Mis Torneos')
+            ->assertDontSee('Mi Carrera')
             // Siempre disponibles
-            ->assertSee('Inicio')
             ->assertSee('Perfil');
     }
 
@@ -78,7 +85,6 @@ class NavigationTest extends TestCase
         $this->actingAs($user)
             ->get(route('inicio'))
             ->assertOk()
-            ->assertSee('Inicio')
             ->assertSee('Perfil');
     }
 

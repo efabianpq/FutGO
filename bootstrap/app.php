@@ -18,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.module'        => \App\Http\Middleware\EnsureModule::class,
             'ensure.torneo_admin'  => \App\Http\Middleware\EnsureTorneoAdmin::class,
             'ensure.tournament_participant' => \App\Http\Middleware\EnsureTournamentParticipant::class,
-            'ensure.team_member'            => \App\Http\Middleware\EnsureTeamMember::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

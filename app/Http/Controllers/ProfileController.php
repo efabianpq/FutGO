@@ -58,13 +58,16 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'phone_whatsapp' => ['required', 'string', 'regex:/^[0-9]{7,15}$/'],
+            'document' => ['nullable', 'string', 'max:40'],
             'notifications_enabled' => ['sometimes', 'boolean'],
         ], [
             'phone_whatsapp.regex' => 'El teléfono debe contener entre 7 y 15 dígitos numéricos.',
+            'document.max' => 'El documento no puede superar los 40 caracteres.',
         ]);
 
         $user = $request->user();
         $user->phone_whatsapp = $data['phone_whatsapp'];
+        $user->document = $data['document'] ?? null;
         $user->notifications_enabled = $request->boolean('notifications_enabled');
         $user->save();
 

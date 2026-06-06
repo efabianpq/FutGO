@@ -127,6 +127,31 @@
                                             <button type="submit" class="font-display font-bold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Rechazar</button>
                                         </form>
                                     </div>
+                                @elseif (! $tp->isCaptain() && $tp->status !== 'inactive' && ! $tournament->isFinished())
+                                    <div x-data="{ open: false }" class="flex items-center justify-center gap-2">
+                                        {{-- Baja --}}
+                                        <form method="POST" action="{{ route('admin.torneos.equipos.players.release', [$tournament, $team, $tp]) }}"
+                                              @submit.prevent="if (confirm('¿Dar de baja a {{ $tp->displayName() }}? Conserva sus estadísticas previas.')) $el.submit()">
+                                            @csrf @method('PATCH')
+                                            <button type="submit" class="font-display font-bold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Baja</button>
+                                        </form>
+                                        {{-- Cambio de equipo (solo torneo en inscripción) --}}
+                                        @if ($tournament->status === 'open' && $otherTeams->isNotEmpty())
+                                            <span class="text-ink-mute">·</span>
+                                            <button type="button" @click="open = !open" class="font-display font-bold text-[12px] uppercase text-pitch hover:underline tracking-wide-cta">Cambiar</button>
+                                            <div x-show="open" x-cloak class="absolute z-10 mt-1 bg-white border border-line rounded-md shadow-card-2 p-3" style="transform: translateY(1.5rem)">
+                                                <form method="POST" action="{{ route('admin.torneos.equipos.players.transfer', [$tournament, $team, $tp]) }}" class="flex items-center gap-2">
+                                                    @csrf @method('PATCH')
+                                                    <select name="to_team_id" class="border border-line rounded-md px-2 py-1 text-[12px]">
+                                                        @foreach ($otherTeams as $ot)
+                                                            <option value="{{ $ot->id }}">{{ $ot->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <button type="submit" class="font-display font-bold text-[12px] uppercase text-pitch hover:underline">Mover</button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-ink-mute">—</span>
                                 @endif

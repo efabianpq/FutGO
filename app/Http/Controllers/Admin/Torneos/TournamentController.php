@@ -56,6 +56,9 @@ class TournamentController extends Controller
         // El creador queda automáticamente como admin del torneo.
         $tournament->admins()->attach($request->user()->id);
 
+        // H4: subir logo/banner (requiere el ID ya creado para la ruta).
+        $this->handleImageUploads($tournament, $request);
+
         return redirect()
             ->route('admin.torneos.show', $tournament)
             ->with('status', 'Torneo creado correctamente.');
@@ -80,6 +83,11 @@ class TournamentController extends Controller
             'matches_played'        => (clone $matchesQuery)->where('status', 'finished')->count(),
         ];
 
+        // H6: datos de gestión para el formato liga.
+        $league = $tournament->format === 'liga'
+            ? $this->leagueSummary($tournament, $hasFixture, $approvedCount)
+            : null;
+
         return view('admin.torneos.show', [
             'tournament'   => $tournament,
             'stats'        => $stats,
@@ -87,6 +95,7 @@ class TournamentController extends Controller
             'hasFixture'   => $hasFixture,
             'canGenerate'  => $tournament->isOpen() && ! $hasFixture && $this->hasEnoughApproved($tournament, $approvedCount),
             'phaseSummary' => $this->groupPhaseSummary($tournament, $hasFixture),
+            'league'       => $league,
         ]);
     }
 
@@ -108,6 +117,9 @@ class TournamentController extends Controller
         $data = $this->validateTournament($request);
         $this->fillFromData($tournament, $data, $request);
         $tournament->save();
+
+        // H4: actualizar logo/banner si se subieron nuevos.
+        $this->handleImageUploads($tournament, $request);
 
         return redirect()
             ->route('admin.torneos.show', $tournament)
@@ -135,9 +147,9 @@ class TournamentController extends Controller
         $tournament->status = $data['status'];
         $tournament->save();
 
-        // Al finalizar, consolidar el histórico de todos los jugadores del torneo.
+        // Al finalizar: consolidar acumulados + fair play + logros + ranking (Sesión F).
         if ($tournament->status === 'finished') {
-            app(\App\Services\Torneos\PlayerCareerStatsService::class)->refreshForTournament($tournament);
+            app(\App\Services\Torneos\ReputationService::class)->consolidateTournament($tournament);
         }
 
         return back()->with('status', 'Estado actualizado a "' . $data['status'] . '".');
@@ -147,11 +159,48 @@ class TournamentController extends Controller
     {
         $this->authorizeAccess($tournament);
 
-        if (! $tournament->isDraft()) {
-            return back()->with('error', 'Solo se pueden eliminar torneos en estado borrador.');
+        if (! in_array($tournament->status, ['draft', 'open'], true)) {
+            return back()->with('error', 'Solo se pueden eliminar torneos en estado borrador o inscripción.');
+        }
+
+        // Recolectamos los users ANTES de borrar, para recalcular el acumulado
+        // histórico DESPUÉS de que el cascade elimine los player_stats del torneo.
+        // Así se evita dejar estadísticas ficticias de torneos de prueba.
+        $affectedUserIds = collect();
+        $clubIdsInTournament = collect();
+        if ($tournament->isOpen()) {
+            $teamIds = $tournament->teams()->pluck('id');
+            $affectedUserIds = \App\Models\Torneos\TeamPlayer::whereIn('team_id', $teamIds)
+                ->whereNotNull('user_id')
+                ->pluck('user_id')
+                ->unique();
+
+            // Clubs inscritos (para limpiar los "por_validar" creados por el admin).
+            $clubIdsInTournament = $tournament->teams()->whereNotNull('club_id')->pluck('club_id')->unique();
         }
 
         $tournament->delete();
+
+        // H8: los clubs "por_validar" (creados por el admin de ESTE torneo) que
+        // queden sin participación en ningún otro torneo se eliminan. Los clubs
+        // "validado" (de un capitán) se conservan siempre — solo se borró su inscripción.
+        if ($clubIdsInTournament->isNotEmpty()) {
+            \App\Models\Torneos\Club::whereIn('id', $clubIdsInTournament)
+                ->where('status', 'por_validar')
+                ->whereDoesntHave('teams')
+                ->get()
+                ->each(function ($club) {
+                    $club->players()->delete();
+                    $club->delete();
+                });
+        }
+
+        // Recalcular career stats DESPUÉS del cascade (player_stats ya borrados).
+        if ($affectedUserIds->isNotEmpty()) {
+            $careerService = app(\App\Services\Torneos\PlayerCareerStatsService::class);
+            \App\Models\User::whereIn('id', $affectedUserIds)->get()
+                ->each(fn ($u) => $careerService->refreshForUser($u));
+        }
 
         return redirect()
             ->route('admin.torneos.index')
@@ -197,12 +246,14 @@ class TournamentController extends Controller
             'name'                 => ['required', 'string', 'min:3', 'max:100'],
             'sport'                => ['required', 'string', 'max:50'],
             'description'          => ['nullable', 'string'],
-            'format'               => ['required', Rule::in(['groups_and_knockout', 'knockout_only', 'round_robin'])],
+            'format'               => ['required', Rule::in(['groups_and_knockout', 'knockout_only', 'round_robin', 'liga'])],
             'groups_count'         => ['required_if:format,' . implode(',', self::FORMATS_WITH_GROUPS), 'nullable', 'integer', 'min:1', 'max:16'],
-            'teams_per_group'      => ['nullable', 'integer', 'min:2', 'max:8', 'required_with:classifies_per_group'],
-            'classifies_per_group' => ['nullable', 'integer', 'min:1', 'lt:teams_per_group'],
+            'teams_per_group'      => ['nullable', 'integer', 'min:2', 'max:8'],
+            // En liga, classifies_per_group = cuántos equipos pasan a la eliminatoria.
+            'classifies_per_group' => ['nullable', 'integer', 'min:1'],
             'max_teams'            => ['nullable', 'integer', 'min:2', 'max:128'],
             'third_place_match'    => ['nullable', 'boolean'],
+            'mvp_enabled'          => ['nullable', 'boolean'],
             'stats'                => ['nullable', 'array'],
             'stats.*'              => [Rule::in(self::TRACKABLE_STATS)],
 
@@ -232,8 +283,9 @@ class TournamentController extends Controller
             'registration_fee'  => ['nullable', 'integer', 'min:0'],
             'prize_description' => ['nullable', 'string', 'max:200'],
             'rules'             => ['nullable', 'string'],
-            'logo_url'          => ['nullable', 'string', 'max:255'],
-            'banner_url'        => ['nullable', 'string', 'max:255'],
+            // H4: logo y banner se suben como imagen (no URL de texto).
+            'logo'              => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'banner'            => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
 
             // Calendario
             'registration_opens_at'  => ['nullable', 'date'],
@@ -250,17 +302,35 @@ class TournamentController extends Controller
             'ends_at.after' => 'El fin del torneo debe ser posterior al inicio.',
         ]);
 
-        // max_teams debe coincidir con groups_count * teams_per_group en formatos con grupos.
+        // Validaciones específicas por formato.
         $validator->after(function ($validator) use ($request) {
-            if (in_array($request->input('format'), self::FORMATS_WITH_GROUPS, true)) {
-                $expected = (int) $request->input('groups_count') * (int) $request->input('teams_per_group');
-                $given = $request->filled('max_teams') ? (int) $request->input('max_teams') : null;
+            $format = $request->input('format');
 
+            if (in_array($format, self::FORMATS_WITH_GROUPS, true)) {
+                // teams_per_group requerido y classifies < teams_per_group.
+                $teamsPerGroup = (int) $request->input('teams_per_group');
+                if ($teamsPerGroup < 2) {
+                    $validator->errors()->add('teams_per_group', 'Indicá cuántos equipos hay por grupo (mínimo 2).');
+                } elseif ((int) $request->input('classifies_per_group') >= $teamsPerGroup) {
+                    $validator->errors()->add('classifies_per_group', 'La cantidad que clasifica debe ser menor que los equipos por grupo.');
+                }
+
+                // max_teams debe coincidir con groups_count * teams_per_group.
+                $expected = (int) $request->input('groups_count') * $teamsPerGroup;
+                $given = $request->filled('max_teams') ? (int) $request->input('max_teams') : null;
                 if ($given !== null && $given !== $expected) {
                     $validator->errors()->add(
                         'max_teams',
                         "El máximo de equipos debe ser igual a grupos × equipos por grupo ({$expected})."
                     );
+                }
+            }
+
+            // H6: en liga, los clasificados a eliminatoria deben ser potencia de 2 (o 0/1 = sin eliminatoria).
+            if ($format === 'liga') {
+                $classifies = (int) $request->input('classifies_per_group');
+                if ($classifies >= 2 && ($classifies & ($classifies - 1)) !== 0) {
+                    $validator->errors()->add('classifies_per_group', 'Los clasificados a eliminatoria deben ser potencia de 2 (2, 4, 8, 16...).');
                 }
             }
         });
@@ -279,6 +349,7 @@ class TournamentController extends Controller
         $tournament->teams_per_group      = $data['teams_per_group'] ?? 4;
         $tournament->classifies_per_group = $data['classifies_per_group'] ?? 2;
         $tournament->third_place_match    = $request->boolean('third_place_match');
+        $tournament->mvp_enabled          = $request->boolean('mvp_enabled');
         $tournament->stats_config         = $data['stats'] ?? [];
 
         // Visibilidad y categoría
@@ -313,14 +384,43 @@ class TournamentController extends Controller
         $tournament->registration_fee  = $data['registration_fee'] ?? 0;
         $tournament->prize_description  = $data['prize_description'] ?? null;
         $tournament->rules              = $data['rules'] ?? null;
-        $tournament->logo_url           = $data['logo_url'] ?? null;
-        $tournament->banner_url         = $data['banner_url'] ?? null;
+        // H4: logo/banner se manejan por separado (uploads) en store()/update().
 
         // Calendario
         $tournament->registration_opens_at  = $data['registration_opens_at'] ?? null;
         $tournament->registration_closes_at = $data['registration_closes_at'] ?? null;
         $tournament->starts_at               = $data['starts_at'] ?? null;
         $tournament->ends_at                 = $data['ends_at'] ?? null;
+    }
+
+    /**
+     * H4: guarda logo/banner subidos en el disco público y actualiza las URLs.
+     * Borra la imagen anterior al reemplazarla. Mismo patrón que ProfileController::updatePhoto.
+     */
+    private function handleImageUploads(Tournament $tournament, Request $request): void
+    {
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $dirty = false;
+
+        foreach (['logo' => 'logo_url', 'banner' => 'banner_url'] as $input => $column) {
+            if (! $request->hasFile($input)) {
+                continue;
+            }
+
+            // Borrar la imagen anterior si estaba en el disco público.
+            $previous = $tournament->{$column};
+            if ($previous && str_starts_with($previous, '/storage/')) {
+                $disk->delete(str_replace('/storage/', '', $previous));
+            }
+
+            $path = $request->file($input)->store("torneos/{$tournament->id}", 'public');
+            $tournament->{$column} = '/storage/' . $path;
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $tournament->save();
+        }
     }
 
     private function uniqueSlug(string $name): string
@@ -344,8 +444,57 @@ class TournamentController extends Controller
             'groups_and_knockout',
             'round_robin'   => $approved === (int) $tournament->max_teams,
             'knockout_only' => $approved >= 4 && ($approved & ($approved - 1)) === 0,
-            default         => false,
+            default         => false,   // liga se activa por separado
         };
+    }
+
+    /**
+     * H6: estado de gestión del formato liga para el dashboard.
+     *
+     * @return array<string,mixed>
+     */
+    private function leagueSummary(Tournament $tournament, bool $hasFixture, int $approvedCount): array
+    {
+        $phase = $tournament->phases()->where('type', 'groups')->orderBy('order')->first();
+
+        $approvedTeams = $tournament->teams()
+            ->where('status', 'approved')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $matches = collect();
+        $total = $finished = 0;
+        if ($phase) {
+            $matches = $phase->matches()
+                ->with(['homeTeam:id,name', 'awayTeam:id,name'])
+                ->orderBy('match_number')
+                ->get();
+            $total    = $matches->count();
+            $finished = $matches->where('status', 'finished')->count();
+        }
+
+        $hasKnockout = $tournament->phases()->where('type', 'knockout')->exists();
+        $classifies  = (int) $tournament->classifies_per_group;
+
+        return [
+            'phase'            => $phase,
+            'activated'        => $phase !== null,
+            'canActivate'     => $tournament->isOpen() && ! $hasFixture && $approvedCount >= 2,
+            'approvedTeams'    => $approvedTeams,
+            'matches'          => $matches,
+            'totalMatches'     => $total,
+            'finishedMatches'  => $finished,
+            'pendingMatches'   => $total - $finished,
+            'hasKnockout'      => $hasKnockout,
+            'classifies'       => $classifies,
+            'canGenerateKnockout' => $phase !== null
+                && ! $hasKnockout
+                && $total > 0
+                && $total === $finished
+                && $classifies >= 2
+                && ($classifies & ($classifies - 1)) === 0
+                && $approvedCount >= $classifies,
+        ];
     }
 
     /**

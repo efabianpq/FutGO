@@ -167,6 +167,24 @@
             <section class="bg-white border border-line rounded-md shadow-card-2 p-5">
                 <p class="font-display font-bold text-pitch uppercase text-[15px] mb-4">Próximos partidos</p>
                 <x-torneos.upcoming-matches :matches="$upcomingMatches" :team-id="$team->id" :limit="5" :show-phase="true" />
+
+                @if ($isCaptain && $upcomingMatches->isNotEmpty())
+                    <div class="mt-4 pt-4 border-t border-line-soft">
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mb-2">Convocatoria (capitán)</p>
+                        <ul class="space-y-1.5">
+                            @foreach ($upcomingMatches->take(5) as $m)
+                                <li class="flex items-center justify-between gap-2">
+                                    <span class="font-mono text-[11px] text-ink-soft truncate">
+                                        {{ $m->scheduled_at ? $m->scheduled_at->format('d/m') : '—' }} ·
+                                        {{ $m->homeTeam?->name ?? '?' }} vs {{ $m->awayTeam?->name ?? '?' }}
+                                    </span>
+                                    <a href="{{ route('torneos.convocatoria.manage', [$tournament, $m]) }}"
+                                       class="font-display font-bold text-[11px] uppercase text-pitch hover:underline tracking-wide-cta shrink-0">Convocar</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </section>
 
             <div class="text-center">

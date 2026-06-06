@@ -31,8 +31,10 @@ php artisan optimize:clear
 npm run build
 php artisan serve --port=8001 (alternativa si el vhost no responde)
 
-## 6. Estado actual
-- Tests: 189 passing
+## 6. Estado actual — FutGO v2.1 (módulo Torneos COMPLETO, Sesiones A–G)
+- Tests: 380 passing
+- Guía integral de pruebas consolidada: docs/TESTING_GUIDE_FUTGO_v2.1.md
+- Despliegue Hostinger: cron único cada minuto → scheduler.sh → `php artisan schedule:run`
 - Módulo Polla: congelado, no tocar
 - Módulo Torneos — Etapa 1 completa:
   ✅ Columna users.modules (DEFAULT 'polla')
@@ -270,7 +272,148 @@ php artisan serve --port=8001 (alternativa si el vhost no responde)
   ⚠ Riesgos/limitaciones: (1) editar nombre/escudo bloqueado si el equipo está en torneo open o in_progress; (2) quitar un
      miembro con el torneo en curso lo marca inactive en ese torneo (preserva stats), no lo borra; (3) cambiar capitán
      propaga solo a torneos no finalizados; (4) reclamo de perfil por_verificar sigue sin UI.
-- Próximo paso: Sesión C.
+- Módulo Torneos — Sesión C — Dinámica del partido (convocatoria previa, MVP, bajas/cambios):
+  ✅ Migraciones: 000025 match_call_ups (convocatoria previa); 000026 tournaments.mvp_enabled (bool);
+     000027 roster_movements (historial de bajas/cambios).
+  ✅ CONVOCATORIA PREVIA (planeación) ≠ ALINEACIÓN (match_lineups, post-partido, fuente de stats):
+     - match_call_ups (status convocado/confirmado/declinado + responded_at). CallUpController:
+       manage/store (capitán arma) + respond (jugador confirma/declina su propia convocatoria).
+     - Rutas /torneos/{tournament}/partidos/{match}/convocatoria[/responder]. Acceso a manage: capitán del equipo.
+     - Capitán arma desde el Hub del equipo (lista de próximos partidos → "Convocar"); el jugador
+       confirma/declina desde "Mi Carrera" (próximos partidos).
+  ✅ MVP por torneo: tournaments.mvp_enabled + Tournament::mvpEnabled(). Checkbox en _form (crear/editar).
+     Si está habilitado, la planilla (resultado.blade) muestra el selector "Figura del partido" entre los que
+     jugaron; el store guarda mvp_team_player_id SOLO si mvpEnabled (si no, lo ignora). Suma a player_stats.mvps
+     (PlayerStatsCalculatorService) y al acumulado (player_career_stats.mvps). Demo: mvp_enabled=true.
+  ✅ BAJAS y CAMBIOS durante el torneo (TeamAdminController, admin del torneo):
+     - Baja: PATCH .../equipos/{team}/jugadores/{teamPlayer}/baja → team_player status='inactive'
+       (conserva player_stats de partidos jugados; excluido de convocatorias/planillas futuras). Permitida en
+       open/in_progress, no en finished; no al capitán.
+     - Cambio de equipo: PATCH .../{teamPlayer}/cambio (to_team_id). REGLA: solo con torneo en 'open'
+       (ventana de inscripción); en 'in_progress' bloqueado (integridad competitiva → vía baja + alta aprobada).
+     - Todo queda en roster_movements (tipo baja/cambio, from/to, quién lo hizo, notas). Botones en admin/equipos/show.
+  ✅ Modelos: MatchCallUp, RosterMovement; TournamentMatch::callUps(); Tournament mvp_enabled fillable/cast.
+  ✅ 10 tests en MatchDynamicsTest (convocatoria+confirmación; capitán-only; MVP suma; MVP off no asigna ni se
+     muestra; baja conserva stats; baja fuera de convocatoria; cambio permitido en open / bloqueado en curso).
+  ✅ 347 tests passing. Guía: SESION_C_GUIA_PRUEBA.md.
+  ⚠ Limitaciones: (1) la convocatoria previa no pre-llena automáticamente la alineación del resultado (son flujos
+     separados a propósito); (2) el cambio de equipo en 'open' mueve el team_player (sin stats aún); con torneo en
+     curso no hay transferencia, solo baja; (3) reclamo de perfil por_verificar sigue sin UI.
+- Módulo Torneos — Sesión D completa — Credencial QR antifraude (identidad del jugador):
+  ✅ DECISIÓN librería QR: `bacon/bacon-qr-code` v3 con backend **SVG en PHP puro** (sin GD ni imagick).
+     Por qué: Hostinger no garantiza imagick; el SVG se incrusta inline en Blade y evita toda dependencia de
+     extensión binaria. (GD está local pero no se usa, para no atarse a él en prod.)
+  ✅ DECISIÓN identificador: `users.futgo_id` ÚNICO permanente, formato **FG-XXXXXX** (6 chars, alfabeto sin
+     ambiguos 0/O/1/I/L/U). Es el ID público del jugador en el ecosistema. Se autogenera en User::booted()
+     (creating) y la migración lo pobló en TODOS los usuarios existentes. También se agregó `users.document`
+     (opcional) editable en el perfil — NUNCA viaja en el QR/URL.
+  ✅ DECISIÓN privacidad del QR: el QR codifica solo una URL `…/torneos/validar?fg=FG-XXXXXX&sig=…` con el
+     identificador PÚBLICO + firma HMAC-SHA256 (truncada, secreto derivado del APP_KEY). Sin nombre, email ni
+     documento. CredentialService::{nextFutgoId, signatureFor, verify, qrUrlFor, qrSvgFor}.
+  ✅ Migraciones: 000028 users.futgo_id (unique) + users.document (+backfill de identificadores);
+     000029 credential_validations (auditoría: futgo_id, validated_user_id, validated_by_user_id, tournament_id,
+     result enum habilitado/no_habilitado/no_encontrado, method enum qr/manual, timestamps).
+  ✅ Modelos: CredentialValidation (validatedUser/validatedBy/tournament, isHabilitado); User (+futgo_id/document
+     fillable + hook de autogeneración).
+  ✅ Credencial del jugador: CredentialController@show + vista torneos/credencial/show (foto, nombre, FUTGO id,
+     QR SVG, equipos activos, nota de privacidad). Ruta GET /torneos/credencial (torneos.credencial). Link en nav
+     "🪪 Mi Credencial" y botón en Mi Carrera.
+  ✅ Validación por árbitros/admin: CredentialValidationController (index = form + auto-validación si llega ?fg=
+     desde un QR; validate = ingreso manual POST). Rutas GET/POST /torneos/validar (torneos.validar / .run) bajo
+     ensure.torneo_admin, registradas ANTES del comodín /{tournament}. Degrada con gracia: el ingreso MANUAL del
+     identificador no requiere cámara ni firma (se valida contra el backend); el QR muestra aviso si la firma es
+     inválida. Habilitado = inscripción active en equipo del torneo elegido y torneo no finished/cancelled.
+     Cada validación queda auditada (quién/ a quién/ cuándo/ resultado/ método).
+  ✅ 9 tests en CredentialQrTest (id único sin colisiones; credencial muestra foto/nombre/id; QR identifica al
+     jugador correcto + firma válida; habilitado; no inscrito → no_habilitado; QR sin datos sensibles; validación
+     manual sin cámara; no_encontrado + auditoría; control de acceso solo torneo_admin).
+  ✅ 356 tests passing (347 + 9). Guía: SESION_D_GUIA_PRUEBA.md.
+  ⚠ Limitaciones: (1) solo jugadores registrados tienen credencial (futgo_id vive en users; los "por_verificar"
+     sin cuenta no tienen hasta reclamar perfil — UI pendiente); (2) un QR con firma inválida igual resuelve al
+     jugador, pero con aviso visible para verificación manual; (3) una fila de auditoría por validación (por diseño).
+- Módulo Torneos — Sesión E completa — Portal público + contenido compartible + exportación PDF/CSV:
+  ✅ DECISIÓN técnica de imágenes: tarjetas **SVG renderizadas desde Blade** (PHP puro, SIN GD ni imagick → portable a
+     Hostinger). Para la vista previa del LINK compartido se usan Open Graph tags (og:image = banner/logo del torneo).
+     Convertir SVG→PNG vía GD queda como mejora futura (limitación: WhatsApp prefiere PNG/JPG al adjuntar archivo).
+  ✅ TournamentReportService: fuente ÚNICA de datos de lectura (portal/share/export) con eager loading → SIN N+1
+     (groupStandings, finishedMatches, upcomingMatches, topScorers, playerStats, mvpLeaders, latestMvpMatch, summary).
+     PRIVACIDAD: del usuario carga SOLO id y name (nunca email/teléfono/documento).
+  ✅ Portal PÚBLICO sin auth: rutas bajo /t/{slug} (torneos.public.*) registradas FUERA del grupo auth.
+     PublicTournamentController@show con abort_unless(isPublic, 404) — los privados ni se revelan. Layout liviano
+     layouts/public (mobile-first, OG/Twitter tags). Vista torneos/public/show: cabecera+resumen, tabla por grupo,
+     resultados, próximos (fecha+cancha), goleadores; botones Compartir (Web Share API + wa.me), Imágenes y Exportar.
+  ✅ Tarjetas compartibles: TournamentShareController (card: goleadores/posiciones/mvp; matchCard: resultado de partido)
+     → image/svg+xml (inline; ?descargar=1 = adjunto). Componente x-share.frame (1080×1080, branding FutGO) + 4 vistas
+     SVG en torneos/public/share. Solo torneos públicos (404 si no).
+  ✅ Exportación PDF/CSV: TournamentExportController (admin con scoping + public si visibility=public) para
+     resultados/posiciones/estadisticas. Reusa patrón auditoría: dompdf (vista torneos/export/pdf genérica) + CSV con
+     BOM UTF-8. Rutas: admin.torneos.export ({tournament}/exportar/{dataset}/{format}) y torneos.public.export.
+     Botones en el dashboard admin (tarjeta "Exportar y compartir" + link al portal) y en el portal público.
+  ✅ 11 tests en PublicPortalTest (público 200 sin login; privado 404; no expone datos sensibles; tabla/resultados/
+     próximos correctos; PDF %PDF válido; CSV con BOM+datos; export privado 404 público / 403 admin ajeno; SVG válido;
+     SVG no en privado; SIN N+1 con conteo de queries < 25).
+  ✅ 367 tests passing (356 + 11). Guía: SESION_E_GUIA_PRUEBA.md.
+  ⚠ Limitaciones: (1) imágenes en SVG (no PNG); preview de link vía OG tags; (2) portal limita a 12 resultados/12
+     próximos/top 10 goleadores para mantenerlo liviano; (3) el logo/banner del torneo se usa en portal y og:image,
+     no dentro del SVG (evita descargar imágenes remotas al renderizar).
+- Módulo Torneos — Sesión F completa — Sistema de reputación (ranking, logros, fair play, temporadas, sorteo):
+  ✅ DECISIÓN ranking CACHEADO: tabla futgo_rankings (no se calcula por request). RankingService::rebuild() la
+     reconstruye al FINALIZAR un torneo (2 hooks) y vía comando torneos:rebuild-reputation (cron).
+     FÓRMULA: score = goles·4 + asistencias·2 + MVP·6 + victorias·3 + vallas·2 + partidos·1 + fair_play·0.5.
+     subject_type player(users.id)/team(clubs.id) × scope_type global/city/category (scope_value) → filtros por
+     jugadores/equipos/ciudades/categorías. Agregación SQL desde player_stats+team_players+teams+tournaments (sin N+1).
+  ✅ DECISIÓN fair play CACHEADO: tabla fair_play_scores (player=users.id / team=clubs.id). FairPlayService.
+     FÓRMULA jugador = max(0, 100 − 3·amarillas − 10·rojas − 5·inasistencias); equipo = promedio de sus jugadores.
+     Inasistencias = MatchCallUp 'declinado' + 'convocado' a partido finalizado (no-show). Alimenta el ranking.
+  ✅ DECISIÓN logros DATA-DRIVEN: catálogo achievements (code/name/metric/threshold/min_matches/is_active) +
+     asignaciones user_achievements (unique user+achievement). Agregar logros = filas nuevas (sin cambios de esquema)
+     mientras la métrica ya esté soportada {matches_played,goals,assists,mvps,clean_sheets,wins,fair_play}.
+     AchievementService::evaluateForUser otorga automáticamente (firstOrCreate → idempotente, nunca duplica).
+     AchievementSeeder: catálogo inicial (debut, veterano_10/50, goleador_10/50/100, asistidor_10, figura_5,
+     muro_10, ganador_25, juego_limpio=capitán ejemplar). Añadido a DatabaseSeeder.
+  ✅ Historial de temporadas: SeasonHistoryService::forUser agrupa player_stats por AÑO (starts_at|created_at del
+     torneo) → temporada con PJ/goles/asist/MVP + detalle por torneo/equipo. Sin nuevo esquema (consolidado en lectura).
+  ✅ DESEMPATE 'drawing' RESUELTO en StandingsCalculatorService: sorteo DETERMINISTA por seed=crc32(tournament:phase:
+     group) + md5(seed:team_id) → REPRODUCIBLE entre recálculos. Solo decide empates ABSOLUTOS (iguales en puntos y en
+     todos los criterios previos). Se AUDITA en standing_draws (seed+posición) borrando+insertando por grupo.
+     Además se implementó el criterio 'fair_play' en el comparador (disciplina del torneo: amarillas+3·rojas, menos
+     es mejor), que corre ANTES del sorteo. No rompe los desempates previos (DG/GF/head_to_head/wins).
+  ✅ Migraciones: 000030 achievements, 000031 user_achievements, 000032 fair_play_scores, 000033 futgo_rankings,
+     000034 standing_draws. Modelos: Achievement, UserAchievement, FairPlayScore, FutgoRanking, StandingDraw;
+     User +achievements()/fairPlayScore(). Servicio orquestador ReputationService (consolidateTournament/rebuildAll).
+  ✅ UI: ruta torneos.ranking (RankingController) + vista con filtros tipo/alcance + nav "📊 Ranking" (alias
+     TorneosRankingController por colisión con el RankingController de la polla). Mi Carrera extendida: tarjeta Fair
+     Play (score+desglose), grilla de Logros (obtenido/bloqueado) e Historial por temporada.
+  ✅ 8 tests nuevos: ReputationTest (ranking ordena por fórmula; filtro ciudad/categoría; logro automático; no
+     duplica; fair play baja con tarjetas+inasistencias; historial de temporadas) + DrawTiebreakerTest (sorteo
+     reproducible y auditado; no se aplica si otro criterio resuelve). NavigationTest ajustado (torneos ya tiene
+     Ranking propio; discriminador polla = 'Auditoría').
+  ✅ 375 tests passing (367 + 8). Guía: SESION_F_GUIA_PRUEBA.md.
+  ⚠ Limitaciones: (1) ranking/fair play son cache (se reconstruyen al finalizar torneo o por cron, no por request);
+     (2) fair play de equipo = promedio de jugadores registrados (los "por verificar" no aportan); (3) temporada =
+     año derivado (sin campo explícito); (4) logros con métrica NUEVA requieren soportarla en AchievementService.
+- Módulo Torneos — Sesión G completa — Recordatorios de partidos + patrocinadores + cierre v2.1:
+  ✅ Recordatorios de partidos (módulo torneos), reutilizando el patrón de la polla:
+     - MatchReminderNotification (mail): partido próximo a un jugador convocado (equipos, fecha, cancha, torneo).
+     - Comando `torneos:match-reminders {--minutes=1440}`: busca partidos status=scheduled con scheduled_at en la
+       ventana; destinatarios = MatchCallUp convocado/confirmado con usuario registrado y notifications_enabled=true;
+       idempotente vía tabla tournament_match_notifications (insert con unique antes de notificar → no reenvía).
+     - Modelo TournamentMatchNotification (unique user+match+type), migración 000035.
+     - Scheduler: en routes/console.php se AGREGÓ `torneos:match-reminders` ->hourly()->withoutOverlapping()
+       ->appendOutputTo(logs/torneos-reminders.log) SIN tocar los 3 schedulers de la polla (verificado por test).
+  ✅ scheduler.sh en la raíz: lo dispara el ÚNICO cron de Hostinger (cada minuto) y ejecuta `php artisan schedule:run`.
+     Documentado el cron en docs/TESTING_GUIDE_FUTGO_v2.1.md y SESION_G_GUIA_PRUEBA.md.
+  ✅ Patrocinadores del torneo (placeholder de monetización, SIN cobro): migración 000036 tournament_sponsors
+     (name, logo_url, link_url, sort_order, is_active); modelo TournamentSponsor + Tournament::sponsors().
+     Admin/Torneos/SponsorController (index/store/destroy con scoping por tournament_admins) + rutas
+     admin.torneos.sponsors.* + vista de gestión (alta/lista/eliminar con confirmación Alpine). Se muestran los
+     activos en el PORTAL PÚBLICO (Sesión E, bloque "Patrocinan este torneo") y hay enlace en el dashboard admin.
+  ✅ 5 tests en SponsorAndReminderTest (envía a convocados; idempotencia no reenvía; notifications_enabled=false no
+     recibe; patrocinador aparece en portal público; scheduler torneos coexiste con el de la polla).
+  ✅ 380 tests passing (375 + 5). Guías: SESION_G_GUIA_PRUEBA.md + docs/TESTING_GUIDE_FUTGO_v2.1.md (integral A–G).
+  ⚠ Limitaciones: (1) solo se notifica a convocados/confirmados registrados (los "por verificar" no reciben email);
+     (2) patrocinadores = solo espacio y gestión básica (sin facturación); (3) email en local = driver log.
+- FutGO v2.1: módulo Torneos completo (Sesiones A–G). Próximo paso: Sesión G+ / nuevas iteraciones según negocio.
 
 ## 7. Convenciones (igual que v1)
 - Español, voseo

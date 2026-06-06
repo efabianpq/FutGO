@@ -48,7 +48,7 @@
             <p class="text-ink-soft">Todavía no dirigís ningún equipo. Creá uno para empezar.</p>
         </div>
     @else
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 gap-6 mb-8">
             @foreach ($captainClubs as $club)
                 <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">
@@ -72,7 +72,7 @@
     {{-- Equipos donde juego --}}
     @if ($memberClubs->isNotEmpty())
         <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Juego en ({{ $memberClubs->count() }})</p>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6">
             @foreach ($memberClubs as $club)
                 <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">

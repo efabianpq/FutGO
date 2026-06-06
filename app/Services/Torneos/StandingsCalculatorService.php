@@ -3,6 +3,7 @@
 namespace App\Services\Torneos;
 
 use App\Models\Torneos\Standing;
+use App\Models\Torneos\StandingDraw;
 use App\Models\Torneos\TournamentMatch;
 use App\Models\Torneos\TournamentPhase;
 use Illuminate\Support\Facades\DB;
@@ -43,8 +44,9 @@ class StandingsCalculatorService
             ?? $tournament->getDefaultTiebreakerOrder());
 
         $groups = $phase->groups()->with('teams')->orderBy('order')->get();
+        $tournamentId = $tournament->id;
 
-        DB::transaction(function () use ($phase, $groups, $pointsWin, $pointsDraw, $pointsLoss, $tiebreakerOrder) {
+        DB::transaction(function () use ($phase, $groups, $pointsWin, $pointsDraw, $pointsLoss, $tiebreakerOrder, $tournamentId) {
             foreach ($groups as $group) {
                 $teamIds = $group->teams()->pluck('teams.id')->all();
 
@@ -52,10 +54,18 @@ class StandingsCalculatorService
                     continue;
                 }
 
-                // ── 1. Eliminar standings previos de este grupo ──────────────
+                // ── 1. Eliminar standings y sorteos previos de este grupo ────
                 Standing::where('phase_id', $phase->id)
                     ->where('group_id', $group->id)
                     ->delete();
+                StandingDraw::where('phase_id', $phase->id)
+                    ->where('group_id', $group->id)
+                    ->delete();
+
+                // Seed determinista del sorteo (reproducible entre recálculos) y
+                // mapa de disciplina por equipo (para el criterio fair_play).
+                $seed   = crc32($tournamentId . ':' . $phase->id . ':' . $group->id);
+                $fpMap  = $this->disciplinaryMap($tournamentId, $teamIds);
 
                 // ── 2. Solo partidos finished con marcador completo ──────────
                 // 'finished' es el status que el sistema asigna al guardar resultado;
@@ -129,7 +139,9 @@ class StandingsCalculatorService
                 $sorted = $this->sortByTiebreaker(
                     array_values($stats),
                     $tiebreakerOrder,
-                    $matches->all()
+                    $matches->all(),
+                    $seed,
+                    $fpMap
                 );
 
                 // ── 7. Insertar standings con posición ───────────────────────
@@ -151,6 +163,9 @@ class StandingsCalculatorService
                         'last_calculated_at' => $now,
                     ]);
                 }
+
+                // ── 8. Auditar el sorteo (solo empates absolutos) ────────────
+                $this->recordDraws($phase, $group->id, $sorted, $tiebreakerOrder, $matches->all(), $fpMap, $seed);
             }
         });
     }
@@ -172,37 +187,134 @@ class StandingsCalculatorService
      * @param array<int,array>          $teams       Acumuladores con llaves de stats.
      * @param array<int,string>         $order       Criterios de desempate en orden exacto.
      * @param array<int,TournamentMatch> $allMatches  Para calcular head_to_head.
+     * @param int                       $seed        Semilla determinista para el sorteo.
+     * @param array<int,int>            $fpMap       Disciplina por team_id (menos es mejor).
      * @return array<int,array>
      */
-    private function sortByTiebreaker(array $teams, array $order, array $allMatches): array
+    private function sortByTiebreaker(array $teams, array $order, array $allMatches, int $seed, array $fpMap): array
     {
-        usort($teams, function (array $a, array $b) use ($order, $allMatches): int {
-            // Puntos siempre es la clave primaria
-            if ($b['points'] !== $a['points']) {
-                return $b['points'] <=> $a['points'];
+        usort($teams, fn (array $a, array $b): int => $this->compareTeams($a, $b, $order, $allMatches, $seed, $fpMap));
+
+        return $teams;
+    }
+
+    /** Comparación completa de dos equipos según puntos + tiebreaker_order. */
+    private function compareTeams(array $a, array $b, array $order, array $allMatches, int $seed, array $fpMap): int
+    {
+        // Puntos siempre es la clave primaria.
+        if ($b['points'] !== $a['points']) {
+            return $b['points'] <=> $a['points'];
+        }
+
+        foreach ($order as $criterion) {
+            $cmp = $this->compareByCriterion($criterion, $a, $b, $allMatches, $seed, $fpMap);
+            if ($cmp !== 0) {
+                return $cmp;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Compara dos equipos por un criterio puntual.
+     *   fair_play → menos disciplina (amarillas + 3·rojas) rankea mejor.
+     *   drawing   → sorteo DETERMINISTA por seed (md5 estable) → reproducible.
+     */
+    private function compareByCriterion(string $criterion, array $a, array $b, array $allMatches, int $seed, array $fpMap): int
+    {
+        return match ($criterion) {
+            'points'          => 0,  // ya se comparó arriba
+            'goal_difference' => $b['goal_difference'] <=> $a['goal_difference'],
+            'goals_for'       => $b['goals_for'] <=> $a['goals_for'],
+            'wins'            => $b['won'] <=> $a['won'],
+            'head_to_head'    => $this->headToHead($a['team_id'], $b['team_id'], $allMatches),
+            'fair_play'       => ($fpMap[$a['team_id']] ?? 0) <=> ($fpMap[$b['team_id']] ?? 0),
+            'drawing'         => strcmp(
+                md5($seed . ':' . $a['team_id']),
+                md5($seed . ':' . $b['team_id'])
+            ),
+            default           => 0,
+        };
+    }
+
+    /**
+     * Disciplina acumulada por equipo en el torneo: amarillas + 3·rojas.
+     * Menos = mejor fair play. Usado por el criterio de desempate 'fair_play'.
+     *
+     * @return array<int,int>
+     */
+    private function disciplinaryMap(int $tournamentId, array $teamIds): array
+    {
+        $rows = DB::table('player_stats as ps')
+            ->join('team_players as tp', 'tp.id', '=', 'ps.team_player_id')
+            ->where('ps.tournament_id', $tournamentId)
+            ->whereIn('tp.team_id', $teamIds)
+            ->groupBy('tp.team_id')
+            ->selectRaw('tp.team_id, COALESCE(SUM(ps.yellow_cards),0) y, COALESCE(SUM(ps.red_cards),0) r')
+            ->get();
+
+        $map = array_fill_keys($teamIds, 0);
+        foreach ($rows as $r) {
+            $map[$r->team_id] = (int) $r->y + 3 * (int) $r->r;
+        }
+
+        return $map;
+    }
+
+    /**
+     * Registra en standing_draws SOLO los equipos cuya posición se resolvió por
+     * sorteo (empate absoluto: iguales en puntos y en todos los criterios previos
+     * a 'drawing'). El seed garantiza reproducibilidad entre recálculos.
+     *
+     * @param array<int,array> $sorted Equipos ya ordenados (con posición = índice).
+     */
+    private function recordDraws(TournamentPhase $phase, int $groupId, array $sorted, array $order, array $allMatches, array $fpMap, int $seed): void
+    {
+        $n = count($sorted);
+        $i = 0;
+
+        while ($i < $n) {
+            // Extiende un "tie-set": equipos consecutivos iguales en todo menos el sorteo.
+            $j = $i;
+            while ($j + 1 < $n && $this->tiedExceptDrawing($sorted[$i], $sorted[$j + 1], $order, $allMatches, $fpMap)) {
+                $j++;
             }
 
-            foreach ($order as $criterion) {
-                $cmp = match ($criterion) {
-                    'points'          => 0,  // ya se comparó arriba
-                    'goal_difference' => $b['goal_difference'] <=> $a['goal_difference'],
-                    'goals_for'       => $b['goals_for'] <=> $a['goals_for'],
-                    'wins'            => $b['won'] <=> $a['won'],
-                    'head_to_head'    => $this->headToHead($a['team_id'], $b['team_id'], $allMatches),
-                    'fair_play'       => 0,
-                    'drawing'         => 0,
-                    default           => 0,
-                };
-
-                if ($cmp !== 0) {
-                    return $cmp;
+            // Si el set tiene más de un equipo, su orden lo decidió el sorteo → auditar.
+            if ($j > $i) {
+                for ($k = $i; $k <= $j; $k++) {
+                    StandingDraw::create([
+                        'phase_id'      => $phase->id,
+                        'group_id'      => $groupId,
+                        'team_id'       => $sorted[$k]['team_id'],
+                        'seed'          => $seed,
+                        'draw_position' => $k + 1,
+                    ]);
                 }
             }
 
-            return 0;
-        });
+            $i = $j + 1;
+        }
+    }
 
-        return $teams;
+    /** ¿Dos equipos quedan empatados en puntos y en todos los criterios salvo 'drawing'? */
+    private function tiedExceptDrawing(array $a, array $b, array $order, array $allMatches, array $fpMap): bool
+    {
+        if ($a['points'] !== $b['points']) {
+            return false;
+        }
+
+        foreach ($order as $criterion) {
+            if ($criterion === 'drawing') {
+                continue;
+            }
+            if ($this->compareByCriterion($criterion, $a, $b, $allMatches, 0, $fpMap) !== 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

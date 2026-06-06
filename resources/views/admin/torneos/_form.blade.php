@@ -3,6 +3,7 @@
         'groups_and_knockout' => 'Grupos + Eliminación',
         'knockout_only'       => 'Solo eliminación',
         'round_robin'         => 'Todos contra todos',
+        'liga'                => 'Liga / Abierto (fixture manual)',
     ];
     $categoryLabels = [
         'libre'     => 'Libre',
@@ -30,7 +31,7 @@
         'assists'        => 'Asistencias',
         'yellow_cards'   => 'Tarjetas amarillas',
         'red_cards'      => 'Tarjetas rojas',
-        'minutes_played' => 'Minutos jugados',
+        // H11: "Minutos jugados" se retiró como estadística trackeable.
     ];
     $selectedStats = old('stats', $tournament->stats_config ?? []);
     $fmt = fn ($d) => $d ? \Illuminate\Support\Carbon::parse($d)->format('Y-m-d\TH:i') : '';
@@ -122,17 +123,25 @@
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label for="logo_url" class="{{ $labelCls }}">Logo (URL)</label>
-                <input type="text" name="logo_url" id="logo_url" maxlength="255"
-                       value="{{ old('logo_url', $tournament->logo_url) }}" class="{{ $numCls('logo_url') }}">
-                @error('logo_url')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+                <label for="logo" class="{{ $labelCls }}">Logo (imagen)</label>
+                @if ($tournament->logo_url)
+                    <img src="{{ $tournament->logo_url }}" alt="Logo actual" class="h-16 w-16 object-cover rounded-md border border-line mb-1">
+                @endif
+                <input type="file" name="logo" id="logo" accept="image/jpeg,image/png,image/webp"
+                       class="text-[13px] file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-pitch file:text-bone file:font-semibold file:text-[12px] file:cursor-pointer">
+                <p class="text-[11px] text-ink-mute">JPG, PNG o WEBP. Máx. 2 MB.</p>
+                @error('logo')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <label for="banner_url" class="{{ $labelCls }}">Banner (URL)</label>
-                <input type="text" name="banner_url" id="banner_url" maxlength="255"
-                       value="{{ old('banner_url', $tournament->banner_url) }}" class="{{ $numCls('banner_url') }}">
-                @error('banner_url')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+                <label for="banner" class="{{ $labelCls }}">Banner (imagen)</label>
+                @if ($tournament->banner_url)
+                    <img src="{{ $tournament->banner_url }}" alt="Banner actual" class="h-16 w-full object-cover rounded-md border border-line mb-1">
+                @endif
+                <input type="file" name="banner" id="banner" accept="image/jpeg,image/png,image/webp"
+                       class="text-[13px] file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-pitch file:text-bone file:font-semibold file:text-[12px] file:cursor-pointer">
+                <p class="text-[11px] text-ink-mute">JPG, PNG o WEBP. Máx. 2 MB.</p>
+                @error('banner')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
         </div>
     </section>
@@ -181,14 +190,43 @@
             @error('max_teams')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
         </div>
 
-        {{-- max_teams para formatos sin grupos --}}
-        <div x-show="!withGroups.includes(format)" x-cloak class="mt-5">
+        {{-- max_teams para eliminación directa --}}
+        <div x-show="format === 'knockout_only'" x-cloak class="mt-5">
             <div class="flex flex-col gap-1.5 sm:max-w-xs">
                 <label for="max_teams" class="{{ $labelCls }}">Máximo de equipos</label>
                 <input type="number" name="max_teams" id="max_teams" min="2" max="128"
-                       value="{{ old('max_teams', $tournament->max_teams ?? 8) }}" class="{{ $numCls('max_teams') }}">
+                       value="{{ old('max_teams', $tournament->max_teams ?? 8) }}" class="{{ $numCls('max_teams') }}"
+                       x-bind:disabled="format !== 'knockout_only'">
+                <p class="text-[12px] text-ink-mute mt-1">Debe ser potencia de 2 (4, 8, 16...).</p>
                 @error('max_teams')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
+        </div>
+
+        {{-- H6: configuración del formato LIGA --}}
+        <div x-show="format === 'liga'" x-cloak class="mt-5">
+            <p class="{{ $labelCls }} mb-3">Configuración de la liga</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="flex flex-col gap-1.5">
+                    <label for="max_teams_liga" class="{{ $labelCls }}">Máximo de equipos</label>
+                    <input type="number" id="max_teams_liga" min="2" max="128"
+                           value="{{ old('max_teams', $tournament->max_teams ?? 10) }}" class="{{ $numCls('max_teams') }}"
+                           x-bind:name="format === 'liga' ? 'max_teams' : ''">
+                    <p class="text-[12px] text-ink-mute mt-1">Cantidad de equipos que participan en la tabla.</p>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label for="classifies_liga" class="{{ $labelCls }}">Clasifican a eliminatoria</label>
+                    <input type="number" id="classifies_liga" min="0" max="64"
+                           value="{{ old('classifies_per_group', $tournament->classifies_per_group ?? 4) }}" class="{{ $numCls('classifies_per_group') }}"
+                           x-bind:name="format === 'liga' ? 'classifies_per_group' : ''">
+                    <p class="text-[12px] text-ink-mute mt-1">Potencia de 2 (2, 4, 8...). Usá 0 o 1 para liga sin eliminatoria.</p>
+                    @error('classifies_per_group')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+                </div>
+            </div>
+            <p class="text-[12px] text-ink-mute mt-2">
+                En liga vos armás el calendario: agregás partidos a mano o auto-generás todos contra todos,
+                y luego generás la eliminatoria con los mejores de la tabla.
+            </p>
+            @error('max_teams')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
         </div>
 
         {{-- Tercer puesto --}}
@@ -197,6 +235,14 @@
                    @checked(old('third_place_match', $tournament->third_place_match))
                    class="w-5 h-5 rounded border-line text-pitch focus:ring-pitch">
             <span class="font-display font-semibold text-pitch uppercase text-[14px]">Partido por el tercer puesto</span>
+        </label>
+
+        {{-- MVP (figura del partido) --}}
+        <label class="flex items-center gap-3 cursor-pointer mt-3">
+            <input type="checkbox" name="mvp_enabled" value="1"
+                   @checked(old('mvp_enabled', $tournament->mvp_enabled))
+                   class="w-5 h-5 rounded border-line text-pitch focus:ring-pitch">
+            <span class="font-display font-semibold text-pitch uppercase text-[14px]">Registrar MVP (figura del partido)</span>
         </label>
 
         {{-- Sistema de puntos --}}
@@ -301,10 +347,26 @@
         <p class="text-[12px] text-ink-mute mb-4">Costos, premios y reglamento.</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div class="flex flex-col gap-1.5">
-                <label for="registration_fee" class="{{ $labelCls }}">Valor inscripción (COP)</label>
-                <input type="number" name="registration_fee" id="registration_fee" min="0" step="1"
-                       value="{{ old('registration_fee', $tournament->registration_fee ?? 0) }}" class="{{ $numCls('registration_fee') }}">
+            <div class="flex flex-col gap-1.5"
+                 x-data="{
+                    raw: '{{ (int) old('registration_fee', $tournament->registration_fee ?? 0) }}',
+                    get formatted() {
+                        if (this.raw === '' || this.raw === null) return '';
+                        return Number(this.raw).toLocaleString('es-CO');
+                    },
+                    onInput(e) {
+                        this.raw = e.target.value.replace(/\D/g, '');
+                        e.target.value = this.formatted;
+                    }
+                 }">
+                <label for="registration_fee_display" class="{{ $labelCls }}">Valor inscripción (COP)</label>
+                <div class="relative">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-mute font-mono pointer-events-none">$</span>
+                    <input type="text" inputmode="numeric" id="registration_fee_display"
+                           :value="formatted" @input="onInput($event)" placeholder="0"
+                           class="w-full pl-7 {{ $numCls('registration_fee') }}">
+                </div>
+                <input type="hidden" name="registration_fee" :value="raw">
                 @error('registration_fee')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
             <div class="flex flex-col gap-1.5">

@@ -48,6 +48,12 @@
                 <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Rol</p>
                 <p class="font-display font-bold text-display-s text-pitch uppercase mt-1">{{ auth()->user()->role }}</p>
             </div>
+            @if (auth()->user()->futgo_id)
+                <div>
+                    <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Identificador FUTGO</p>
+                    <p class="font-mono font-bold text-body text-pitch mt-1 tracking-wider">{{ auth()->user()->futgo_id }}</p>
+                </div>
+            @endif
         </div>
 
         <form method="POST" action="{{ route('profile.update') }}" class="space-y-5">
@@ -61,6 +67,15 @@
                        class="h-[46px] px-3.5 bg-white border-[1.5px] {{ $errors->has('phone_whatsapp') ? 'border-alerta' : 'border-line' }} rounded-md text-[15px] focus:border-pitch focus:ring-0">
                 <p class="text-[12px] text-ink-mute">Solo números, 7 a 15 dígitos.</p>
                 @error('phone_whatsapp')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label for="document" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Documento de identidad <span class="text-ink-mute normal-case">(opcional)</span></label>
+                <input id="document" name="document" type="text" maxlength="40"
+                       value="{{ old('document', auth()->user()->document) }}"
+                       class="h-[46px] px-3.5 bg-white border-[1.5px] {{ $errors->has('document') ? 'border-alerta' : 'border-line' }} rounded-md text-[15px] focus:border-pitch focus:ring-0">
+                <p class="text-[12px] text-ink-mute">Refuerza la validación de identidad antifraude. Nunca se expone en el QR ni en enlaces.</p>
+                @error('document')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
 
             <label class="inline-flex items-center gap-2 text-body-s">

@@ -17,35 +17,27 @@
     $isCaptain     = $torneosAccess && ($user?->isCaptainAnywhere() ?? false);
     $isTorneoPlayer = $torneosAccess && ($user?->isTorneoPlayerAnywhere() ?? false);
 
-    $navLinks = [
-        ['route' => 'inicio', 'label' => 'Inicio', 'icon' => null, 'starts' => 'inicio', 'show' => true],
-    ];
+    // ── Nuevo orden del nav (H17): Mi Carrera · Mis Equipos · Mis Torneos ·
+    //    Ranking · Pronósticos · Auditoría · Perfil | Admin (plataforma)
+    $navLinks = [];
 
-    if ($pollaAccess) {
-        $navLinks[] = ['route' => 'predictions.index', 'label' => 'Mis Pronósticos', 'icon' => null, 'starts' => 'predictions', 'show' => true];
-        $navLinks[] = ['route' => 'ranking.index',     'label' => 'Ranking',         'icon' => null, 'starts' => 'ranking',     'show' => true];
-    }
-
-    // Navegación del módulo Torneos según el rol del usuario.
-    // Solo se muestran opciones que el usuario realmente puede utilizar.
     if ($torneosAccess) {
-        // Menús unificados: Mis Torneos (participación), Mis Equipos (equipos
-        // permanentes que dirijo o donde juego, + crear), Mi Carrera (toda mi
-        // actividad y trayectoria como jugador).
-        $navLinks[] = ['route' => 'torneos.index', 'label' => 'Mis Torneos', 'icon' => '🏆', 'starts' => 'torneos.index', 'show' => true];
-        $navLinks[] = ['route' => 'torneos.mis-equipos', 'label' => 'Mis Equipos', 'icon' => '🛡️', 'starts' => 'torneos.mis-equipos', 'show' => true];
-        $navLinks[] = ['route' => 'torneos.mi-carrera', 'label' => 'Mi Carrera', 'icon' => null, 'starts' => 'torneos.mi-carrera', 'show' => true];
-
-        if ($isTorneoAdmin) {
-            $navLinks[] = ['route' => 'admin.torneos.index', 'label' => 'Gestión Torneos', 'icon' => '⚙', 'starts' => 'admin.torneos', 'show' => true];
-        }
+        $navLinks[] = ['route' => 'torneos.mi-carrera',   'label' => 'Mi Carrera',  'starts' => 'torneos.mi-carrera'];
+        $navLinks[] = ['route' => 'torneos.mis-equipos',  'label' => 'Mis Equipos', 'starts' => 'torneos.mis-equipos'];
+        // "Torneos": portal de exploración de torneos públicos (H9).
+        $navLinks[] = ['route' => 'torneos.public.index', 'label' => 'Torneos',     'starts' => 'torneos.public'];
+        $navLinks[] = ['route' => 'torneos.index',        'label' => 'Mis Torneos', 'starts' => 'torneos.index'];
+        $navLinks[] = ['route' => 'torneos.ranking',      'label' => 'Ranking',     'starts' => 'torneos.ranking'];
     }
 
-    // Generales (siempre).
     if ($pollaAccess) {
-        $navLinks[] = ['route' => 'audit.index', 'label' => 'Auditoría', 'icon' => '↓', 'starts' => 'audit', 'show' => true];
+        $navLinks[] = ['route' => 'predictions.index', 'label' => 'Pronósticos', 'starts' => 'predictions'];
+        $navLinks[] = ['route' => 'audit.index',       'label' => 'Auditoría',   'starts' => 'audit'];
     }
-    $navLinks[] = ['route' => 'profile.show', 'label' => 'Perfil', 'icon' => null, 'starts' => 'profile', 'show' => true];
+
+    $navLinks[] = ['route' => 'profile.show', 'label' => 'Perfil', 'starts' => 'profile'];
+
+    $homeRoute = route('inicio');
 
     $homeRoute = route('inicio');
 @endphp
@@ -66,7 +58,7 @@
                     @foreach ($navLinks as $meta)
                         <a href="{{ route($meta['route']) }}"
                            class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive($meta['starts']) ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
-                            @if ($meta['icon']) <span class="text-green">{{ $meta['icon'] }}</span> @endif{{ $meta['label'] }}
+                            {{ $meta['label'] }}
                         </a>
                     @endforeach
                 </nav>
@@ -78,7 +70,7 @@
                         {{ explode(' ', $user->name)[0] }}
                     </span>
                     @if ($user->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm">⚙ Admin</a>
+                        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm">Admin</a>
                     @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -104,12 +96,12 @@
             <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1">
                 @foreach ($navLinks as $meta)
                     <a href="{{ route($meta['route']) }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">
-                        @if ($meta['icon']) <span class="text-green">{{ $meta['icon'] }}</span> @endif{{ $meta['label'] }}
+                        {{ $meta['label'] }}
                     </a>
                 @endforeach
                 <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">¿Cómo funciona?</a>
                 @if ($user->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">⚙ Admin</a>
+                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">Admin</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

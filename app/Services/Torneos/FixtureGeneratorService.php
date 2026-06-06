@@ -158,6 +158,234 @@ class FixtureGeneratorService
         return false;
     }
 
+    // ───────────────────────── Formato LIGA (H6) ─────────────────────────
+
+    /**
+     * H6: activa un torneo en formato "liga". Crea la fase única (tipo groups,
+     * un solo grupo con todos los aprobados) SIN partidos, y pasa el torneo a
+     * in_progress. El admin agrega los partidos luego (manual o auto round-robin).
+     *
+     * @throws RuntimeException si el torneo no cumple los requisitos.
+     */
+    public function setupLeague(Tournament $tournament): TournamentPhase
+    {
+        if ($tournament->format !== 'liga') {
+            throw new RuntimeException('Solo los torneos en formato liga se activan de esta forma.');
+        }
+        if (! $tournament->isOpen()) {
+            throw new RuntimeException("El torneo debe estar en estado 'open' para activarlo.");
+        }
+        if ($tournament->phases()->exists()) {
+            throw new RuntimeException('El torneo ya fue activado.');
+        }
+
+        $approved = $tournament->teams()->where('status', 'approved')->orderBy('id')->get();
+        if ($approved->count() < 2) {
+            throw new RuntimeException('Se requieren al menos 2 equipos aprobados para activar la liga.');
+        }
+
+        return DB::transaction(function () use ($tournament, $approved) {
+            $phase = TournamentPhase::create([
+                'tournament_id' => $tournament->id,
+                'name'          => 'Liga',
+                'type'          => 'groups',
+                'order'         => 1,
+                'is_active'     => true,
+                'status'        => 'active',
+            ]);
+
+            $group = TournamentGroup::create([
+                'phase_id' => $phase->id,
+                'name'     => 'Tabla general',
+                'order'    => 1,
+            ]);
+
+            foreach ($approved as $team) {
+                $group->teams()->attach($team->id);
+            }
+
+            $tournament->status = 'in_progress';
+            $tournament->save();
+
+            return $phase;
+        });
+    }
+
+    /**
+     * H6: agrega un partido individual a la fase de liga (lo crea el admin a mano).
+     *
+     * @throws RuntimeException si el torneo/fase no admiten agregar partidos.
+     */
+    public function addLeagueMatch(Tournament $tournament, int $homeTeamId, int $awayTeamId, ?string $scheduledAt = null, ?string $venue = null): TournamentMatch
+    {
+        $phase = $this->leaguePhase($tournament);
+
+        if ($homeTeamId === $awayTeamId) {
+            throw new RuntimeException('Un equipo no puede jugar contra sí mismo.');
+        }
+
+        // Ambos equipos deben pertenecer al grupo de la liga (aprobados).
+        $group = $phase->groups()->first();
+        $teamIds = $group->teams()->pluck('teams.id')->all();
+        if (! in_array($homeTeamId, $teamIds, true) || ! in_array($awayTeamId, $teamIds, true)) {
+            throw new RuntimeException('Ambos equipos deben estar inscritos y aprobados en la liga.');
+        }
+
+        return TournamentMatch::create([
+            'phase_id'     => $phase->id,
+            'group_id'     => $group->id,
+            'home_team_id' => $homeTeamId,
+            'away_team_id' => $awayTeamId,
+            'status'       => 'scheduled',
+            'scheduled_at' => $scheduledAt,
+            'venue'        => $venue,
+            'match_number' => $this->nextTournamentMatchNumber($tournament),
+        ]);
+    }
+
+    /**
+     * H6: auto-genera todos los partidos round-robin (todos contra todos) que
+     * falten en la fase de liga. No duplica enfrentamientos ya creados.
+     *
+     * @return int cantidad de partidos creados.
+     */
+    public function generateLeagueRoundRobin(Tournament $tournament): int
+    {
+        $phase = $this->leaguePhase($tournament);
+        $group = $phase->groups()->first();
+        $teamIds = $group->teams()->orderBy('teams.id')->pluck('teams.id')->all();
+
+        // Enfrentamientos ya existentes (en cualquier orden) para no duplicar.
+        $existing = $phase->matches()->get(['home_team_id', 'away_team_id'])
+            ->map(fn ($m) => $this->pairKey($m->home_team_id, $m->away_team_id))
+            ->filter()
+            ->flip();
+
+        $created = 0;
+        return DB::transaction(function () use ($teamIds, $existing, $phase, $group, $tournament, &$created) {
+            $n = count($teamIds);
+            for ($i = 0; $i < $n; $i++) {
+                for ($j = $i + 1; $j < $n; $j++) {
+                    $key = $this->pairKey($teamIds[$i], $teamIds[$j]);
+                    if ($existing->has($key)) {
+                        continue;
+                    }
+                    TournamentMatch::create([
+                        'phase_id'     => $phase->id,
+                        'group_id'     => $group->id,
+                        'home_team_id' => $teamIds[$i],
+                        'away_team_id' => $teamIds[$j],
+                        'status'       => 'scheduled',
+                        'match_number' => $this->nextTournamentMatchNumber($tournament),
+                    ]);
+                    $created++;
+                }
+            }
+            return $created;
+        });
+    }
+
+    /**
+     * H6: genera la eliminatoria de una liga tomando los mejores N de la tabla
+     * (classifies_per_group). N debe ser potencia de 2 (>= 2). Cierra la fase
+     * de liga, crea las rondas de eliminatoria, asigna el bracket por seeding
+     * (1ro vs último) y activa la primera ronda.
+     *
+     * @throws RuntimeException si no se cumplen las condiciones.
+     */
+    public function generateKnockoutFromStandings(Tournament $tournament): array
+    {
+        if ($tournament->format !== 'liga') {
+            throw new RuntimeException('Solo aplica a torneos en formato liga.');
+        }
+
+        $phase = $this->leaguePhase($tournament);
+        $group = $phase->groups()->first();
+
+        // No debe existir ya una eliminatoria.
+        if ($tournament->phases()->where('type', 'knockout')->exists()) {
+            throw new RuntimeException('La eliminatoria ya fue generada.');
+        }
+
+        // Todos los partidos de la liga deben estar finalizados.
+        $pending = $phase->matches()->where('status', '!=', 'finished')->count();
+        if ($phase->matches()->count() === 0) {
+            throw new RuntimeException('La liga no tiene partidos cargados.');
+        }
+        if ($pending > 0) {
+            throw new RuntimeException("Quedan {$pending} partidos sin finalizar en la liga.");
+        }
+
+        $classifies = (int) $tournament->classifies_per_group;
+        if ($classifies < 2 || ! $this->isPowerOfTwo($classifies)) {
+            throw new RuntimeException('La cantidad de clasificados a eliminatoria debe ser potencia de 2 (2, 4, 8...).');
+        }
+
+        // Mejores N de la tabla.
+        $standings = Standing::where('group_id', $group->id)
+            ->orderByRaw('position IS NULL')
+            ->orderBy('position')
+            ->limit($classifies)
+            ->get();
+
+        if ($standings->count() < $classifies) {
+            throw new RuntimeException('No hay suficientes equipos en la tabla para clasificar.');
+        }
+
+        $seeds = $standings->pluck('team_id')->all();
+
+        return DB::transaction(function () use ($tournament, $phase, $classifies, $seeds) {
+            // Cierra la fase de liga.
+            $phase->status = 'completed';
+            $phase->is_active = false;
+            $phase->save();
+
+            // El contador global parte del máximo actual.
+            $this->nextMatchNumber = $this->nextTournamentMatchNumber($tournament);
+
+            // Crea las rondas de eliminatoria a partir del order siguiente.
+            $startOrder = (int) $tournament->phases()->max('order') + 1;
+            $phases = $this->buildKnockoutPhases($tournament, $startOrder, $classifies);
+
+            // Asigna el bracket por seeding (1ro vs último) y activa la primera ronda.
+            $firstRound = $phases[0];
+            $firstRound->is_active = true;
+            $firstRound->status = 'active';
+            $firstRound->save();
+
+            $this->assignBracket($firstRound, $this->seedFlatOrder($seeds));
+
+            return $this->summary($tournament);
+        });
+    }
+
+    /** Fase de liga (tipo groups) del torneo. */
+    private function leaguePhase(Tournament $tournament): TournamentPhase
+    {
+        $phase = $tournament->phases()->where('type', 'groups')->orderBy('order')->first();
+        if (! $phase) {
+            throw new RuntimeException('La liga aún no fue activada.');
+        }
+        return $phase;
+    }
+
+    /** Siguiente match_number a nivel torneo (máximo actual + 1). */
+    private function nextTournamentMatchNumber(Tournament $tournament): int
+    {
+        $phaseIds = $tournament->phases()->pluck('id');
+        $max = (int) TournamentMatch::whereIn('phase_id', $phaseIds)->max('match_number');
+        return $max + 1;
+    }
+
+    /** Clave normalizada de un enfrentamiento (sin importar local/visitante). */
+    private function pairKey(?int $a, ?int $b): ?string
+    {
+        if (! $a || ! $b) {
+            return null;
+        }
+        return $a < $b ? "{$a}-{$b}" : "{$b}-{$a}";
+    }
+
     // ───────────────────────── Generadores por formato ─────────────────────────
 
     private function generateGroupsAndKnockout(Tournament $tournament, Collection $approved): void

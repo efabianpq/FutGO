@@ -143,13 +143,15 @@ class PlayerStatsTest extends TestCase
         $this->assertEquals(0, $stat->goals);
     }
 
-    public function test_minutos_calculados_con_minute_in_y_out(): void
+    public function test_minutos_jugados_ya_no_se_miden_h11(): void
     {
+        // H11: la medición de minutos jugados se retiró (torneos amateur no la llevan).
+        // Aunque el lineup traiga minute_in/minute_out, minutes_played persiste en 0.
         $admin = $this->makeTournamentAdmin();
         [$tournament, $teams] = $this->setupTournament($admin, 4, 90);
 
         $match  = $this->firstMatch($tournament);
-        $player = $teams[0]['players'][1]; // segundo jugador del equipo 0
+        $player = $teams[0]['players'][1];
 
         $teamId = $teams[0]['team']->id;
         $isHome = $match->home_team_id === $teamId;
@@ -163,7 +165,7 @@ class PlayerStatsTest extends TestCase
                     [
                         'team_player_id' => $player->id,
                         'team_id'        => $teamId,
-                        'started'        => 0,      // entró como sustituto
+                        'started'        => 0,
                         'minute_in'      => 30,
                         'minute_out'     => 70,
                     ],
@@ -175,41 +177,9 @@ class PlayerStatsTest extends TestCase
             ->where('team_player_id', $player->id)
             ->first();
 
-        $this->assertEquals(40, $stat->minutes_played); // 70 - 30 = 40
-    }
-
-    public function test_jugador_sin_sustitucion_acumula_match_duration(): void
-    {
-        $admin = $this->makeTournamentAdmin();
-        [$tournament, $teams] = $this->setupTournament($admin, 4, 90);
-
-        $match  = $this->firstMatch($tournament);
-        $player = $teams[0]['players'][0];
-        $teamId = $teams[0]['team']->id;
-        $isHome = $match->home_team_id === $teamId;
-
-        $this->actingAs($admin)->post(
-            route('admin.torneos.partidos.store', [$tournament, $match]),
-            [
-                'home_score' => $isHome ? 2 : 0,
-                'away_score' => $isHome ? 0 : 2,
-                'lineups' => [
-                    [
-                        'team_player_id' => $player->id,
-                        'team_id'        => $teamId,
-                        'started'        => 1,
-                        'minute_in'      => 0,
-                        'minute_out'     => '',  // jugó todo el partido
-                    ],
-                ],
-            ]
-        );
-
-        $stat = PlayerStat::where('tournament_id', $tournament->id)
-            ->where('team_player_id', $player->id)
-            ->first();
-
-        $this->assertEquals(90, $stat->minutes_played);
+        // El jugador SÍ cuenta como partido jugado (vía lineup), pero sin minutos.
+        $this->assertEquals(1, $stat->matches_played);
+        $this->assertEquals(0, $stat->minutes_played);
     }
 
     public function test_clean_sheets_con_lineup(): void

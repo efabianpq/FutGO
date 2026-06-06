@@ -16,16 +16,17 @@ use Illuminate\Support\Facades\DB;
  *
  * Fuente de verdad de participación: match_lineups.
  * - matches_played: partidos con fila en match_lineups.
- * - minutes_played: desde minute_in/minute_out del lineup; NULL → match_duration.
  * - clean_sheets: partidos con lineup donde el equipo no recibió goles.
  * - wins/draws/losses: resultado del equipo en partidos con lineup del jugador.
  * - goals/assists/cards: desde match_events (sin cambios).
+ *
+ * H11: la medición de minutos jugados se retiró (en torneos amateur no se lleva).
+ * La columna minutes_played se conserva en la BD pero siempre se persiste en 0.
  */
 class PlayerStatsCalculatorService
 {
     public function recalculate(Tournament $tournament, Team $team): void
     {
-        $matchDuration = (int) ($tournament->match_duration ?? 90);
         $phaseIds      = $tournament->phases()->pluck('id');
 
         // Partidos finished del torneo donde el equipo participó
@@ -62,7 +63,7 @@ class PlayerStatsCalculatorService
 
         DB::transaction(function () use (
             $tournament, $team, $players, $allLineups, $allEvents,
-            $finishedMatches, $matchDuration
+            $finishedMatches
         ) {
             foreach ($players as $player) {
                 $lineups       = $allLineups->get($player->id, collect());
@@ -73,7 +74,6 @@ class PlayerStatsCalculatorService
                 $assists       = 0;
                 $yellowCards   = 0;
                 $redCards      = 0;
-                $minutesPlayed = 0;
                 $matchesPlayed = 0;
                 $wins          = 0;
                 $draws         = 0;
@@ -89,7 +89,6 @@ class PlayerStatsCalculatorService
                     }
 
                     $matchesPlayed++;
-                    $minutesPlayed += $lineup->minutesPlayed($matchDuration);
 
                     // Figura del partido (MVP)
                     if ((int) $match->mvp_team_player_id === (int) $player->id) {
@@ -134,7 +133,7 @@ class PlayerStatsCalculatorService
                         'assists'            => $assists,
                         'yellow_cards'       => $yellowCards,
                         'red_cards'          => $redCards,
-                        'minutes_played'     => $minutesPlayed,
+                        'minutes_played'     => 0, // H11: medición de minutos retirada
                         'matches_played'     => $matchesPlayed,
                         'wins'               => $wins,
                         'draws'              => $draws,

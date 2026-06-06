@@ -12,30 +12,54 @@
     ];
 @endphp
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ credentialOpen: false }">
+
+    {{-- ── Modal credencial (H16): QR + identificador FUTGO ──────────────────── --}}
+    <div x-show="credentialOpen" x-cloak x-transition.opacity
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+         @click.self="credentialOpen = false" @keydown.escape.window="credentialOpen = false">
+        <div class="bg-white rounded-lg shadow-modal w-full max-w-sm overflow-hidden">
+            <div class="bg-pitch px-6 py-4 flex items-center justify-between">
+                <p class="font-display font-extrabold text-bone uppercase text-[15px]">Mi credencial</p>
+                <button type="button" @click="credentialOpen = false" class="text-bone/80 hover:text-bone text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-6 flex flex-col items-center text-center">
+                <div class="bg-white border border-line rounded-md p-2" style="width:220px;height:220px">
+                    <div class="w-full h-full [&>svg]:w-full [&>svg]:h-full">{!! $credentialQrSvg !!}</div>
+                </div>
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mt-4">Identificador FUTGO</p>
+                <p class="font-mono font-bold text-2xl text-pitch mt-1 tracking-wider">{{ $user->futgo_id }}</p>
+                <p class="text-[12px] text-ink-mute mt-3 leading-relaxed">
+                    Presentá este código al árbitro para validar tu identidad.
+                </p>
+            </div>
+        </div>
+    </div>
 
     {{-- Encabezado: hoja de vida --}}
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6 flex flex-wrap items-center gap-5">
         <x-avatar :user="$user" size="xl" />
         <div class="min-w-0 flex-1">
-            <p class="eyebrow">🪪 Hoja de vida deportiva</p>
+            <p class="eyebrow">Hoja de vida deportiva</p>
             <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 {{ $careerStat->tournaments_count }} torneo(s) · {{ $careerStat->teams_count }} equipo(s)
             </p>
         </div>
-        <x-btn :href="route('profile.show')" variant="ghost" size="sm">Editar perfil / foto</x-btn>
+        <div class="flex flex-col gap-2 shrink-0">
+            <x-btn type="button" variant="primary" size="sm" x-on:click="credentialOpen = true">Mi credencial</x-btn>
+            <x-btn :href="route('profile.show')" variant="ghost" size="sm">Editar perfil / foto</x-btn>
+        </div>
     </div>
 
-    {{-- Acumulado total --}}
+    {{-- ══ 1 · Acumulado histórico (todos los torneos) ═══════════════════════ --}}
     <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Acumulado histórico (todos los torneos)</p>
-    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-8">
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-3">
         @foreach ([
             ['PJ', $careerStat->matches_played, 'pitch'],
             ['Goles', $careerStat->goals, 'gol'],
             ['Asist.', $careerStat->assists, 'pitch'],
             ['MVP', $careerStat->mvps, 'gol'],
-            ['Min', $careerStat->minutes_played, 'pitch'],
             ['Vallas 0', $careerStat->clean_sheets, 'pitch'],
         ] as [$lbl, $val, $accent])
             <div class="bg-white border border-line rounded-md shadow-card p-3 text-center border-l-4
@@ -60,30 +84,8 @@
         @endforeach
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {{-- Mis torneos --}}
-        <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
-            <div class="bg-pitch-mist border-b border-line px-4 py-3">
-                <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Mis torneos ({{ $tournaments->count() }})</p>
-            </div>
-            @if ($tournaments->isEmpty())
-                <div class="p-6 text-center text-ink-soft text-[14px]">Todavía no participaste en ningún torneo.</div>
-            @else
-                <ul class="divide-y divide-line-soft">
-                    @foreach ($tournaments as $row)
-                        @php [$lbl, $variant] = $statusMeta[$row['tournament']->status] ?? [$row['tournament']->status, 'default']; @endphp
-                        <li class="px-4 py-3 flex items-center justify-between gap-3">
-                            <div class="min-w-0">
-                                <a href="{{ route('torneos.hub', $row['tournament']) }}" class="font-display font-semibold text-pitch text-[14px] hover:underline truncate block">{{ $row['tournament']->name }}</a>
-                                <p class="font-mono text-[11px] text-ink-mute">{{ $row['team']->name }}</p>
-                            </div>
-                            <x-badge :variant="$variant">{{ $lbl }}</x-badge>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </section>
-
+    {{-- ══ 2 · Mis equipos  +  3 · Mis torneos ═══════════════════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {{-- Mis equipos --}}
         <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
             <div class="bg-pitch-mist border-b border-line px-4 py-3">
@@ -109,53 +111,33 @@
                 </ul>
             @endif
         </section>
+
+        {{-- Mis torneos --}}
+        <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
+            <div class="bg-pitch-mist border-b border-line px-4 py-3">
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Mis torneos ({{ $tournaments->count() }})</p>
+            </div>
+            @if ($tournaments->isEmpty())
+                <div class="p-6 text-center text-ink-soft text-[14px]">Todavía no participaste en ningún torneo.</div>
+            @else
+                <ul class="divide-y divide-line-soft">
+                    @foreach ($tournaments as $row)
+                        @php [$lbl, $variant] = $statusMeta[$row['tournament']->status] ?? [$row['tournament']->status, 'default']; @endphp
+                        <li class="px-4 py-3 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <a href="{{ route('torneos.hub', $row['tournament']) }}" class="font-display font-semibold text-pitch text-[14px] hover:underline truncate block">{{ $row['tournament']->name }}</a>
+                                <p class="font-mono text-[11px] text-ink-mute">{{ $row['team']->name }}</p>
+                            </div>
+                            <x-badge :variant="$variant">{{ $lbl }}</x-badge>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
     </div>
 
-    {{-- Mi historial (detalle por torneo) --}}
-    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mt-6">
-        <div class="bg-pitch-mist border-b border-line px-4 py-3">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Mi historial</p>
-        </div>
-        @if ($statsByTournament->isEmpty())
-            <div class="p-6 text-center text-ink-soft text-[14px]">Sin estadísticas registradas todavía.</div>
-        @else
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[640px] text-left">
-                    <thead>
-                        <tr class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute border-b border-line-soft">
-                            <th class="px-4 py-2">Torneo</th>
-                            <th class="px-4 py-2">Equipo</th>
-                            <th class="px-3 py-2 text-center">PJ</th>
-                            <th class="px-3 py-2 text-center">Goles</th>
-                            <th class="px-3 py-2 text-center">Asist.</th>
-                            <th class="px-3 py-2 text-center">MVP</th>
-                            <th class="px-3 py-2 text-center">🟨</th>
-                            <th class="px-3 py-2 text-center">🟥</th>
-                            <th class="px-3 py-2 text-center">Min</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-line-soft">
-                        @foreach ($statsByTournament as $s)
-                            <tr class="hover:bg-bone-soft text-[13px]">
-                                <td class="px-4 py-3 font-display font-semibold text-pitch">{{ $s->tournament?->name ?? '—' }}</td>
-                                <td class="px-4 py-3 text-ink-soft">{{ $s->teamPlayer?->team?->name ?? '—' }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->matches_played }}</td>
-                                <td class="px-3 py-3 text-center font-mono font-bold text-gol-deep">{{ $s->goals }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->assists }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->mvps }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->yellow_cards }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->red_cards }}</td>
-                                <td class="px-3 py-3 text-center font-mono">{{ $s->minutes_played }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-    </section>
-
-    {{-- ══ Mi actividad (próximos / resultados / disciplina) ═══════════════════ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    {{-- ══ 4 · Próximos partidos  +  5 · Últimos resultados ══════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
             <div class="bg-pitch-mist border-b border-line px-4 py-3">
                 <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Próximos partidos</p>
@@ -165,6 +147,7 @@
             @else
                 <ul class="divide-y divide-line-soft">
                     @foreach ($upcomingMatches as $m)
+                        @php $cu = $myCallUps->get($m->id); @endphp
                         <li class="px-4 py-3">
                             <p class="font-display font-semibold text-pitch text-[14px] truncate">
                                 {{ $m->homeTeam?->name ?? 'Por definir' }} vs {{ $m->awayTeam?->name ?? 'Por definir' }}
@@ -172,6 +155,30 @@
                             <p class="font-mono text-[11px] text-ink-mute">
                                 {{ $m->phase?->tournament?->name }} · {{ $m->scheduled_at ? $m->scheduled_at->format('d/m H:i') : 'Sin fecha' }}
                             </p>
+                            @if ($cu)
+                                <div class="mt-2 flex items-center gap-2 flex-wrap">
+                                    @if ($cu->status === 'confirmado')
+                                        <x-badge variant="win">Asistencia confirmada</x-badge>
+                                    @elseif ($cu->status === 'declinado')
+                                        <x-badge variant="default">Declinaste</x-badge>
+                                    @else
+                                        <span class="font-mono text-[11px] text-gol-deep">¡Estás convocado!</span>
+                                    @endif
+
+                                    @if (! $m->isFinished() && $cu->status !== 'confirmado')
+                                        <form method="POST" action="{{ route('torneos.convocatoria.respond', [$m->phase->tournament, $m]) }}" class="inline">
+                                            @csrf <input type="hidden" name="response" value="confirmado">
+                                            <button type="submit" class="font-display font-bold text-[12px] uppercase text-gol-deep hover:underline tracking-wide-cta">Confirmar</button>
+                                        </form>
+                                    @endif
+                                    @if (! $m->isFinished() && $cu->status !== 'declinado')
+                                        <form method="POST" action="{{ route('torneos.convocatoria.respond', [$m->phase->tournament, $m]) }}" class="inline">
+                                            @csrf <input type="hidden" name="response" value="declinado">
+                                            <button type="submit" class="font-display font-semibold text-[12px] uppercase text-alerta hover:underline tracking-wide-cta">Declinar</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
@@ -199,36 +206,123 @@
         </section>
     </div>
 
-    {{-- Disciplina --}}
-    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mt-6">
+    {{-- ══ 6 · Fair Play y Disciplina (H13: consolidado) ═════════════════════ --}}
+    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-6">
         <div class="bg-pitch-mist border-b border-line px-4 py-3">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Disciplina</p>
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Fair Play y Disciplina</p>
         </div>
-        @if ($activeSuspensions->isNotEmpty())
-            <div class="bg-alerta/10 border-b border-line px-4 py-3">
-                <p class="font-display font-semibold text-alerta text-[13px]">Tenés {{ $activeSuspensions->count() }} suspensión(es) vigente(s) por tarjeta roja.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3">
+            {{-- Score Fair Play --}}
+            <div class="p-5 text-center border-b sm:border-b-0 sm:border-r border-line-soft">
+                @php $fp = $fairPlay?->score ?? 100; @endphp
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Fair Play</p>
+                <p class="font-display font-extrabold text-5xl mt-2 {{ $fp >= 90 ? 'text-gol-deep' : ($fp < 60 ? 'text-alerta' : 'text-pitch') }}">{{ $fp }}</p>
+                <p class="font-mono text-[11px] text-ink-mute">/ 100</p>
+                <div class="flex justify-center gap-4 mt-3 text-[12px] text-ink-soft">
+                    <span>🟨 {{ $fairPlay?->yellow_cards ?? 0 }}</span>
+                    <span>🟥 {{ $fairPlay?->red_cards ?? 0 }}</span>
+                    <span>🚫 {{ $fairPlay?->absences ?? 0 }}</span>
+                </div>
             </div>
-        @endif
-        @if ($disciplinary->isEmpty())
-            <div class="p-6 text-center text-ink-soft text-[14px]">Sin tarjetas registradas. ¡Juego limpio!</div>
+
+            {{-- Detalle disciplinario --}}
+            <div class="sm:col-span-2">
+                @if ($activeSuspensions->isNotEmpty())
+                    <div class="bg-alerta/10 border-b border-line px-4 py-3">
+                        <p class="font-display font-semibold text-alerta text-[13px]">Tenés {{ $activeSuspensions->count() }} suspensión(es) vigente(s) por tarjeta roja.</p>
+                    </div>
+                @endif
+                @if ($disciplinary->isEmpty())
+                    <div class="p-6 text-center text-ink-soft text-[14px]">Sin tarjetas registradas. ¡Juego limpio!</div>
+                @else
+                    <ul class="divide-y divide-line-soft max-h-72 overflow-y-auto">
+                        @foreach ($disciplinary as $ev)
+                            <li class="px-4 py-3 flex items-center gap-3">
+                                <span class="text-lg">{{ $ev->type === 'red_card' ? '🟥' : '🟨' }}</span>
+                                <div class="min-w-0">
+                                    <p class="font-display font-semibold text-pitch text-[13px]">
+                                        {{ $ev->type === 'red_card' ? 'Roja' : 'Amarilla' }}
+                                        @if ($ev->minute) · min {{ $ev->minute }} @endif
+                                    </p>
+                                    <p class="font-mono text-[11px] text-ink-mute truncate">
+                                        {{ $ev->match?->phase?->tournament?->name }} ·
+                                        {{ $ev->match?->homeTeam?->name ?? '—' }} vs {{ $ev->match?->awayTeam?->name ?? '—' }}
+                                    </p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </section>
+
+    {{-- ══ 7 · Mi historial (H14: consolidado por temporada) ═════════════════ --}}
+    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
+        <div class="bg-pitch-mist border-b border-line px-4 py-3">
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Mi historial</p>
+        </div>
+        @if ($statsByTournament->isEmpty())
+            <div class="p-6 text-center text-ink-soft text-[14px]">Sin estadísticas registradas todavía.</div>
         @else
-            <ul class="divide-y divide-line-soft">
-                @foreach ($disciplinary as $ev)
-                    <li class="px-4 py-3 flex items-center gap-3">
-                        <span class="text-lg">{{ $ev->type === 'red_card' ? '🟥' : '🟨' }}</span>
-                        <div class="min-w-0">
-                            <p class="font-display font-semibold text-pitch text-[13px]">
-                                {{ $ev->type === 'red_card' ? 'Roja' : 'Amarilla' }}
-                                @if ($ev->minute) · min {{ $ev->minute }} @endif
-                            </p>
-                            <p class="font-mono text-[11px] text-ink-mute truncate">
-                                {{ $ev->match?->phase?->tournament?->name }} ·
-                                {{ $ev->match?->homeTeam?->name ?? '—' }} vs {{ $ev->match?->awayTeam?->name ?? '—' }}
+            @php
+                // Agrupa el detalle por torneo en temporadas (año del torneo).
+                $historyBySeason = $statsByTournament->groupBy(function ($s) {
+                    $date = $s->tournament?->starts_at ?? $s->tournament?->created_at;
+                    return $date ? $date->format('Y') : 'Sin fecha';
+                })->sortKeysDesc();
+            @endphp
+            <div class="divide-y divide-line">
+                @foreach ($historyBySeason as $season => $rows)
+                    @php
+                        $sMatches = $rows->sum('matches_played');
+                        $sGoals   = $rows->sum('goals');
+                        $sAssists = $rows->sum('assists');
+                        $sMvps    = $rows->sum('mvps');
+                    @endphp
+                    <div>
+                        {{-- Encabezado de temporada --}}
+                        <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-bone-soft">
+                            <p class="font-display font-extrabold text-pitch text-[15px]">Temporada {{ $season }}</p>
+                            <p class="font-mono text-[11px] text-ink-mute">
+                                {{ $sMatches }} PJ · {{ $sGoals }} G · {{ $sAssists }} A · {{ $sMvps }} MVP
                             </p>
                         </div>
-                    </li>
+                        {{-- Detalle por torneo de la temporada --}}
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[560px] text-left">
+                                <thead>
+                                    <tr class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute border-b border-line-soft">
+                                        <th class="px-4 py-2">Torneo</th>
+                                        <th class="px-4 py-2">Equipo</th>
+                                        <th class="px-3 py-2 text-center">PJ</th>
+                                        <th class="px-3 py-2 text-center">Goles</th>
+                                        <th class="px-3 py-2 text-center">Asist.</th>
+                                        <th class="px-3 py-2 text-center">MVP</th>
+                                        <th class="px-3 py-2 text-center">🟨</th>
+                                        <th class="px-3 py-2 text-center">🟥</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-line-soft">
+                                    @foreach ($rows as $s)
+                                        <tr class="hover:bg-bone-soft text-[13px]">
+                                            <td class="px-4 py-3 font-display font-semibold text-pitch">{{ $s->tournament?->name ?? '—' }}</td>
+                                            <td class="px-4 py-3 text-ink-soft">{{ $s->teamPlayer?->team?->name ?? '—' }}</td>
+                                            <td class="px-3 py-3 text-center font-mono">{{ $s->matches_played }}</td>
+                                            <td class="px-3 py-3 text-center font-mono font-bold text-gol-deep">{{ $s->goals }}</td>
+                                            <td class="px-3 py-3 text-center font-mono">{{ $s->assists }}</td>
+                                            <td class="px-3 py-3 text-center font-mono">{{ $s->mvps }}</td>
+                                            <td class="px-3 py-3 text-center font-mono">{{ $s->yellow_cards }}</td>
+                                            <td class="px-3 py-3 text-center font-mono">{{ $s->red_cards }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
         @endif
     </section>
 </div>

@@ -19,16 +19,15 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-            <p class="eyebrow">🏆 Torneos</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Mis Torneos</h1>
-            <p class="text-ink-soft text-[14px] mt-1">Los torneos donde participás como administrador, capitán o jugador.</p>
+            <p class="eyebrow">Torneos</p>
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis Torneos</h1>
+            <p class="text-ink-soft text-[13px] mt-1">Los torneos donde participás como administrador, capitán o jugador.</p>
         </div>
         @if ($isTorneoAdmin)
             <div class="flex gap-3">
                 <x-btn :href="route('admin.torneos.create')" variant="primary">+ Nuevo torneo</x-btn>
-                <x-btn :href="route('admin.torneos.index')" variant="ghost">Gestión completa</x-btn>
             </div>
         @endif
     </div>
@@ -46,7 +45,7 @@
             @endif
         </div>
     @else
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6">
             @foreach ($cards as $card)
                 @php
                     $t = $card['tournament'];
@@ -60,7 +59,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <a href="{{ route('torneos.hub', $t) }}"
-                                   class="font-display font-bold text-pitch text-display-s uppercase leading-tight hover:underline block truncate">
+                                   class="font-display font-bold text-pitch text-[16px] uppercase leading-tight hover:underline block truncate">
                                     {{ $t->name }}
                                 </a>
                                 <p class="font-mono text-[11px] text-ink-mute mt-1">
@@ -117,9 +116,14 @@
                             </a>
 
                             @if ($card['manages'])
+                                {{-- H3: acciones de administración (Ver / Editar) dinámicas para admins. --}}
                                 <a href="{{ route('admin.torneos.show', $t) }}"
                                    class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
-                                    Gestión
+                                    Ver
+                                </a>
+                                <a href="{{ route('admin.torneos.edit', $t) }}"
+                                   class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
+                                    Editar
                                 </a>
                                 <a href="{{ route('admin.torneos.equipos.index', $t) }}"
                                    class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">

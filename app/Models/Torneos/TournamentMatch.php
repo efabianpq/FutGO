@@ -91,6 +91,12 @@ class TournamentMatch extends Model
         return $this->hasMany(MatchLineup::class, 'match_id');
     }
 
+    /** Convocatoria previa (planeación + confirmación de asistencia). */
+    public function callUps(): HasMany
+    {
+        return $this->hasMany(MatchCallUp::class, 'match_id');
+    }
+
     public function isScheduled(): bool
     {
         return $this->status === 'scheduled';

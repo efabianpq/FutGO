@@ -70,8 +70,8 @@ $eventLabels = [
                 <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->assists }}</p>
             </div>
             <div class="bg-white border border-line rounded-md shadow-card-2 p-4 text-center">
-                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">Minutos</p>
-                <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->minutes_played }}'</p>
+                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">⭐ Figuras</p>
+                <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->mvps }}</p>
             </div>
         </div>
 
@@ -138,7 +138,6 @@ $eventLabels = [
                         <div class="text-right text-[12px] font-mono text-ink-mute">
                             @if ($lineup)
                                 {{ $lineup->started ? 'Titular' : 'Sustituto' }}
-                                · {{ $lineup->minutesPlayed($tournament->match_duration ?? 90) }}'
                             @endif
                         </div>
                     </div>

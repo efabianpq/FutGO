@@ -214,6 +214,7 @@ class DemoTournamentSeeder extends Seeder
             'knockout_tiebreak'    => 'penalties',
             'match_duration'       => 90,
             'max_substitutions'    => 5,
+            'mvp_enabled'          => true,
             'min_players_per_team' => 11,
             'max_players_per_team' => 25,
             'registration_fee'     => 0,

@@ -68,6 +68,8 @@ $formInit = [
     'isKnockout'  => $match->phase?->type === 'knockout',
     'homePenalties' => $match->home_penalties !== null ? (int) $match->home_penalties : '',
     'awayPenalties' => $match->away_penalties !== null ? (int) $match->away_penalties : '',
+    'mvpEnabled'  => $mvpEnabled,
+    'mvp'         => $match->mvp_team_player_id ? (string) $match->mvp_team_player_id : '',
 ];
 @endphp
 
@@ -387,6 +389,21 @@ $formInit = [
             </div>
         </template>
 
+        {{-- ─── MVP (figura del partido) — solo si el torneo lo habilita ─── --}}
+        @if ($mvpEnabled)
+            <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6" x-show="!isWalkover" x-cloak>
+                <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1">⭐ Figura del partido (MVP)</p>
+                <p class="font-mono text-[11px] text-ink-mute mb-3">Opcional. Elegí un jugador entre los que participaron.</p>
+                <select x-model="mvp"
+                        class="w-full border border-line rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-pitch">
+                    <option value="">— Sin MVP —</option>
+                    <template x-for="p in players.filter(p => p.played)" :key="'mvp-'+p.id">
+                        <option :value="String(p.id)" x-text="(p.number ? '#'+p.number+' ' : '') + p.name"></option>
+                    </template>
+                </select>
+            </div>
+        @endif
+
         {{-- ─── Cuerpo técnico y disciplina ─── --}}
         <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6">
             <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1">Cuerpo técnico y disciplina</p>
@@ -510,6 +527,8 @@ function resultadoForm(cfg) {
         isKnockout:     cfg.isKnockout,
         homePenalties:  cfg.homePenalties,
         awayPenalties:  cfg.awayPenalties,
+        mvpEnabled:     cfg.mvpEnabled,
+        mvp:            cfg.mvp,
 
         popup: { open: false, playerId: null, playerName: '', minutes: [] },
 
@@ -598,6 +617,14 @@ function resultadoForm(cfg) {
 
             add('home_score', this.homeScore());
             add('away_score', this.awayScore());
+
+            // MVP (solo si el torneo lo habilita y se eligió un jugador que jugó)
+            if (this.mvpEnabled && this.mvp) {
+                const mvpId = parseInt(this.mvp, 10);
+                if (this.players.some(p => p.id === mvpId && p.played)) {
+                    add('mvp_team_player_id', mvpId);
+                }
+            }
 
             if (this.isKnockout && this.homeScore() === this.awayScore()) {
                 if (this.homePenalties !== '' && this.homePenalties !== null) add('home_penalties', this.homePenalties);

@@ -72,6 +72,12 @@ class PlayerCareerController extends Controller
         $upcomingMatches = $matches->whereIn('status', ['scheduled', 'live'])->take(8)->values();
         $recentResults   = $matches->where('status', 'finished')->sortByDesc('match_number')->take(8)->values();
 
+        // Convocatorias del jugador para sus próximos partidos (confirmar/declinar).
+        $myCallUps = \App\Models\Torneos\MatchCallUp::whereIn('match_id', $upcomingMatches->pluck('id'))
+            ->whereIn('team_player_id', $teamPlayerIds)
+            ->get()
+            ->keyBy('match_id');
+
         $activeSuspensions = $teamPlayers->where('status', 'inactive')->values();
 
         $disciplinary = MatchEvent::whereIn('team_player_id', $teamPlayerIds)
@@ -80,9 +86,19 @@ class PlayerCareerController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        // ── Reputación (Sesión F): fair play ──
+        // H15: la sección de Logros se retiró de la UI (datos en BD se conservan).
+        // H14: "Mi historial" e "Historial por temporada" se consolidaron en una
+        // sola sección que agrupa statsByTournament por año (en la vista).
+        $fairPlay = $user->fairPlayScore;
+
+        // H16: credencial como modal dentro de Mi Carrera (QR + identificador FUTGO).
+        $credentialQrSvg = \App\Services\Torneos\CredentialService::qrSvgFor($user);
+
         return view('torneos.mi-carrera', compact(
             'user', 'careerStat', 'statsByTournament', 'tournaments', 'clubs',
-            'upcomingMatches', 'recentResults', 'activeSuspensions', 'disciplinary'
+            'upcomingMatches', 'recentResults', 'activeSuspensions', 'disciplinary', 'myCallUps',
+            'fairPlay', 'credentialQrSvg'
         ));
     }
 }

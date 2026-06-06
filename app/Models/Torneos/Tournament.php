@@ -55,6 +55,7 @@ class Tournament extends Model
         'max_players_per_team',
         'match_duration',
         'max_substitutions',
+        'mvp_enabled',
         // Información adicional
         'registration_fee',
         'prize_description',
@@ -67,6 +68,7 @@ class Tournament extends Model
     {
         return [
             'third_place_match'       => 'boolean',
+            'mvp_enabled'             => 'boolean',
             'stats_config'            => 'array',
             'tiebreaker_order'        => 'array',
             'registration_opens_at'   => 'datetime',
@@ -85,6 +87,12 @@ class Tournament extends Model
     public function isPublic(): bool
     {
         return $this->visibility === 'public';
+    }
+
+    /** ¿El torneo usa la metodología de MVP (figura del partido)? */
+    public function mvpEnabled(): bool
+    {
+        return (bool) $this->mvp_enabled;
     }
 
     public function isPrivate(): bool
@@ -154,6 +162,12 @@ class Tournament extends Model
     public function playerStats(): HasMany
     {
         return $this->hasMany(PlayerStat::class);
+    }
+
+    /** Patrocinadores del torneo (Sesión G). */
+    public function sponsors(): HasMany
+    {
+        return $this->hasMany(TournamentSponsor::class);
     }
 
     public function isDraft(): bool

@@ -98,4 +98,30 @@ class PlayerCareerStatsService
             $this->refreshForUser($user);
         }
     }
+
+    /**
+     * Elimina las contribuciones de un torneo del acumulado histórico de los
+     * jugadores que participaron en él y recalcula sus totales.
+     *
+     * Se llama cuando un torneo se ELIMINA sin haber finalizado, de forma que
+     * las stats ficticias de un torneo de prueba no contaminen el historial.
+     * Los player_stats del torneo se borran en cascade junto al torneo.
+     */
+    public function removeForTournament(Tournament $tournament): void
+    {
+        // Identificar todos los usuarios registrados que participaron en el torneo.
+        $teamIds = $tournament->teams()->pluck('id');
+
+        $userIds = TeamPlayer::whereIn('team_id', $teamIds)
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->unique();
+
+        // Recalcular el acumulado de cada uno SIN las stats de este torneo.
+        // Como los player_stats del torneo se borran en cascade al eliminar el
+        // torneo (o justo antes de llamar este método), la suma ya no los incluirá.
+        foreach (User::whereIn('id', $userIds)->get() as $user) {
+            $this->refreshForUser($user);
+        }
+    }
 }

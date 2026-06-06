@@ -75,7 +75,6 @@ $statusMeta = [
                         <th class="px-3 py-3 text-center" title="Tarjetas amarillas">🟨</th>
                         <th class="px-3 py-3 text-center" title="Tarjetas rojas">🟥</th>
                         <th class="px-3 py-3 text-center" title="Partidos jugados">PJ</th>
-                        <th class="px-3 py-3 text-center" title="Minutos jugados">Min</th>
                         <th class="px-4 py-3"></th>
                     </tr>
                 </thead>
@@ -109,7 +108,6 @@ $statusMeta = [
                             <td class="px-3 py-3 text-center font-mono text-[13px]">{{ $stat->yellow_cards ?: '—' }}</td>
                             <td class="px-3 py-3 text-center font-mono text-[13px]">{{ $stat->red_cards ?: '—' }}</td>
                             <td class="px-3 py-3 text-center font-mono text-[13px]">{{ $stat->matches_played }}</td>
-                            <td class="px-3 py-3 text-center font-mono text-[13px]">{{ $stat->minutes_played }}'</td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('torneos.estadisticas.jugador', [$tournament, $stat->teamPlayer]) }}"
                                    class="text-[12px] font-display font-semibold uppercase text-pitch hover:underline">

@@ -101,7 +101,7 @@ class TournamentAdminFlowTest extends TestCase
             ->assertOk()
             ->assertSee($tournament->name)
             ->assertSee('Inscripción')   // badge de estado open
-            ->assertSee('Gestión')       // acceso directo de administrador
+            ->assertSee('Editar')        // acción de administrador (H3: Ver/Editar)
             ->assertDontSee('Próximamente');
     }
 

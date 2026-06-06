@@ -22,13 +22,17 @@ class MyTournamentsController extends Controller
     {
         $user = auth()->user();
 
-        // ── 1. Torneos donde el usuario participa ─────────────────────────────
+        // ── 1. Torneos visibles para el usuario (vista unificada H3) ──────────
+        // - Admin de plataforma: ve TODOS los torneos (inventario global).
+        // - Torneo_admin / capitán / jugador: ve los que administra o donde juega.
         $tournaments = Tournament::query()
-            ->where(fn ($q) => $q
-                ->whereHas('tournamentAdmins', fn ($a) => $a->where('user_id', $user->id))
-                ->orWhereHas('teams', fn ($t) => $t
-                    ->where('captain_user_id', $user->id)
-                    ->orWhereHas('players', fn ($p) => $p->where('user_id', $user->id))
+            ->when(! $user->isAdmin(), fn ($query) => $query
+                ->where(fn ($q) => $q
+                    ->whereHas('tournamentAdmins', fn ($a) => $a->where('user_id', $user->id))
+                    ->orWhereHas('teams', fn ($t) => $t
+                        ->where('captain_user_id', $user->id)
+                        ->orWhereHas('players', fn ($p) => $p->where('user_id', $user->id))
+                    )
                 )
             )
             ->withCount('teams')

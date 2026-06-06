@@ -1,0 +1,22 @@
+<!--
+  FutGO · Carga de fuentes
+  Pegar en el <head> del layout Blade (antes de tu CSS).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!--
+  Anti-FOUC del tema (colócalo lo más arriba posible en el <head>):
+-->
+<script>
+  (function () {
+    var t = localStorage.getItem('futgo-theme') || 'dark';
+    if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  })();
+</script>
+
+<!--
+  Producción: autohospedar Archivo (con eje width/Expanded), Inter y JetBrains Mono
+  para mejor rendimiento y privacidad. Declarar @font-face con font-display:swap.
+-->

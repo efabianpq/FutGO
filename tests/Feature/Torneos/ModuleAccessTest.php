@@ -60,6 +60,9 @@ class ModuleAccessTest extends TestCase
 
     public function test_torneo_admin_accede_al_panel_de_torneos(): void
     {
+        // H3: /admin/torneos se consolidó con la vista unificada (torneos.index).
+        // El torneo_admin pasa el middleware y es redirigido a la vista unificada
+        // (a diferencia del usuario normal, que es bloqueado hacia predictions).
         $user = User::factory()->create([
             'is_active' => true,
             'role'      => 'torneo_admin',
@@ -67,7 +70,7 @@ class ModuleAccessTest extends TestCase
         ]);
         $this->actingAs($user)
              ->get('/admin/torneos')
-             ->assertOk();
+             ->assertRedirect(route('torneos.index'));
     }
 
     public function test_usuario_normal_no_accede_al_panel_de_torneos(): void

@@ -175,8 +175,11 @@ class MatchResultController extends Controller
         // Un partido finalizado se consulta/exporta; para corregirlo hay que anularlo.
         $canEdit = $match->isScheduled() || $match->isLive();
 
+        // MVP: solo si el torneo usa esa metodología.
+        $mvpEnabled = $tournament->mvpEnabled();
+
         return view('admin.torneos.partidos.resultado', compact(
-            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups', 'canEdit'
+            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups', 'canEdit', 'mvpEnabled'
         ));
     }
 
@@ -256,7 +259,8 @@ class MatchResultController extends Controller
             $match->home_score     = $homeScore;
             $match->away_score     = $awayScore;
             $match->winner_team_id = $winnerId;
-            $match->mvp_team_player_id = $data['mvp_team_player_id'] ?? null;
+            // MVP solo si el torneo habilita la metodología; si no, se ignora.
+            $match->mvp_team_player_id = $tournament->mvpEnabled() ? ($data['mvp_team_player_id'] ?? null) : null;
             $match->status         = 'finished';
 
             // Cuerpo arbitral (principal, secundario, observaciones).
@@ -509,8 +513,8 @@ class MatchResultController extends Controller
                     $tournament->status = 'finished';
                     $tournament->save();
 
-                    // Consolidación final: el histórico de cada jugador queda al día.
-                    $this->careerStats->refreshForTournament($tournament);
+                    // Consolidación final: acumulados + fair play + logros + ranking (Sesión F).
+                    app(\App\Services\Torneos\ReputationService::class)->consolidateTournament($tournament);
                 }
             }
         }

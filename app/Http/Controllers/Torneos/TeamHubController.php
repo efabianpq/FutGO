@@ -5,18 +5,11 @@ namespace App\Http\Controllers\Torneos;
 use App\Http\Controllers\Controller;
 use App\Models\Torneos\Standing;
 use App\Models\Torneos\Team;
-use App\Models\Torneos\TeamPlayer;
 use App\Models\Torneos\Tournament;
 use App\Models\Torneos\TournamentMatch;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
-/**
- * Centro de Gestión de Equipos: dashboard del equipo del usuario dentro de un torneo.
- * El acceso a las mutaciones (aprobar/rechazar) lo refuerza ensure.team_member +
- * la verificación de capitán/torneo_admin en el propio controlador.
- */
 class TeamHubController extends Controller
 {
     public function index(Tournament $tournament): View|RedirectResponse
@@ -87,64 +80,6 @@ class TeamHubController extends Controller
             'activePlayers', 'pendingPlayers',
             'upcomingMatches', 'recentResults', 'stats'
         ));
-    }
-
-    public function approvePlayer(Tournament $tournament, TeamPlayer $player): RedirectResponse
-    {
-        $this->authorizeManage($tournament, $player);
-
-        if (! $player->isPending()) {
-            return back()->with('error', 'Solo se pueden aprobar solicitudes pendientes.');
-        }
-
-        $player->update(['status' => 'active']);
-
-        Log::info('torneos.team.player_approved', [
-            'tournament_id'  => $tournament->id,
-            'team_id'        => $player->team_id,
-            'team_player_id' => $player->id,
-            'player_user_id' => $player->user_id,
-            'approved_by'    => auth()->id(),
-        ]);
-
-        return back()->with('status', 'Jugador aprobado e incorporado a la plantilla.');
-    }
-
-    public function rejectPlayer(Tournament $tournament, TeamPlayer $player): RedirectResponse
-    {
-        $this->authorizeManage($tournament, $player);
-
-        if (! $player->isPending()) {
-            return back()->with('error', 'Solo se pueden rechazar solicitudes pendientes.');
-        }
-
-        $player->update(['status' => 'rejected']);
-
-        Log::info('torneos.team.player_rejected', [
-            'tournament_id'  => $tournament->id,
-            'team_id'        => $player->team_id,
-            'team_player_id' => $player->id,
-            'player_user_id' => $player->user_id,
-            'rejected_by'    => auth()->id(),
-        ]);
-
-        return back()->with('status', 'Solicitud rechazada.');
-    }
-
-    // ─────────────────────────────────────────────────────────────────
-
-    /** Solo el capitán del equipo o un torneo_admin pueden gestionar la plantilla. */
-    private function authorizeManage(Tournament $tournament, TeamPlayer $player): void
-    {
-        $user = auth()->user();
-        $team = $player->team;
-
-        // ensure.team_member ya garantizó pertenencia + que el equipo es del torneo.
-        $isCaptain = $team->captain_user_id === $user->id;
-        $isAdmin   = $user->isAdmin()
-            || $tournament->tournamentAdmins()->where('user_id', $user->id)->exists();
-
-        abort_unless($isCaptain || $isAdmin, 403, 'Solo el capitán puede gestionar la plantilla.');
     }
 
     /** Equipo del usuario autenticado en este torneo (capitán o jugador), o null. */

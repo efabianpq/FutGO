@@ -6,18 +6,25 @@ use App\Http\Controllers\Admin\InvitationCodeController as AdminCodesController;
 use App\Http\Controllers\Admin\ResultsController as AdminResultsController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\Torneos\FixtureController;
+use App\Http\Controllers\Admin\Torneos\MatchSchedulerController;
 use App\Http\Controllers\Admin\Torneos\MatchResultController;
 use App\Http\Controllers\Admin\Torneos\PhaseController;
+use App\Http\Controllers\Admin\Torneos\SponsorController;
 use App\Http\Controllers\Admin\Torneos\StandingsController;
 use App\Http\Controllers\Admin\Torneos\TeamAdminController;
 use App\Http\Controllers\Admin\Torneos\TournamentController;
 use App\Http\Controllers\Admin\UserController as AdminUsersController;
-use App\Http\Controllers\Torneos\CaptainDashboardController;
+use App\Http\Controllers\Torneos\CallUpController;
 use App\Http\Controllers\Torneos\ClubController;
+use App\Http\Controllers\Torneos\CredentialController;
+use App\Http\Controllers\Torneos\CredentialValidationController;
+use App\Http\Controllers\Torneos\PublicTournamentController;
+use App\Http\Controllers\Torneos\RankingController as TorneosRankingController;
+use App\Http\Controllers\Torneos\TournamentExportController;
+use App\Http\Controllers\Torneos\TournamentShareController;
 use App\Http\Controllers\Torneos\PlayerCareerController;
 use App\Http\Controllers\Torneos\MyTeamsController;
 use App\Http\Controllers\Torneos\MyTournamentsController;
-use App\Http\Controllers\Torneos\PlayerDashboardController;
 use App\Http\Controllers\Torneos\StatsController;
 use App\Http\Controllers\Torneos\TeamController;
 use App\Http\Controllers\Torneos\TeamHubController;
@@ -41,6 +48,27 @@ Route::get('/', function () {
 
 // Página pública "¿Cómo funciona?" — accesible para guests, auth no-activos y activos
 Route::view('/como-funciona', 'como-funciona')->name('how-it-works');
+
+// ─── Portal PÚBLICO del torneo (sin auth) — Sesión E ──────────────────────
+// Solo torneos visibility='public' (el controlador hace abort 404 si no lo son).
+Route::prefix('t')->name('torneos.public.')->group(function () {
+    // H9: portal de exploración de torneos públicos (menú "Torneos").
+    Route::get('/', [PublicTournamentController::class, 'index'])->name('index');
+
+    Route::get('/{tournament:slug}', [PublicTournamentController::class, 'show'])->name('show');
+
+    // Exportación pública (PDF/CSV) de datos no sensibles.
+    Route::get('/{tournament:slug}/exportar/{dataset}/{format}', [TournamentExportController::class, 'public'])
+        ->whereIn('dataset', ['resultados', 'posiciones', 'estadisticas'])
+        ->whereIn('format', ['pdf', 'csv'])
+        ->name('export');
+
+    // Tarjetas compartibles (SVG). El partido va ANTES del comodín {card}.
+    Route::get('/{tournament:slug}/img/partido/{match}', [TournamentShareController::class, 'matchCard'])->name('img.match');
+    Route::get('/{tournament:slug}/img/{card}', [TournamentShareController::class, 'card'])
+        ->whereIn('card', ['goleadores', 'posiciones', 'mvp'])
+        ->name('img');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
@@ -114,6 +142,20 @@ Route::middleware('auth')->group(function () {
                 // Hoja de vida deportiva: trayectoria permanente del jugador across torneos.
                 Route::get('/mi-carrera', [PlayerCareerController::class, 'show'])->name('mi-carrera');
 
+                // Ranking FUTGO global (Sesión F) — lee cache futgo_rankings.
+                Route::get('/ranking', [TorneosRankingController::class, 'index'])->name('ranking');
+
+                // ── Credencial digital antifraude (Sesión D) ──────────────────
+                // Credencial propia del jugador (foto, nombre, FUTGO id, QR).
+                Route::get('/credencial', [CredentialController::class, 'show'])->name('credencial');
+
+                // Validación por árbitros/admin (escaneo de QR o ingreso manual).
+                // Va ANTES del comodín /{tournament} para no ser capturada por él.
+                Route::middleware('ensure.torneo_admin')->group(function () {
+                    Route::get('/validar', [CredentialValidationController::class, 'index'])->name('validar');
+                    Route::post('/validar', [CredentialValidationController::class, 'validate'])->name('validar.run');
+                });
+
                 // ── Equipos PERMANENTES (clubs) — identidad transversal a torneos ──
                 Route::post('/equipos', [ClubController::class, 'store'])->name('equipos.store');
                 Route::prefix('clubes/{club}')->name('clubes.')->group(function () {
@@ -134,6 +176,15 @@ Route::middleware('auth')->group(function () {
                         Route::get('/inscribir', [TeamController::class, 'inscribir'])->name('inscribir');
                         Route::post('/inscribir', [TeamController::class, 'store'])->name('store');
                         Route::get('/', [TeamHubController::class, 'index'])->name('show');
+                    });
+
+                // Convocatoria previa (capitán arma + jugadores confirman asistencia).
+                Route::prefix('{tournament}/partidos/{match}/convocatoria')
+                    ->name('convocatoria.')
+                    ->group(function () {
+                        Route::get('/', [CallUpController::class, 'manage'])->name('manage');
+                        Route::post('/', [CallUpController::class, 'store'])->name('store');
+                        Route::post('/responder', [CallUpController::class, 'respond'])->name('respond');
                     });
 
                 // Cronograma público del torneo
@@ -172,7 +223,9 @@ Route::middleware('auth')->group(function () {
             ->prefix('admin/torneos')
             ->name('admin.torneos.')
             ->group(function () {
-                Route::get('/', [TournamentController::class, 'index'])->name('index');
+                // H3: "Gestión Torneos" y "Mis Torneos" se unificaron en una sola
+                // vista (torneos.index). Esta ruta redirige para conservar enlaces.
+                Route::get('/', fn () => redirect()->route('torneos.index'))->name('index');
                 Route::get('/crear', [TournamentController::class, 'create'])->name('create');
                 Route::post('/', [TournamentController::class, 'store'])->name('store');
                 Route::get('/{tournament}', [TournamentController::class, 'show'])->name('show');
@@ -186,17 +239,34 @@ Route::middleware('auth')->group(function () {
                     ->name('equipos.')
                     ->group(function () {
                         Route::get('/', [TeamAdminController::class, 'index'])->name('index');
+                        // H7: el admin crea equipos (clubs) directamente + asigna capitán.
+                        Route::post('/crear', [TeamAdminController::class, 'createClub'])->name('create');
                         Route::get('/{team}', [TeamAdminController::class, 'show'])->name('show');
+                        Route::patch('/{team}/asignar-capitan', [TeamAdminController::class, 'assignCaptain'])->name('assignCaptain');
                         Route::patch('/{team}/aprobar', [TeamAdminController::class, 'approve'])->name('approve');
                         Route::patch('/{team}/rechazar', [TeamAdminController::class, 'reject'])->name('reject');
                         // Aprobación de jugadores agregados con el torneo en curso.
                         Route::patch('/{team}/jugadores/{teamPlayer}/aprobar', [TeamAdminController::class, 'approvePlayer'])->name('players.approve');
                         Route::patch('/{team}/jugadores/{teamPlayer}/rechazar', [TeamAdminController::class, 'rejectPlayer'])->name('players.reject');
+                        // Bajas y cambios de equipo durante el torneo (con historial).
+                        Route::patch('/{team}/jugadores/{teamPlayer}/baja', [TeamAdminController::class, 'releasePlayer'])->name('players.release');
+                        Route::patch('/{team}/jugadores/{teamPlayer}/cambio', [TeamAdminController::class, 'transferPlayer'])->name('players.transfer');
                     });
 
                 // Generación de fixture (torneo_admin)
                 Route::post('/{tournament}/fixture/generar', [FixtureController::class, 'generate'])
                     ->name('fixture.generate');
+
+                // H6: gestión del fixture en formato liga (torneo_admin).
+                Route::prefix('/{tournament}/liga')
+                    ->name('liga.')
+                    ->group(function () {
+                        Route::post('/activar', [MatchSchedulerController::class, 'activate'])->name('activate');
+                        Route::post('/partidos', [MatchSchedulerController::class, 'store'])->name('matches.store');
+                        Route::post('/round-robin', [MatchSchedulerController::class, 'autoRoundRobin'])->name('roundRobin');
+                        Route::delete('/partidos/{match}', [MatchSchedulerController::class, 'destroy'])->name('matches.destroy');
+                        Route::post('/eliminatoria', [MatchSchedulerController::class, 'generateKnockout'])->name('knockout');
+                    });
 
                 // Cierre de fase y generación de eliminatoria (torneo_admin)
                 Route::prefix('/{tournament}/phases')
@@ -213,6 +283,21 @@ Route::middleware('auth')->group(function () {
                         Route::get('/', [StandingsController::class, 'index'])->name('index');
                         Route::post('/recalculate', [StandingsController::class, 'recalculate'])->name('recalculate');
                     });
+
+                // Patrocinadores del torneo (torneo_admin) — Sesión G
+                Route::prefix('/{tournament}/patrocinadores')
+                    ->name('sponsors.')
+                    ->group(function () {
+                        Route::get('/', [SponsorController::class, 'index'])->name('index');
+                        Route::post('/', [SponsorController::class, 'store'])->name('store');
+                        Route::delete('/{sponsor}', [SponsorController::class, 'destroy'])->name('destroy');
+                    });
+
+                // Exportación PDF/CSV del torneo (torneo_admin) — Sesión E
+                Route::get('/{tournament}/exportar/{dataset}/{format}', [TournamentExportController::class, 'admin'])
+                    ->whereIn('dataset', ['resultados', 'posiciones', 'estadisticas'])
+                    ->whereIn('format', ['pdf', 'csv'])
+                    ->name('export');
 
                 // Resultados de partidos (torneo_admin)
                 Route::prefix('/{tournament}/partidos')

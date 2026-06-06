@@ -9,7 +9,7 @@
     <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1 mb-6">Nuevo torneo</h1>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">
-        <form method="POST" action="{{ route('admin.torneos.store') }}">
+        <form method="POST" action="{{ route('admin.torneos.store') }}" enctype="multipart/form-data">
             @csrf
             @include('admin.torneos._form')
 

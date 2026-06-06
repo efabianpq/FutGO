@@ -20,6 +20,7 @@ class Club extends Model
         'shield_url',
         'created_by_user_id',
         'captain_user_id',
+        'status',
     ];
 
     public function creator(): BelongsTo
@@ -54,6 +55,24 @@ class Club extends Model
     public function isCaptainedBy(?User $user): bool
     {
         return $user !== null && $this->captain_user_id === $user->id;
+    }
+
+    /** Club validado: creado por su propio capitán (identidad confirmada). */
+    public function isValidado(): bool
+    {
+        return $this->status === 'validado';
+    }
+
+    /** Club por validar: creado por un admin de torneo, sin capitán confirmado. */
+    public function isPorValidar(): bool
+    {
+        return $this->status === 'por_validar';
+    }
+
+    /** Clubs creados por capitanes (con identidad confirmada). */
+    public function scopeValidados($query)
+    {
+        return $query->where('status', 'validado');
     }
 
     /** Escudo a mostrar. */

@@ -560,4 +560,132 @@ class MatchResultTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertEquals('scheduled', $match->fresh()->status);
     }
+
+    // ─── H10: Estadísticas en tiempo real ────────────────────────────────────
+
+    public function test_career_stats_se_actualizan_al_guardar_resultado(): void
+    {
+        $admin   = $this->makeTournamentAdmin();
+        $captain = $this->makeUser();
+
+        $tournament = Tournament::create([
+            'name' => 'Copa Stats ' . uniqid(), 'slug' => 'copa-stats-' . uniqid(),
+            'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
+            'groups_count' => 1, 'teams_per_group' => 2, 'classifies_per_group' => 1,
+            'max_teams' => 2, 'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0,
+            'created_by_user_id' => $admin->id,
+        ]);
+        $tournament->tournamentAdmins()->create(['user_id' => $admin->id]);
+
+        // Equipo local con capitán como jugador
+        $homeTeam = Team::create([
+            'tournament_id' => $tournament->id, 'captain_user_id' => $captain->id,
+            'name' => 'Local', 'status' => 'approved',
+        ]);
+        $tp = TeamPlayer::create([
+            'team_id' => $homeTeam->id, 'user_id' => $captain->id, 'status' => 'active',
+        ]);
+
+        // Equipo visitante
+        $awayUser = $this->makeUser();
+        $awayTeam = Team::create([
+            'tournament_id' => $tournament->id, 'captain_user_id' => $awayUser->id,
+            'name' => 'Visitante', 'status' => 'approved',
+        ]);
+        TeamPlayer::create([
+            'team_id' => $awayTeam->id, 'user_id' => $awayUser->id, 'status' => 'active',
+        ]);
+
+        app(\App\Services\Torneos\FixtureGeneratorService::class)->generate($tournament);
+        $tournament->refresh();
+
+        $match = $this->firstMatch($tournament);
+
+        // ANTES del resultado: career stats inexistentes o en cero
+        $this->assertDatabaseMissing('player_career_stats', ['user_id' => $captain->id]);
+
+        // Ingresar resultado con un gol del capitán
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score' => 1,
+            'away_score' => 0,
+            'events' => [
+                ['team_player_id' => $tp->id, 'type' => 'goal', 'minute' => 20],
+            ],
+        ]);
+
+        // DESPUÉS del resultado: player_stats actualizado
+        $ps = \App\Models\Torneos\PlayerStat::where('team_player_id', $tp->id)->first();
+        $this->assertNotNull($ps);
+        $this->assertEquals(1, $ps->goals);
+
+        // Y career stats también actualizado en tiempo real
+        $career = \App\Models\Torneos\PlayerCareerStat::where('user_id', $captain->id)->first();
+        $this->assertNotNull($career, 'Los career stats deben existir inmediatamente después de guardar el resultado.');
+        $this->assertEquals(1, $career->goals, 'Los goles del acumulado deben coincidir con los de la partida.');
+    }
+
+    public function test_career_stats_se_borran_al_eliminar_torneo_sin_finalizar(): void
+    {
+        $admin   = $this->makeTournamentAdmin();
+        $captain = $this->makeUser();
+
+        $tournament = Tournament::create([
+            'name' => 'Copa Prueba ' . uniqid(), 'slug' => 'copa-prueba-' . uniqid(),
+            'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
+            'groups_count' => 1, 'teams_per_group' => 2, 'classifies_per_group' => 1,
+            'max_teams' => 2, 'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0,
+            'created_by_user_id' => $admin->id,
+        ]);
+        $tournament->tournamentAdmins()->create(['user_id' => $admin->id]);
+
+        $homeTeam = Team::create([
+            'tournament_id' => $tournament->id, 'captain_user_id' => $captain->id,
+            'name' => 'Local', 'status' => 'approved',
+        ]);
+        $tp = TeamPlayer::create([
+            'team_id' => $homeTeam->id, 'user_id' => $captain->id, 'status' => 'active',
+        ]);
+        $awayUser = $this->makeUser();
+        $awayTeam = Team::create([
+            'tournament_id' => $tournament->id, 'captain_user_id' => $awayUser->id,
+            'name' => 'Visitante', 'status' => 'approved',
+        ]);
+        TeamPlayer::create([
+            'team_id' => $awayTeam->id, 'user_id' => $awayUser->id, 'status' => 'active',
+        ]);
+
+        app(\App\Services\Torneos\FixtureGeneratorService::class)->generate($tournament);
+        $tournament->refresh();
+
+        $match = $this->firstMatch($tournament);
+
+        // Ingresar resultado para generar career stats
+        $this->actingAs($admin)->post($this->storeResultUrl($tournament, $match), [
+            'home_score' => 2, 'away_score' => 0,
+            'events' => [
+                ['team_player_id' => $tp->id, 'type' => 'goal', 'minute' => 10],
+                ['team_player_id' => $tp->id, 'type' => 'goal', 'minute' => 40],
+            ],
+        ]);
+
+        // Confirmar que career stats existen con 2 goles
+        $this->assertDatabaseHas('player_career_stats', ['user_id' => $captain->id, 'goals' => 2]);
+
+        // Eliminar el torneo (en estado in_progress después de generate)
+        // Para simular "open", ponemos el torneo de vuelta en open manualmente
+        $tournament->status = 'open';
+        $tournament->save();
+
+        $this->actingAs($admin)->delete(route('admin.torneos.destroy', $tournament));
+
+        // Los career stats deben haberse recalculado sin ese torneo → goals = 0
+        $career = \App\Models\Torneos\PlayerCareerStat::where('user_id', $captain->id)->first();
+        // Si el torneo fue el único, el career se recalcula a 0 (fila existe con 0 goals)
+        if ($career) {
+            $this->assertEquals(0, $career->goals, 'Los goles del acumulado deben ser 0 tras borrar el torneo de prueba.');
+        } else {
+            // Si no hay más torneos, la fila puede no existir (igualmente correcto)
+            $this->assertTrue(true);
+        }
+    }
 }

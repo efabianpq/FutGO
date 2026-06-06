@@ -21,6 +21,8 @@ class User extends Authenticatable
         'email',
         'password',
         'google_id',
+        'futgo_id',
+        'document',
         'phone_whatsapp',
         'avatar_url',
         'invitation_code',
@@ -30,6 +32,19 @@ class User extends Authenticatable
         'notifications_enabled',
         'email_verified_at',
     ];
+
+    /**
+     * Asigna automáticamente el identificador público FUTGO (FG-XXXXXX) al crear
+     * un usuario, si no se le pasó uno. Cubre registro, seeders, tinker y tests.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            if (empty($user->futgo_id)) {
+                $user->futgo_id = \App\Services\Torneos\CredentialService::nextFutgoId();
+            }
+        });
+    }
 
     protected $hidden = [
         'password',
@@ -96,6 +111,21 @@ class User extends Authenticatable
     public function careerStat(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(\App\Models\Torneos\PlayerCareerStat::class);
+    }
+
+    /** Logros (gamificación) obtenidos por el jugador. */
+    public function achievements(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Torneos\Achievement::class, 'user_achievements')
+            ->withPivot('awarded_at')
+            ->withTimestamps();
+    }
+
+    /** Fair Play Score cacheado del jugador (Sesión F). */
+    public function fairPlayScore(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Torneos\FairPlayScore::class, 'subject_id')
+            ->where('subject_type', 'player');
     }
 
     /** Iniciales para el avatar de respaldo cuando no hay foto. */

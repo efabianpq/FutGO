@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             TestUsersSeeder::class,
             InvitationCodeSeeder::class,
+            AchievementSeeder::class,
         ]);
     }
 }

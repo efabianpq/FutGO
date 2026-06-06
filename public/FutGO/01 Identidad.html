@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FutGO · Identidad de Marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="futgo.css" />
+<style>
+  /* page-local */
+  .hero-id { padding: 80px 0 64px; position: relative; overflow: hidden; }
+  .hero-id::before {
+    content:""; position:absolute; inset:0; z-index:-1;
+    background:
+      radial-gradient(60% 80% at 85% -10%, rgba(0,230,118,.16), transparent 60%),
+      radial-gradient(50% 60% at 0% 100%, rgba(18,32,58,.6), transparent 70%);
+  }
+  .hero-id .big { font-family: var(--font-display); font-stretch:125%; font-weight:900; font-size: clamp(64px, 12vw, 168px); line-height:.86; letter-spacing:-.03em; margin:18px 0 0; }
+  .hero-id .big em { font-style:normal; color: var(--green); }
+  .hero-id .tagline { font-family: var(--font-display); font-stretch:125%; font-weight:600; font-size: clamp(20px,3vw,30px); color: var(--text-muted); margin-top:20px; letter-spacing:-.01em; }
+  .id-meta { display:flex; flex-wrap:wrap; gap:32px; margin-top:48px; padding-top:24px; border-top:1px solid var(--border); }
+  .id-meta .k { font-family: var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color: var(--text-subtle); }
+  .id-meta .v { font-weight:600; margin-top:4px; }
+
+  .mvp { display:grid; grid-template-columns: repeat(3,1fr); gap:20px; }
+  .mvp .card-pad h3 { font-family: var(--font-display); font-stretch:125%; font-weight:800; font-size:22px; margin:14px 0 10px; }
+  .mvp .num { font-family: var(--font-mono); color: var(--green); font-size:13px; letter-spacing:.1em; }
+  .mvp p { color: var(--text-muted); margin:0; }
+
+  .logo-stage { display:grid; grid-template-columns: 1.3fr 1fr; gap:20px; }
+  .logo-box { border:1px solid var(--border); border-radius: var(--r-lg); min-height:280px; display:flex; align-items:center; justify-content:center; position:relative; }
+  .logo-box .tag { position:absolute; bottom:14px; left:16px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color: var(--text-subtle); }
+  .lb-dark { background: var(--bg-grid); }
+  .lb-green { background: var(--green); }
+  .lb-green .word, .lb-green .word b { color: var(--on-green) !important; }
+  .lb-navy { background: var(--navy); }
+  .lb-surface { background: var(--surface); }
+
+  .logo-vert { flex-direction:column; gap:18px; }
+  .logo-vert .word { font-size:34px; }
+
+  .construct { display:grid; grid-template-columns: repeat(4,1fr); gap:16px; }
+  .construct .c { border:1px solid var(--border); border-radius: var(--r-md); padding:18px; }
+  .construct .c .demo { height:120px; display:flex; align-items:center; justify-content:center; background: var(--surface); border-radius: var(--r-sm); margin-bottom:12px; }
+  .construct .c h4 { margin:0 0 4px; font-size:14px; }
+  .construct .c p { margin:0; font-size:12.5px; color: var(--text-muted); }
+  .dont .demo { position:relative; }
+  .dont .demo::after { content:""; position:absolute; inset:0; background: linear-gradient(to top left, transparent 48%, var(--danger) 48.5%, var(--danger) 51.5%, transparent 52%); border-radius: var(--r-sm); }
+
+  .pal { display:grid; grid-template-columns: repeat(4,1fr); gap:14px; }
+  .sw { border:1px solid var(--border); border-radius: var(--r-md); overflow:hidden; background: var(--surface); }
+  .sw .cap { height:104px; display:flex; align-items:flex-end; padding:12px; }
+  .sw .info { padding:12px 14px; }
+  .sw .nm { font-weight:700; font-size:14px; }
+  .sw .hx { font-family: var(--font-mono); font-size:12px; color: var(--text-muted); margin-top:3px; }
+  .sw .role { font-size:11.5px; color: var(--text-subtle); margin-top:6px; }
+  .pal-row-title { font-family: var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color: var(--text-subtle); margin: 28px 0 12px; }
+
+  .type-spec { display:grid; grid-template-columns: 240px 1fr; gap:36px; align-items:start; }
+  .type-spec + .type-spec { margin-top:40px; padding-top:40px; border-top:1px solid var(--border); }
+  .type-spec .meta h4 { font-family: var(--font-display); font-stretch:125%; font-weight:800; font-size:24px; margin:0 0 8px; }
+  .type-spec .meta p { color: var(--text-muted); font-size:14px; margin:0 0 16px; }
+  .type-spec dl { display:grid; grid-template-columns:auto 1fr; gap:6px 16px; font-family: var(--font-mono); font-size:12px; margin:0; }
+  .type-spec dt { color: var(--text-subtle); text-transform:uppercase; letter-spacing:.08em; }
+  .type-spec .show .l { font-family: var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color: var(--text-subtle); margin:18px 0 6px; }
+  .slogan-pick { display:grid; gap:10px; }
+  .slogan-pick .opt { display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
+  .slogan-pick .opt.win { border-color: var(--green); background: var(--green-tint); }
+  .slogan-pick .opt .badge { flex:none; }
+  .slogan-pick .opt .s { font-family: var(--font-display); font-stretch:125%; font-weight:700; font-size:18px; }
+  .slogan-pick .opt .why { color: var(--text-muted); font-size:13px; margin-left:auto; max-width:42ch; text-align:right; }
+
+  @media (max-width: 860px){
+    .mvp, .construct, .pal { grid-template-columns: repeat(2,1fr); }
+    .logo-stage, .type-spec { grid-template-columns: 1fr; }
+    .slogan-pick .opt { flex-wrap:wrap; }
+    .slogan-pick .opt .why { text-align:left; margin-left:0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="logo" href="01 Identidad.html" aria-label="FutGO inicio">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="var(--green)"/>
+      <circle cx="24" cy="17.5" r="10" fill="#fff"/>
+      <polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="var(--green)"/>
+      <g stroke="var(--green)" stroke-width="1.6" stroke-linecap="round">
+        <line x1="24" y1="12.3" x2="24" y2="7.7"/>
+        <line x1="28.95" y1="15.89" x2="33.3" y2="14.5"/>
+        <line x1="27.06" y1="21.71" x2="29.7" y2="25.4"/>
+        <line x1="20.94" y1="21.71" x2="18.3" y2="25.4"/>
+        <line x1="19.05" y1="15.89" x2="14.7" y2="14.5"/>
+      </g>
+    </svg>
+    <span class="word">Fut<b>GO</b></span>
+  </a>
+  <div class="spacer"></div>
+  <nav>
+    <a href="01 Identidad.html" class="active">Identidad</a>
+    <a href="02 UI Kit.html">UI Kit</a>
+    <a href="03 Landing.html">Landing</a>
+  </nav>
+  <button class="btn btn-secondary btn-sm" onclick="FutGO.toggleTheme()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+    <span data-theme-label>Oscuro</span>
+  </button>
+</header>
+
+<!-- HERO -->
+<section class="hero-id">
+  <div class="wrap">
+    <span class="eyebrow">Sistema de marca · v1.0</span>
+    <h1 class="big">El sistema<br/>operativo del<br/><em>fútbol amateur.</em></h1>
+    <p class="tagline">FutGO profesionaliza torneos, equipos, estadísticas y reservas — todo en un solo ecosistema.</p>
+    <div class="id-meta">
+      <div><div class="k">Arquetipo</div><div class="v">El Retador · Constructor de comunidad</div></div>
+      <div><div class="k">Tono</div><div class="v">Moderno · Dinámico · Competitivo</div></div>
+      <div><div class="k">Referencias</div><div class="v">Strava × Hudl × Linear</div></div>
+      <div><div class="k">Stack</div><div class="v">Laravel · Tailwind · Alpine</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STRATEGY -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow muted">01 — Estrategia</span>
+      <h2>Por qué existe FutGO</h2>
+      <p>El fútbol amateur mueve a millones de personas cada fin de semana con herramientas de aficionado: grupos de chat, hojas de cálculo y memoria. FutGO le da la infraestructura que merece.</p>
+    </div>
+    <div class="mvp">
+      <div class="card card-pad">
+        <div class="num">Misión</div>
+        <h3>Profesionalizar el juego de todos</h3>
+        <p>Darle a cada organizador, equipo y jugador amateur las herramientas que hoy solo tiene el fútbol profesional.</p>
+      </div>
+      <div class="card card-pad">
+        <div class="num">Visión</div>
+        <h3>El estándar del fútbol base</h3>
+        <p>Convertirnos en el sistema operativo donde se gestiona, juega y conecta todo el fútbol amateur del mundo hispano.</p>
+      </div>
+      <div class="card card-pad">
+        <div class="num">Posicionamiento</div>
+        <h3>Ecosistema, no app suelta</h3>
+        <p>No es un marcador ni un grupo de chat: es la capa que conecta torneos, equipos, canchas, estadísticas y patrocinadores.</p>
+      </div>
+    </div>
+
+    <div class="pal-row-title">Eslogan · análisis y recomendación</div>
+    <div class="slogan-pick">
+      <div class="opt win">
+        <span class="badge badge-solid">Recomendado</span>
+        <span class="s">Donde crece el fútbol amateur</span>
+        <span class="why">Captura misión (crecimiento), audiencia (amateur) y el rol de plataforma sin sonar transaccional. Emotivo y de marca, no de feature.</span>
+      </div>
+      <div class="opt">
+        <span class="badge">Alterno</span>
+        <span class="s">Organiza. Compite. Conecta.</span>
+        <span class="why">Excelente para campañas B2B y onboarding de organizadores: describe el producto en 3 verbos. Úsalo como sub-claim funcional.</span>
+      </div>
+      <div class="opt">
+        <span class="badge">Energía</span>
+        <span class="s">Juega. Compite. Crece.</span>
+        <span class="why">Ideal para superficies dirigidas a jugadores (app móvil, redes). Más personal, menos institucional.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGO -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow muted">02 — Logotipo</span>
+      <h2>La marca</h2>
+      <p>El símbolo funde un <strong>pin de ubicación</strong> con un <strong>balón</strong>: el lugar donde se juega. El "GO" del wordmark se destaca en verde — la invitación a salir a la cancha.</p>
+    </div>
+
+    <div class="logo-stage">
+      <div class="logo-box lb-dark">
+        <div class="logo lg">
+          <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true" style="width:64px;height:64px">
+            <path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="var(--green)"/>
+            <circle cx="24" cy="17.5" r="10" fill="#fff"/>
+            <polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="var(--green)"/>
+            <g stroke="var(--green)" stroke-width="1.6" stroke-linecap="round">
+              <line x1="24" y1="12.3" x2="24" y2="7.7"/><line x1="28.95" y1="15.89" x2="33.3" y2="14.5"/>
+              <line x1="27.06" y1="21.71" x2="29.7" y2="25.4"/><line x1="20.94" y1="21.71" x2="18.3" y2="25.4"/>
+              <line x1="19.05" y1="15.89" x2="14.7" y2="14.5"/>
+            </g>
+          </svg>
+          <span class="word" style="font-size:48px">Fut<b>GO</b></span>
+        </div>
+        <span class="tag">Lockup primario · sobre oscuro</span>
+      </div>
+      <div class="logo-box lb-green">
+        <div class="logo lg logo-vert">
+          <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true" style="width:60px;height:60px">
+            <path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="var(--on-green)"/>
+            <circle cx="24" cy="17.5" r="10" fill="var(--green)"/>
+            <polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="var(--on-green)"/>
+          </svg>
+          <span class="word">Fut<b>GO</b></span>
+        </div>
+        <span class="tag">Inverso · sobre verde de marca</span>
+      </div>
+    </div>
+
+    <div class="construct" style="margin-top:20px">
+      <div class="c">
+        <div class="demo">
+          <svg viewBox="0 0 48 48" fill="none" style="width:64px;height:64px">
+            <path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="var(--green)"/>
+            <circle cx="24" cy="17.5" r="10" fill="#fff"/>
+            <polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="var(--green)"/>
+          </svg>
+        </div>
+        <h4>Isotipo</h4>
+        <p>Pin + balón. App icon, favicon, avatar de marca.</p>
+      </div>
+      <div class="c">
+        <div class="demo" style="background:var(--navy)">
+          <span class="word" style="font-family:var(--font-display);font-stretch:125%;font-weight:800;font-size:30px;color:var(--text)">Fut<b style="color:var(--green)">GO</b></span>
+        </div>
+        <h4>Wordmark</h4>
+        <p>Archivo Expanded 800. "GO" siempre en verde de marca.</p>
+      </div>
+      <div class="c">
+        <div class="demo"><span class="badge badge-green" style="font-size:13px;height:auto;padding:6px 12px">Área segura = altura de la "O"</span></div>
+        <h4>Espacio libre</h4>
+        <p>Margen mínimo: la altura de la "O" alrededor del lockup.</p>
+      </div>
+      <div class="c dont">
+        <div class="demo">
+          <span class="word" style="font-family:var(--font-display);font-stretch:125%;font-weight:800;font-size:26px;transform:skewX(-12deg);display:inline-block;color:var(--text-muted)">FutGO</span>
+        </div>
+        <h4>No hacer</h4>
+        <p>No inclinar, deformar, recolorear el "GO" ni separar el isotipo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLOR -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow muted">03 — Color</span>
+      <h2>Paleta</h2>
+      <p>Verde eléctrico como única señal de marca sobre una base casi-negra. Todo lo demás es neutro y semántico: el color se gana su lugar, no lo regala.</p>
+    </div>
+
+    <div class="pal-row-title">Marca</div>
+    <div class="pal">
+      <div class="sw"><div class="cap" style="background:#00e676;color:#052b1a"><span class="mono">FutGO Green</span></div><div class="info"><div class="nm">Green</div><div class="hx">#00E676</div><div class="role">CTA · acentos · marca</div></div></div>
+      <div class="sw"><div class="cap" style="background:#00c853;color:#052b1a"><span class="mono">Strong</span></div><div class="info"><div class="nm">Green Strong</div><div class="hx">#00C853</div><div class="role">Pressed · hover</div></div></div>
+      <div class="sw"><div class="cap" style="background:#12203a;color:#e8ecf1"><span class="mono">Navy</span></div><div class="info"><div class="nm">Navy</div><div class="hx">#12203A</div><div class="role">Superficie de acento</div></div></div>
+      <div class="sw"><div class="cap" style="background:#0b0f14;color:#e8ecf1;border:1px solid var(--border)"><span class="mono">Base</span></div><div class="info"><div class="nm">Ink Base</div><div class="hx">#0B0F14</div><div class="role">Fondo modo oscuro</div></div></div>
+    </div>
+
+    <div class="pal-row-title">Semánticos</div>
+    <div class="pal">
+      <div class="sw"><div class="cap" style="background:#2ee37a;color:#052b1a"><span class="mono">Success</span></div><div class="info"><div class="nm">Success</div><div class="hx">#2EE37A</div><div class="role">Victoria · confirmado</div></div></div>
+      <div class="sw"><div class="cap" style="background:#ffb020;color:#2c2009"><span class="mono">Warning</span></div><div class="info"><div class="nm">Warning</div><div class="hx">#FFB020</div><div class="role">Pendiente · empate</div></div></div>
+      <div class="sw"><div class="cap" style="background:#ff5a5f;color:#2c1213"><span class="mono">Danger</span></div><div class="info"><div class="nm">Danger</div><div class="hx">#FF5A5F</div><div class="role">En vivo · derrota · error</div></div></div>
+      <div class="sw"><div class="cap" style="background:#4d9bff;color:#0e1f33"><span class="mono">Info</span></div><div class="info"><div class="nm">Info</div><div class="hx">#4D9BFF</div><div class="role">Reservas · enlaces</div></div></div>
+    </div>
+
+    <div class="pal-row-title">Neutros · modo oscuro</div>
+    <div class="pal">
+      <div class="sw"><div class="cap" style="background:#0b0f14;border:1px solid var(--border)"></div><div class="info"><div class="nm">bg</div><div class="hx">#0B0F14</div></div></div>
+      <div class="sw"><div class="cap" style="background:#11161d"></div><div class="info"><div class="nm">surface</div><div class="hx">#11161D</div></div></div>
+      <div class="sw"><div class="cap" style="background:#161e28"></div><div class="info"><div class="nm">surface-2</div><div class="hx">#161E28</div></div></div>
+      <div class="sw"><div class="cap" style="background:#232f3d"></div><div class="info"><div class="nm">border</div><div class="hx">#232F3D</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TYPE -->
+<section class="section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow muted">04 — Tipografía</span>
+      <h2>Sistema tipográfico</h2>
+      <p>Archivo en su eje expandido para titulares y datos de impacto. Inter para UI y lectura. JetBrains Mono para etiquetas técnicas y metadatos.</p>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">
+        <h4>Archivo</h4>
+        <p>Display & marketing. Usar el eje <em>Expanded</em> (font-stretch 125%) en pesos 700–900. Energía deportiva con estructura.</p>
+        <dl>
+          <dt>Rol</dt><dd>Titulares, stats, marca</dd>
+          <dt>Pesos</dt><dd>700 · 800 · 900</dd>
+          <dt>Width</dt><dd>Expanded 125%</dd>
+          <dt>Tracking</dt><dd>−0.02em</dd>
+        </dl>
+      </div>
+      <div class="show">
+        <div class="display" style="font-size:84px">Matchday</div>
+        <div class="l">Display · Archivo Expanded 900 · 84/.96</div>
+        <div class="display-2" style="font-size:40px">Jornada 12 · Liga Pachón</div>
+        <div class="l">Heading · Archivo Expanded 700 · 40</div>
+      </div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">
+        <h4>Inter</h4>
+        <p>UI y cuerpo. Neutral, altísima legibilidad a tamaños pequeños. La base de toda la interfaz del SaaS.</p>
+        <dl>
+          <dt>Rol</dt><dd>UI, cuerpo, botones</dd>
+          <dt>Pesos</dt><dd>400 · 500 · 600 · 700</dd>
+          <dt>Tracking</dt><dd>−0.01em en UI</dd>
+        </dl>
+      </div>
+      <div class="show">
+        <p style="font-size:20px;font-weight:600;margin:0">Crea tu torneo en minutos y deja que FutGO calcule la tabla.</p>
+        <div class="l">Body L · Inter 600 · 20/1.5</div>
+        <p style="font-size:15px;color:var(--text-muted);margin:0;max-width:60ch">Cada partido alimenta automáticamente las estadísticas de jugadores y equipos: goles, asistencias, tarjetas, racha y rating — sin hojas de cálculo, sin discusiones.</p>
+        <div class="l">Body · Inter 400 · 15/1.55</div>
+      </div>
+    </div>
+
+    <div class="type-spec">
+      <div class="meta">
+        <h4>JetBrains Mono</h4>
+        <p>Datos y etiquetas. Eyebrows, IDs de partido, timestamps, columnas numéricas. Aporta la limpieza técnica tipo Linear.</p>
+        <dl>
+          <dt>Rol</dt><dd>Labels, IDs, metadatos</dd>
+          <dt>Pesos</dt><dd>400 · 500</dd>
+          <dt>Tracking</dt><dd>+0.12em</dd>
+        </dl>
+      </div>
+      <div class="show">
+        <div class="mono" style="font-size:14px;line-height:2;color:var(--text-muted)">
+          MATCH-1042 · 30·MAY·2026 · 19:00<br/>
+          GROUP·A · MD·07 · CANCHA·3<br/>
+          <span style="color:var(--green)">FT 3—1 · RATING 7.8</span>
+        </div>
+        <div class="l">Mono · JetBrains 500 · 14/2.0 · +.12em</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="padding:48px 0;background:var(--surface);border-top:1px solid var(--border)">
+  <div class="wrap row wrap-row" style="justify-content:space-between;gap:18px">
+    <div class="logo"><svg class="mark" viewBox="0 0 48 48" fill="none"><path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="var(--green)"/><circle cx="24" cy="17.5" r="10" fill="#fff"/><polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="var(--green)"/></svg><span class="word">Fut<b>GO</b></span></div>
+    <div class="row" style="gap:18px">
+      <a class="text-muted" href="02 UI Kit.html">UI Kit →</a>
+      <a class="text-muted" href="03 Landing.html">Landing →</a>
+    </div>
+    <span class="mono text-subtle" style="font-size:12px">Donde crece el fútbol amateur</span>
+  </div>
+</footer>
+
+<script src="futgo.js"></script>
+</body>
+</html>

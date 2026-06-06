@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>FutGO · Splash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --green:#00e676; --ink:#0b0f14; --on-green:#052b1a; --text:#e8ecf1; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background: var(--ink);
+    color: var(--text);
+    font-family: "Archivo", system-ui, sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100dvh;
+    overflow:hidden;
+    position:relative;
+  }
+  /* brand glow field */
+  body::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(55% 45% at 50% 42%, rgba(0,230,118,.20), transparent 60%),
+      radial-gradient(80% 60% at 50% 120%, rgba(18,32,58,.7), transparent 70%);
+    z-index:0;
+  }
+  /* subtle dotted pitch texture */
+  body::after{
+    content:""; position:absolute; inset:0; z-index:0; opacity:.5;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 0);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(60% 60% at 50% 45%, #000, transparent 75%);
+            mask-image: radial-gradient(60% 60% at 50% 45%, #000, transparent 75%);
+  }
+  .splash{
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center;
+    gap:28px;
+  }
+  .logo-mark{
+    width:120px; height:120px;
+    filter: drop-shadow(0 0 36px rgba(0,230,118,.45));
+    animation: pop .7s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .logo-mark .ring{ transform-origin:center; animation: ripple 2.4s ease-out infinite; }
+  .wordmark{
+    font-weight:900; font-stretch:125%; font-size:52px; letter-spacing:-.03em;
+    line-height:1; color:var(--text);
+    animation: rise .7s .12s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .wordmark b{ color:var(--green); }
+  .tagline{
+    font-family:"JetBrains Mono", monospace; font-size:12px; letter-spacing:.22em;
+    text-transform:uppercase; color: var(--green);
+    animation: rise .7s .24s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .loader{
+    position:absolute; bottom:max(48px, env(safe-area-inset-bottom));
+    left:50%; transform:translateX(-50%); z-index:1;
+    width:120px; height:4px; border-radius:99px; overflow:hidden;
+    background: rgba(255,255,255,.08);
+  }
+  .loader > i{
+    display:block; height:100%; width:40%; border-radius:99px;
+    background: var(--green); box-shadow:0 0 12px rgba(0,230,118,.6);
+    animation: slide 1.3s ease-in-out infinite;
+  }
+  @keyframes pop{ from{ opacity:0; transform:scale(.8) translateY(8px);} to{ opacity:1; transform:none;} }
+  @keyframes rise{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:none;} }
+  @keyframes ripple{ 0%{ transform:scale(1); opacity:.5;} 70%{ transform:scale(1.5); opacity:0;} 100%{opacity:0;} }
+  @keyframes slide{ 0%{ transform:translateX(-120%);} 50%{ transform:translateX(120%);} 100%{ transform:translateX(300%);} }
+  @media (prefers-reduced-motion: reduce){
+    .logo-mark,.wordmark,.tagline{ animation:none; }
+    .logo-mark .ring,.loader>i{ animation:none; }
+    .loader>i{ width:100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="splash">
+    <svg class="logo-mark" viewBox="0 0 48 48" fill="none" aria-label="FutGO">
+      <circle class="ring" cx="24" cy="17.5" r="15" fill="none" stroke="#00e676" stroke-width="1"/>
+      <path d="M24 45.5C24 45.5 8 30 8 18A16 16 0 1 1 40 18C40 30 24 45.5 24 45.5Z" fill="#00e676"/>
+      <circle cx="24" cy="17.5" r="10" fill="#fff"/>
+      <polygon points="24,12.3 28.95,15.89 27.06,21.71 20.94,21.71 19.05,15.89" fill="#00e676"/>
+    </svg>
+    <div class="wordmark">Fut<b>GO</b></div>
+    <div class="tagline">Donde crece el fútbol amateur</div>
+  </div>
+  <div class="loader" aria-hidden="true"><i></i></div>
+</body>
+</html>

@@ -9,7 +9,7 @@
     <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1 mb-6">{{ $tournament->name }}</h1>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">
-        <form method="POST" action="{{ route('admin.torneos.update', $tournament) }}">
+        <form method="POST" action="{{ route('admin.torneos.update', $tournament) }}" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
             @include('admin.torneos._form')

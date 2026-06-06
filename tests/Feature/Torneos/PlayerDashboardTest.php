@@ -169,4 +169,31 @@ class PlayerDashboardTest extends TestCase
             ->assertSee('Mi Carrera')
             ->assertDontSee('Gestión Torneos');
     }
+
+    // ─── H16: credencial como modal en Mi Carrera ───────────────────────────────
+
+    public function test_mi_carrera_incluye_credencial_como_modal_con_qr(): void
+    {
+        [$tournament, $teams] = $this->makeScenario();
+        $player = $this->playerOf($teams[0]);
+
+        $this->actingAs($player)
+            ->get(route('torneos.mi-carrera'))
+            ->assertOk()
+            ->assertSee('Mi credencial')          // botón que abre el modal
+            ->assertSee('credentialOpen', false)  // estado Alpine del modal
+            ->assertSee($player->futgo_id)        // identificador FUTGO en el modal
+            ->assertSee('<svg', false);           // QR renderizado como SVG
+    }
+
+    public function test_credencial_ya_no_esta_en_el_nav(): void
+    {
+        [$tournament, $teams] = $this->makeScenario();
+
+        // H16: "Mi Credencial" dejó de ser un ítem de menú (ahora es modal).
+        $this->actingAs($this->playerOf($teams[0]))
+            ->get(route('inicio'))
+            ->assertOk()
+            ->assertDontSee('Mi Credencial');
+    }
 }
