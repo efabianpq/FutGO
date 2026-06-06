@@ -86,9 +86,10 @@
                 @else
                     {{-- Identidad del jugador --}}
                     <div class="flex items-center gap-4">
-                        <x-avatar :user="$result['user']" size="lg" />
+                        <x-avatar :user="$result['user']" size="md" class="sm:hidden shrink-0" />
+                        <x-avatar :user="$result['user']" size="lg" class="hidden sm:block shrink-0" />
                         <div class="min-w-0">
-                            <p class="font-display font-bold text-display-s text-ink truncate">{{ $result['user']->name }}</p>
+                            <p class="font-display font-bold text-lg sm:text-display-s text-ink break-words">{{ $result['user']->name }}</p>
                             <p class="font-mono font-bold text-body text-pitch mt-0.5 tracking-wider">{{ $result['user']->futgo_id }}</p>
                         </div>
                     </div>

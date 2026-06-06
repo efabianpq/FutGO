@@ -37,16 +37,19 @@
     </div>
 
     {{-- Encabezado: hoja de vida --}}
-    <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6 flex flex-wrap items-center gap-5">
-        <x-avatar :user="$user" size="xl" />
+    {{-- Móvil: avatar+nombre en fila (sm avatar), botones debajo.
+         Desktop: fila única con xl avatar + texto flex-1 + botones a la derecha. --}}
+    <div class="bg-white border border-line rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-wrap sm:flex-nowrap sm:items-center gap-4 sm:gap-5">
+        <x-avatar :user="$user" size="lg" class="sm:hidden shrink-0" />
+        <x-avatar :user="$user" size="xl" class="hidden sm:block shrink-0" />
         <div class="min-w-0 flex-1">
             <p class="eyebrow">Hoja de vida deportiva</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
+            <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 {{ $careerStat->tournaments_count }} torneo(s) · {{ $careerStat->teams_count }} equipo(s)
             </p>
         </div>
-        <div class="flex flex-col gap-2 shrink-0">
+        <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto shrink-0">
             <x-btn type="button" variant="primary" size="sm" x-on:click="credentialOpen = true">Mi credencial</x-btn>
             <x-btn :href="route('profile.show')" variant="ghost" size="sm">Editar perfil / foto</x-btn>
         </div>

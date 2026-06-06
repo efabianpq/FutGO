@@ -24,32 +24,33 @@ $eventLabels = [
     </nav>
 
     {{-- Encabezado del jugador --}}
-    <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div class="flex items-start gap-4">
-            <x-avatar :user="$teamPlayer->user" :name="$teamPlayer->displayName()" size="lg" />
-            <div>
-            <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">
-                {{ $teamPlayer->displayName() }}
-            </h1>
-            <div class="flex items-center gap-3 mt-2 flex-wrap">
-                <div class="flex items-center gap-1.5">
-                    @if ($teamPlayer->team?->color)
-                        <span class="w-3 h-3 rounded-full border border-line"
-                              style="background:{{ $teamPlayer->team->color }}"></span>
+    <div class="bg-white border border-line rounded-md shadow-card-2 p-5 sm:p-6 mb-6">
+        <div class="flex items-center gap-4">
+            <x-avatar :user="$teamPlayer->user" :name="$teamPlayer->displayName()" size="md" class="sm:hidden shrink-0" />
+            <x-avatar :user="$teamPlayer->user" :name="$teamPlayer->displayName()" size="lg" class="hidden sm:block shrink-0" />
+            <div class="min-w-0 flex-1">
+                <p class="eyebrow">{{ $tournament->name }}</p>
+                <h1 class="font-display font-bold text-xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">
+                    {{ $teamPlayer->displayName() }}
+                </h1>
+                <div class="flex items-center gap-3 mt-2 flex-wrap">
+                    <div class="flex items-center gap-1.5">
+                        @if ($teamPlayer->team?->color)
+                            <span class="w-3 h-3 rounded-full border border-line"
+                                  style="background:{{ $teamPlayer->team->color }}"></span>
+                        @endif
+                        <span class="font-display font-semibold text-[14px] text-pitch">{{ $teamPlayer->team?->name }}</span>
+                    </div>
+                    @if ($teamPlayer->jersey_number)
+                        <span class="font-mono text-[13px] text-ink-mute">#{{ $teamPlayer->jersey_number }}</span>
                     @endif
-                    <span class="font-display font-semibold text-[14px] text-pitch">{{ $teamPlayer->team?->name }}</span>
+                    @if ($teamPlayer->position)
+                        <span class="font-mono text-[12px] text-ink-mute uppercase">{{ $teamPlayer->position }}</span>
+                    @endif
+                    @if ($teamPlayer->isInactive())
+                        <x-badge variant="default">Inactivo</x-badge>
+                    @endif
                 </div>
-                @if ($teamPlayer->jersey_number)
-                    <span class="font-mono text-[13px] text-ink-mute">#{{ $teamPlayer->jersey_number }}</span>
-                @endif
-                @if ($teamPlayer->position)
-                    <span class="font-mono text-[12px] text-ink-mute uppercase">{{ $teamPlayer->position }}</span>
-                @endif
-                @if ($teamPlayer->isInactive())
-                    <x-badge variant="default">Inactivo</x-badge>
-                @endif
-            </div>
             </div>
         </div>
     </div>

@@ -37,18 +37,20 @@
 
     {{-- ══ 1. INFORMACIÓN GENERAL ═══════════════════════════════════════════ --}}
     <div class="bg-white border border-line rounded-md shadow-card-2 p-5 sm:p-6 mb-6">
-        <div class="flex items-start gap-4">
+        <div class="flex items-center gap-4">
+            {{-- Avatar del equipo: más pequeño en móvil (w-12) --}}
             @if ($team->shield_url)
-                <img src="{{ $team->shield_url }}" alt="{{ $team->name }}" class="w-16 h-16 rounded-full object-cover border border-line shrink-0">
+                <img src="{{ $team->shield_url }}" alt="{{ $team->name }}"
+                     class="w-12 sm:w-16 h-12 sm:h-16 rounded-full object-cover border border-line shrink-0">
             @else
-                <span class="w-16 h-16 rounded-full border border-line shrink-0 flex items-center justify-center font-display font-extrabold text-pitch text-2xl"
+                <span class="w-12 sm:w-16 h-12 sm:h-16 rounded-full border border-line shrink-0 flex items-center justify-center font-display font-extrabold text-pitch text-xl sm:text-2xl"
                       style="background:{{ $team->color ?? '#E8E8E8' }}">
                     {{ mb_strtoupper(mb_substr($team->name, 0, 1)) }}
                 </span>
             @endif
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                    <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
+                    <h1 class="font-display font-bold text-xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
                     <x-badge :variant="$tsVariant">{{ $tsLabel }}</x-badge>
                 </div>
                 <p class="font-mono text-[12px] text-ink-mute mt-1">

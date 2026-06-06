@@ -39,15 +39,15 @@
     @endif
 
     {{-- Encabezado --}}
-    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $tournament->name }}</h1>
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-6">
+        <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 class="font-display font-bold text-xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $tournament->name }}</h1>
                 <x-badge :variant="$variant">{{ $label }}</x-badge>
             </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">{{ $tournament->slug }} · {{ $formatLabels[$tournament->format] ?? $tournament->format }}</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-2 sm:gap-3 shrink-0">
             <x-btn :href="route('admin.torneos.edit', $tournament)" variant="ghost">Editar</x-btn>
             <x-btn :href="route('admin.torneos.index')" variant="link">← Volver</x-btn>
         </div>

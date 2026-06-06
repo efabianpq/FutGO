@@ -22,10 +22,11 @@
     {{-- Tarjeta credencial --}}
     <div class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden">
         {{-- Cabecera identidad --}}
-        <div class="bg-pitch px-6 py-5 flex items-center gap-4">
-            <x-avatar :user="$user" size="lg" class="!border-bone/40" />
+        <div class="bg-pitch px-5 sm:px-6 py-4 sm:py-5 flex items-center gap-4">
+            <x-avatar :user="$user" size="md" class="sm:hidden !border-bone/40 shrink-0" />
+            <x-avatar :user="$user" size="lg" class="hidden sm:block !border-bone/40 shrink-0" />
             <div class="min-w-0">
-                <p class="font-display font-extrabold text-bone text-display-s uppercase truncate">{{ $user->name }}</p>
+                <p class="font-display font-extrabold text-bone text-lg sm:text-display-s uppercase break-words">{{ $user->name }}</p>
                 <p class="font-mono text-[12px] text-bone/70 mt-0.5">Jugador FUTGO</p>
             </div>
         </div>

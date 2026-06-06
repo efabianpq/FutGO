@@ -30,12 +30,12 @@
         </div>
     @endif
 
-    <div class="flex items-start justify-between gap-4 mb-6">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $team->name }}</h1>
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-6">
+        <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <h1 class="font-display font-bold text-xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
                 @if ($team->color)
-                    <span class="inline-block w-5 h-5 rounded-full border border-line"
+                    <span class="inline-block w-5 h-5 rounded-full border border-line shrink-0"
                           style="background:{{ $team->color }}"></span>
                 @endif
                 <x-badge :variant="$variant">{{ $label }}</x-badge>

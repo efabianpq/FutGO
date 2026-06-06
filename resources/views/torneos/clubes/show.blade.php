@@ -20,17 +20,20 @@
     @endif
 
     {{-- Encabezado del club --}}
-    <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6 flex flex-wrap items-center gap-5">
-        <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" />
+    <div class="bg-white border border-line rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-wrap sm:flex-nowrap sm:items-center gap-4 sm:gap-5">
+        <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" class="sm:hidden shrink-0" />
+        <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" class="hidden sm:block shrink-0" />
         <div class="min-w-0 flex-1">
-            <p class="eyebrow">🛡️ Equipo</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
+            <p class="eyebrow">Equipo</p>
+            <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 Capitán: {{ $club->captain?->name ?? '—' }} · {{ $participations->count() }} participación(es) · {{ $players->count() }} jugadores
             </p>
         </div>
         @if ($canManage)
-            <x-btn :href="route('torneos.clubes.manage', $club)" variant="primary" size="sm">Gestionar plantilla</x-btn>
+            <div class="w-full sm:w-auto shrink-0">
+                <x-btn :href="route('torneos.clubes.manage', $club)" variant="primary" size="sm">Gestionar plantilla</x-btn>
+            </div>
         @endif
     </div>
 

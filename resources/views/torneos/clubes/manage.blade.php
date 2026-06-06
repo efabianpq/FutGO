@@ -19,10 +19,11 @@
 
     {{-- Identidad del equipo --}}
     <div class="bg-white border border-line rounded-md shadow-card-2 p-5 sm:p-6 mb-6">
-        <div class="flex items-start gap-4">
-            <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" />
+        <div class="flex items-center gap-4">
+            <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" class="sm:hidden shrink-0" />
+            <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" class="hidden sm:block shrink-0" />
             <div class="min-w-0 flex-1">
-                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase break-words">{{ $club->name }}</h1>
+                <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $club->name }}</h1>
                 <p class="font-mono text-[12px] text-ink-mute mt-1">Capitán: <span class="text-pitch font-semibold">{{ $club->captain?->name ?? '—' }}</span></p>
             </div>
         </div>
