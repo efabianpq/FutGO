@@ -17,7 +17,8 @@
     ];
 @endphp
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+     x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
@@ -31,6 +32,10 @@
             </div>
         @endif
     </div>
+
+    @if ($cards->isNotEmpty())
+        <div class="mb-5"><x-search-input placeholder="Buscar torneo por nombre…" /></div>
+    @endif
 
     @if ($cards->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card-2 p-10 text-center">
@@ -53,7 +58,8 @@
                     $next = $card['next_match'];
                 @endphp
 
-                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
+                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                         x-show="match(@js($t->name))" x-cloak>
                     {{-- Encabezado --}}
                     <div class="p-5 border-b border-line-soft">
                         <div class="flex items-start justify-between gap-3">
@@ -106,56 +112,24 @@
                         </div>
                     </div>
 
-                    {{-- Accesos directos --}}
+                    {{-- Accesos directos (v2.0 H8/H11: tarjeta simplificada) --}}
                     <div class="p-5 mt-auto">
-                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mb-2">Accesos</p>
                         <div class="flex flex-wrap gap-2">
-                            <a href="{{ route('torneos.hub', $t) }}"
-                               class="px-3 py-1.5 rounded-md bg-pitch text-bone font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch-deep transition-all duration-fast">
-                                Hub
-                            </a>
-
                             @if ($card['manages'])
-                                {{-- H3: acciones de administración (Ver / Editar) dinámicas para admins. --}}
+                                {{-- Admin del torneo: Resumen (hub) + Panel de Control (gestión). --}}
+                                <a href="{{ route('torneos.hub', $t) }}"
+                                   class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
+                                    Resumen
+                                </a>
                                 <a href="{{ route('admin.torneos.show', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
-                                    Ver
+                                   class="px-3 py-1.5 rounded-md bg-pitch text-bone font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch-deep transition-all duration-fast">
+                                    Panel de Control
                                 </a>
-                                <a href="{{ route('admin.torneos.edit', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
-                                    Editar
-                                </a>
-                                <a href="{{ route('admin.torneos.equipos.index', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">
-                                    Equipos
-                                </a>
-                                @if ($card['has_fixture'])
-                                    <a href="{{ route('admin.torneos.partidos.index', $t) }}"
-                                       class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">
-                                        Fixture
-                                    </a>
-                                    @if ($card['has_groups'])
-                                        <a href="{{ route('admin.torneos.standings.index', $t) }}"
-                                           class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">
-                                            Standings
-                                        </a>
-                                    @endif
-                                @endif
-                            @elseif ($card['my_team'])
-                                <a href="{{ route('torneos.equipo.show', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-pitch text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch hover:text-bone transition-all duration-fast">
-                                    Mi equipo
-                                </a>
-                            @endif
-
-                            @if ($card['has_fixture'])
-                                <a href="{{ route('torneos.cronograma.index', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">
-                                    Cronograma
-                                </a>
-                                <a href="{{ route('torneos.estadisticas.index', $t) }}"
-                                   class="px-3 py-1.5 rounded-md border border-line text-pitch font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-bone-soft transition-all duration-fast">
-                                    Estadísticas
+                            @else
+                                {{-- Jugador / capitán: un único acceso al torneo. --}}
+                                <a href="{{ route('torneos.hub', $t) }}"
+                                   class="px-3 py-1.5 rounded-md bg-pitch text-bone font-display font-semibold text-[12px] uppercase tracking-wide-label hover:bg-pitch-deep transition-all duration-fast">
+                                    Ver torneo
                                 </a>
                             @endif
                         </div>

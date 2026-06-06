@@ -84,8 +84,91 @@ class CaptainDashboardTest extends TestCase
         $this->makeClub($captain);
 
         $this->actingAs($captain)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertSee('Mis Equipos');
+    }
+
+    // ─── E8/H13: el admin de plataforma ve todos los equipos ─────────────────────
+
+    public function test_admin_de_plataforma_ve_todos_los_equipos(): void
+    {
+        // Equipos de distintos capitanes.
+        $cap1 = $this->makeUser(['name' => 'Capitán Uno']);
+        $club1 = $this->makeClub($cap1);
+        $club1->update(['name' => 'Equipo Alfa']);
+
+        $cap2 = $this->makeUser(['name' => 'Capitán Dos']);
+        $club2 = $this->makeClub($cap2);
+        $club2->update(['name' => 'Equipo Beta']);
+
+        $platformAdmin = $this->makeUser(['role' => 'admin', 'modules' => 'full']);
+
+        $this->actingAs($platformAdmin)
+            ->get(route('torneos.mis-equipos'))
+            ->assertOk()
+            ->assertSee('Todos los equipos')   // título para admin
+            ->assertSee('Equipo Alfa')
+            ->assertSee('Equipo Beta');
+    }
+
+    // ─── E6/H9: agregar jugador por nombre con autocompletado ────────────────────
+
+    public function test_busqueda_de_jugadores_por_nombre_parcial(): void
+    {
+        $captain = $this->makeUser();
+        $this->makeClub($captain);
+
+        // "Edisson Fabian Pachon" debe aparecer al buscar "Fabian".
+        $this->makeUser(['name' => 'Edisson Fabian Pachon']);
+        $this->makeUser(['name' => 'Carlos Gómez']);
+
+        $res = $this->actingAs($captain)
+            ->getJson(route('torneos.jugadores.buscar', ['q' => 'fabian']));
+
+        $res->assertOk();
+        $res->assertJsonFragment(['name' => 'Edisson Fabian Pachon']);
+        $res->assertJsonMissing(['name' => 'Carlos Gómez']);
+    }
+
+    public function test_busqueda_requiere_minimo_dos_caracteres(): void
+    {
+        $captain = $this->makeUser();
+        $this->makeClub($captain);
+        $this->makeUser(['name' => 'Fabian']);
+
+        $this->actingAs($captain)
+            ->getJson(route('torneos.jugadores.buscar', ['q' => 'f']))
+            ->assertOk()
+            ->assertJsonCount(0);
+    }
+
+    public function test_agregar_jugador_por_user_id_desde_sugerencia(): void
+    {
+        $captain = $this->makeUser();
+        $club    = $this->makeClub($captain);
+        $player  = $this->makeUser(['name' => 'Edisson Fabian Pachon']);
+
+        $this->actingAs($captain)
+            ->post(route('torneos.clubes.players.add', $club), [
+                'user_id'  => $player->id,
+                'position' => 'Delantero',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('club_players', [
+            'club_id' => $club->id,
+            'user_id' => $player->id,
+        ]);
+    }
+
+    public function test_agregar_jugador_sin_seleccion_falla(): void
+    {
+        $captain = $this->makeUser();
+        $club    = $this->makeClub($captain);
+
+        $this->actingAs($captain)
+            ->post(route('torneos.clubes.players.add', $club), ['position' => 'Arquero'])
+            ->assertSessionHasErrors('user_id');
     }
 }

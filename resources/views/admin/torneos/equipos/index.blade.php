@@ -13,7 +13,7 @@
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-     x-data="{ createOpen: false, assignFor: null }">
+     x-data="{ createOpen: false, assignFor: null, q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-2 font-mono text-[12px] text-ink-mute mb-5">
@@ -25,7 +25,7 @@
     <div class="flex items-center justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Equipos inscritos</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Equipos inscritos</h1>
         </div>
         <div class="flex items-center gap-3">
             <x-badge variant="default">{{ $teams->count() }} equipos</x-badge>
@@ -34,6 +34,10 @@
             @endif
         </div>
     </div>
+
+    @if ($teams->isNotEmpty())
+        <div class="mb-4"><x-search-input placeholder="Buscar equipo por nombre…" /></div>
+    @endif
 
     @if (session('status'))
         <div class="mb-4 bg-gol/20 border border-gol text-pitch-deep px-4 py-3 rounded-md font-display font-semibold">
@@ -102,7 +106,8 @@
                 <tbody class="divide-y divide-line-soft">
                     @foreach ($teams as $team)
                         @php [$label, $variant] = $statusMeta[$team->status] ?? [$team->status, 'default']; @endphp
-                        <tr class="hover:bg-bone-soft transition-colors duration-fast">
+                        <tr class="hover:bg-bone-soft transition-colors duration-fast"
+                            x-show="match(@js($team->name))" x-cloak>
                             <td class="px-4 py-3">
                                 <a href="{{ route('admin.torneos.equipos.show', [$tournament, $team]) }}"
                                    class="font-display font-bold text-pitch hover:underline">

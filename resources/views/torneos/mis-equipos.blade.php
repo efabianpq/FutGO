@@ -2,13 +2,18 @@
 @section('title', 'Mis Equipos')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ showCreate: {{ $errors->any() ? 'true' : 'false' }} }">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+     x-data="{ showCreate: {{ $errors->any() ? 'true' : 'false' }}, q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-            <p class="eyebrow">🛡️ Equipos</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Mis Equipos</h1>
-            <p class="text-ink-soft text-[14px] mt-1">Tus equipos permanentes: los que dirigís como capitán y aquellos donde jugás. Un equipo es transversal a los torneos.</p>
+            <p class="eyebrow">Equipos</p>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Mis Equipos</h1>
+            @if ($isPlatformAdmin)
+                <p class="text-ink-soft text-[14px] mt-1">Como administrador de la plataforma ves todos los equipos registrados.</p>
+            @else
+                <p class="text-ink-soft text-[14px] mt-1">Tus equipos permanentes: los que dirigís como capitán y aquellos donde jugás. Un equipo es transversal a los torneos.</p>
+            @endif
         </div>
         <x-btn type="button" variant="primary" x-on:click="showCreate = !showCreate">+ Crear equipo</x-btn>
     </div>
@@ -41,16 +46,23 @@
         <p class="font-mono text-[11px] text-ink-mute mt-2">Al crear el equipo quedás como su capitán. Después lo podés inscribir en los torneos que quieras.</p>
     </div>
 
-    {{-- Equipos que dirijo --}}
-    <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Dirijo como capitán ({{ $captainClubs->count() }})</p>
+    @if ($captainClubs->isNotEmpty() || $memberClubs->isNotEmpty())
+        <div class="mb-5"><x-search-input placeholder="Buscar equipo por nombre…" /></div>
+    @endif
+
+    {{-- Equipos que dirijo (o todos, si es admin de plataforma) --}}
+    <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">
+        {{ $isPlatformAdmin ? 'Todos los equipos' : 'Dirijo como capitán' }} ({{ $captainClubs->count() }})
+    </p>
     @if ($captainClubs->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card p-8 text-center mb-8">
-            <p class="text-ink-soft">Todavía no dirigís ningún equipo. Creá uno para empezar.</p>
+            <p class="text-ink-soft">{{ $isPlatformAdmin ? 'Todavía no hay equipos en la plataforma.' : 'Todavía no dirigís ningún equipo. Creá uno para empezar.' }}</p>
         </div>
     @else
         <div class="grid grid-cols-1 gap-6 mb-8">
             @foreach ($captainClubs as $club)
-                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
+                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                         x-show="match(@js($club->name))" x-cloak>
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">
                         <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" />
                         <div class="min-w-0 flex-1">
@@ -74,7 +86,8 @@
         <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Juego en ({{ $memberClubs->count() }})</p>
         <div class="grid grid-cols-1 gap-6">
             @foreach ($memberClubs as $club)
-                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
+                <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                         x-show="match(@js($club->name))" x-cloak>
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">
                         <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" />
                         <div class="min-w-0 flex-1">

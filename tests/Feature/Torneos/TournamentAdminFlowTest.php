@@ -100,8 +100,8 @@ class TournamentAdminFlowTest extends TestCase
             ->get(route('torneos.index'))
             ->assertOk()
             ->assertSee($tournament->name)
-            ->assertSee('Inscripción')   // badge de estado open
-            ->assertSee('Editar')        // acción de administrador (H3: Ver/Editar)
+            ->assertSee('Inscripción')        // badge de estado open
+            ->assertSee('Panel de Control')   // acción de administrador (v2.0 H11)
             ->assertDontSee('Próximamente');
     }
 
@@ -207,14 +207,16 @@ class TournamentAdminFlowTest extends TestCase
 
     // ─── Menú por rol ──────────────────────────────────────────────────────────
 
-    public function test_navbar_muestra_gestion_para_torneo_admin(): void
+    public function test_navbar_muestra_mis_torneos_para_torneo_admin(): void
     {
+        // v2.0: la gestión se accede desde la tarjeta de Mis Torneos ("Panel de
+        // Control"), no desde un item de nav. El admin ve "Mis Torneos" en el nav.
         $admin = $this->makeUser(['role' => 'torneo_admin']);
         $this->makeTournament($admin);
 
         $this->actingAs($admin)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
-            ->assertSee('Gestión Torneos');
+            ->assertSee('Mis Torneos');
     }
 }

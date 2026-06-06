@@ -121,9 +121,9 @@ class TournamentAdminTest extends TestCase
              ->assertSee('Torneo De A');
     }
 
-    public function test_vista_unificada_muestra_acciones_ver_y_editar_para_admin(): void
+    public function test_vista_unificada_muestra_panel_de_control_para_admin(): void
     {
-        // H3: los botones Ver/Editar aparecen solo si el usuario administra el torneo.
+        // v2.0 (H11): el admin ve "Resumen" + "Panel de Control" en la tarjeta.
         $admin = $this->torneoAdmin();
         $this->makeTournamentFor($admin, ['name' => 'Torneo Gestionado']);
 
@@ -131,12 +131,12 @@ class TournamentAdminTest extends TestCase
              ->get(route('torneos.index'))
              ->assertOk()
              ->assertSee('Torneo Gestionado')
-             ->assertSee('Editar');
+             ->assertSee('Panel de Control');
     }
 
     public function test_jugador_no_ve_acciones_de_administracion(): void
     {
-        // Un jugador (no admin del torneo) ve la tarjeta sin botón Editar.
+        // Un jugador (no admin del torneo) ve "Ver torneo", no "Panel de Control".
         $admin  = $this->torneoAdmin();
         $player = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
 
@@ -153,7 +153,8 @@ class TournamentAdminTest extends TestCase
              ->get(route('torneos.index'))
              ->assertOk()
              ->assertSee('Torneo Jugado')
-             ->assertDontSee('Editar');
+             ->assertSee('Ver torneo')
+             ->assertDontSee('Panel de Control');
     }
 
     public function test_se_puede_crear_torneo_con_datos_validos(): void

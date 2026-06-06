@@ -137,24 +137,71 @@ class ClubController extends Controller
         return back()->with('status', 'Escudo del equipo actualizado.');
     }
 
-    /** Agrega un jugador registrado (por email) a la plantilla permanente. */
+    /**
+     * Búsqueda de jugadores registrados por nombre (autocompletado).
+     * Devuelve coincidencias parciales para que el capitán encuentre al usuario
+     * sin saber su email exacto (E6/H9). No expone datos sensibles más allá del
+     * nombre y un email parcialmente enmascarado para distinguir homónimos.
+     */
+    public function searchPlayers(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = User::query()
+            ->where('name', 'like', '%' . $q . '%')
+            ->whereNotNull('futgo_id')           // jugadores del ecosistema
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'email'])
+            ->map(fn ($u) => [
+                'id'    => $u->id,
+                'name'  => $u->name,
+                'email' => $this->maskEmail($u->email),
+            ]);
+
+        return response()->json($results);
+    }
+
+    /** Enmascara el email para distinguir homónimos sin exponerlo completo. */
+    private function maskEmail(?string $email): string
+    {
+        if (! $email || ! str_contains($email, '@')) {
+            return '';
+        }
+        [$local, $domain] = explode('@', $email, 2);
+        $shown = mb_substr($local, 0, 2);
+        return $shown . str_repeat('*', max(1, mb_strlen($local) - 2)) . '@' . $domain;
+    }
+
+    /** Agrega un jugador registrado (por nombre/sugerencia o email) a la plantilla. */
     public function addPlayer(Request $request, Club $club): RedirectResponse
     {
         $this->authorizeManage($club);
 
         $data = $request->validate([
-            'email'         => ['required', 'email'],
+            'user_id'       => ['nullable', 'integer', 'exists:users,id'],
+            'email'         => ['nullable', 'email'],
             'jersey_number' => ['nullable', 'integer', 'min:1', 'max:99'],
             'position'      => ['nullable', 'string', 'max:30'],
         ]);
 
-        $player = User::where('email', $data['email'])->first();
+        // Preferimos el user_id elegido en el autocompletado; si no, el email.
+        $player = null;
+        if (! empty($data['user_id'])) {
+            $player = User::find($data['user_id']);
+        } elseif (! empty($data['email'])) {
+            $player = User::where('email', $data['email'])->first();
+        }
+
         if (! $player) {
-            return back()->withErrors(['email' => 'No existe ningún usuario registrado con ese email. Pedile que se registre primero.']);
+            return back()->withErrors(['user_id' => 'Elegí un jugador de la lista de sugerencias o ingresá un email válido.']);
         }
 
         if ($club->players()->where('user_id', $player->id)->exists()) {
-            return back()->withErrors(['email' => "{$player->name} ya está en la plantilla."]);
+            return back()->withErrors(['user_id' => "{$player->name} ya está en la plantilla."]);
         }
 
         $member = ClubPlayer::create([

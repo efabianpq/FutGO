@@ -41,7 +41,7 @@
         <x-avatar :user="$user" size="xl" />
         <div class="min-w-0 flex-1">
             <p class="eyebrow">Hoja de vida deportiva</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 {{ $careerStat->tournaments_count }} torneo(s) · {{ $careerStat->teams_count }} equipo(s)
             </p>

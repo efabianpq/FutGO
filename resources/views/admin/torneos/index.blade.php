@@ -23,7 +23,7 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <p class="eyebrow">Administración</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Torneos</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Torneos</h1>
         </div>
         <x-btn :href="route('admin.torneos.create')" variant="primary">+ Nuevo torneo</x-btn>
     </div>

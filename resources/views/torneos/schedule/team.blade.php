@@ -31,7 +31,7 @@ $statusMeta = [
             @endif
             <div>
                 <p class="eyebrow">{{ $tournament->name }}</p>
-                <h1 class="font-display font-bold text-display-m text-pitch uppercase">{{ $team->name }}</h1>
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $team->name }}</h1>
                 <p class="font-mono text-[12px] text-ink-mute mt-0.5">
                     Capitán: {{ $team->captain?->name ?? '—' }}
                 </p>

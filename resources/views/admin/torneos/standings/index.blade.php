@@ -4,7 +4,8 @@
 @section('content')
 @include('admin.torneos._nav')
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+     x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-2 font-mono text-[12px] text-ink-mute mb-5">
@@ -16,7 +17,7 @@
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Tabla de posiciones</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Tabla de posiciones</h1>
             @if ($tournament->tiebreaker_order)
                 <p class="font-mono text-[11px] text-ink-mute mt-1">
                     Desempate: {{ implode(' → ', $tournament->tiebreaker_order) }}
@@ -55,6 +56,7 @@
             <p class="text-[13px] text-ink-mute mt-2">Generá el fixture primero desde el dashboard.</p>
         </div>
     @else
+        <div class="mb-5"><x-search-input placeholder="Buscar equipo por nombre…" /></div>
         @foreach ($phases as $phase)
             <div class="mb-8">
                 <p class="font-display font-bold text-pitch uppercase text-[15px] mb-4 flex items-center gap-2">
@@ -106,7 +108,8 @@
                                                     $posClass = 'text-ink-mute';
                                                 }
                                             @endphp
-                                            <tr class="hover:bg-bone-soft transition-colors duration-fast {{ $rowClass }}">
+                                            <tr class="hover:bg-bone-soft transition-colors duration-fast {{ $rowClass }}"
+                                                x-show="match(@js($standing->team?->name ?? ''))" x-cloak>
                                                 <td class="px-3 py-3 font-mono text-[13px] {{ $posClass }}">{{ $pos }}</td>
                                                 <td class="px-4 py-3">
                                                     <div class="flex items-center gap-2">

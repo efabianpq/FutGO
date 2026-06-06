@@ -192,6 +192,22 @@ class TeamHubTest extends TestCase
             ->assertOk();
     }
 
+    public function test_hub_muestra_estadisticas_acotadas_al_torneo_h7(): void
+    {
+        // H7: dentro de un torneo, "Mi equipo" muestra el contexto y las stats de
+        // ESE torneo (la consolidación cross-torneo vive en el perfil del club).
+        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $captain = $this->makeUser();
+        $t       = $this->makeTournament($admin);
+        $team    = $this->makeTeam($t, $captain);
+
+        $this->actingAs($captain)
+            ->get(route('torneos.equipo.show', $t))
+            ->assertOk()
+            ->assertSee('Plantilla en este torneo')   // scope explícito del torneo
+            ->assertSee($t->name);                    // contexto del torneo actual
+    }
+
     public function test_aviso_de_pendientes_visible_en_el_hub(): void
     {
         $admin   = $this->makeUser(['role' => 'torneo_admin']);

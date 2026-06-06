@@ -14,12 +14,12 @@ $statusMeta = [
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-     x-data="{ filterTeam: 'all' }">
+     x-data="{ filterTeam: 'all', q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">Estadísticas</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">{{ $tournament->name }}</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">{{ $tournament->name }}</h1>
             <div class="flex items-center gap-3 mt-1">
                 <x-badge :variant="$statusVariant">{{ $statusLabel }}</x-badge>
                 <span class="font-mono text-[12px] text-ink-mute">{{ ucfirst($tournament->sport) }}</span>
@@ -62,6 +62,9 @@ $statusMeta = [
             </div>
         @endif
 
+        {{-- Buscador por nombre --}}
+        <div class="mb-4"><x-search-input placeholder="Buscar jugador por nombre…" /></div>
+
         {{-- Tabla de estadísticas --}}
         <div class="bg-white border border-line rounded-md shadow-card-2 overflow-x-auto">
             <table class="w-full text-left min-w-[700px]">
@@ -82,7 +85,7 @@ $statusMeta = [
                     @foreach ($stats as $i => $stat)
                         @php $team = $stat->teamPlayer?->team; @endphp
                         <tr class="hover:bg-bone-soft transition-colors duration-fast"
-                            x-show="filterTeam === 'all' || filterTeam === '{{ $team?->id }}'"
+                            x-show="(filterTeam === 'all' || filterTeam === '{{ $team?->id }}') && match(@js($stat->teamPlayer?->user?->name ?? ''))"
                             x-transition>
                             <td class="px-4 py-3 font-mono text-[12px] text-ink-mute">{{ $i + 1 }}</td>
                             <td class="px-4 py-3">

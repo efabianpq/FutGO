@@ -129,8 +129,9 @@ class UnifiedCaptainPlayerTest extends TestCase
         $club = $this->createClub($user, 'AntiDup');
         $jugador = $this->torneoUser();
 
-        $this->actingAs($user)->post(route('torneos.clubes.players.add', $club), ['email' => $jugador->email])->assertRedirect();
-        $this->actingAs($user)->post(route('torneos.clubes.players.add', $club), ['email' => $jugador->email])->assertSessionHasErrors('email');
+        // v2.0 (E6/H9): alta por user_id (sugerencia de búsqueda por nombre).
+        $this->actingAs($user)->post(route('torneos.clubes.players.add', $club), ['user_id' => $jugador->id])->assertRedirect();
+        $this->actingAs($user)->post(route('torneos.clubes.players.add', $club), ['user_id' => $jugador->id])->assertSessionHasErrors('user_id');
 
         $this->assertEquals(1, ClubPlayer::where('club_id', $club->id)->where('user_id', $jugador->id)->count());
     }

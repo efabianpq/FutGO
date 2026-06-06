@@ -24,14 +24,14 @@ class NavigationTest extends TestCase
 
     public function test_usuario_solo_polla_ve_menu_polla_y_no_torneos(): void
     {
-        // H2/H17: el label cambió de "Mis Pronósticos" → "Pronósticos"
+        // v2.0: "Pronósticos" es un dropdown que agrupa Mis Pronósticos, Auditoría, etc.
         $user = $this->userWithModules('polla');
 
         $this->actingAs($user)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
-            ->assertSee('Pronósticos')      // nuevo label (sin "Mis")
-            ->assertSee('Auditoría')        // discriminador exclusivo de la polla
+            ->assertSee('Pronósticos')      // botón del dropdown
+            ->assertSee('Auditoría')        // subitem exclusivo de la polla
             ->assertDontSee('Mis Torneos')
             ->assertDontSee('Mi Carrera');
     }
@@ -41,12 +41,13 @@ class NavigationTest extends TestCase
         $user = $this->userWithModules('torneos');
 
         $this->actingAs($user)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertSee('Mi Carrera')
             ->assertSee('Mis Equipos')
             ->assertSee('Mis Torneos')
-            ->assertSee('Ranking')          // el módulo Torneos tiene su propio ranking
+            ->assertSee('Buscar Torneo')        // antes "Torneos" (v2.0)
+            ->assertSee('Ranking de la plataforma')
             ->assertDontSee('Pronósticos')
             ->assertDontSee('Auditoría');   // discriminador exclusivo de la polla
     }
@@ -56,7 +57,7 @@ class NavigationTest extends TestCase
         $user = $this->userWithModules('full');
 
         $this->actingAs($user)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertSee('Pronósticos')      // polla
             ->assertSee('Auditoría')        // polla
@@ -69,23 +70,24 @@ class NavigationTest extends TestCase
         $user = $this->userWithModules('');
 
         $this->actingAs($user)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertDontSee('Pronósticos')
             ->assertDontSee('Mis Torneos')
             ->assertDontSee('Mi Carrera')
-            // Siempre disponibles
-            ->assertSee('Perfil');
+            // Menú de perfil siempre disponible.
+            ->assertSee('Configurar perfil');
     }
 
-    public function test_menus_generales_siempre_visibles(): void
+    public function test_menu_perfil_siempre_visible(): void
     {
         $user = $this->userWithModules('full');
 
         $this->actingAs($user)
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
-            ->assertSee('Perfil');
+            ->assertSee('Configurar perfil')
+            ->assertSee('Salir');
     }
 
     public function test_dashboard_redirige_segun_modulo_polla(): void
@@ -97,12 +99,22 @@ class NavigationTest extends TestCase
             ->assertRedirect(route('predictions.index'));
     }
 
-    public function test_dashboard_redirige_torneos_a_inicio(): void
+    public function test_dashboard_redirige_torneos_a_mi_carrera(): void
     {
+        // v2.0: /inicio se retiró; los usuarios de torneos aterrizan en Mi Carrera.
         $user = $this->userWithModules('torneos');
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertRedirect(route('inicio'));
+            ->assertRedirect(route('torneos.mi-carrera'));
+    }
+
+    public function test_inicio_redirige_al_nuevo_punto_de_entrada(): void
+    {
+        $user = $this->userWithModules('torneos');
+
+        $this->actingAs($user)
+            ->get(route('inicio'))
+            ->assertRedirect(route('dashboard'));
     }
 }

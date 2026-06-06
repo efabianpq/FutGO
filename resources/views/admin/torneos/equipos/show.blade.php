@@ -33,7 +33,7 @@
     <div class="flex items-start justify-between gap-4 mb-6">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="font-display font-bold text-display-m text-pitch uppercase">{{ $team->name }}</h1>
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $team->name }}</h1>
                 @if ($team->color)
                     <span class="inline-block w-5 h-5 rounded-full border border-line"
                           style="background:{{ $team->color }}"></span>

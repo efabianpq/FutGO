@@ -29,7 +29,7 @@ $eventLabels = [
             <x-avatar :user="$teamPlayer->user" :name="$teamPlayer->displayName()" size="lg" />
             <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">
                 {{ $teamPlayer->displayName() }}
             </h1>
             <div class="flex items-center gap-3 mt-2 flex-wrap">

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Torneos')
+@section('title', 'Buscar Torneo')
 
 @section('content')
 @php
@@ -9,20 +9,41 @@
         'round_robin'         => 'Todos contra todos',
         'liga'                => 'Liga / Abierto',
     ];
-
-    $card = function ($t) use ($formatLabels) {
-        return $t;
-    };
 @endphp
 
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+     x-data="{ q: '', city: '', match(name, city) {
+        const okName = this.q === '' || name.toLowerCase().includes(this.q.toLowerCase());
+        const okCity = this.city === '' || city === this.city;
+        return okName && okCity;
+     } }">
 
-    <div class="mb-8">
+    <div class="mb-6">
         <p class="eyebrow">Torneos</p>
-        <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Explorar torneos</h1>
+        <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Buscar Torneo</h1>
         <p class="text-ink-soft text-[14px] mt-1">
             Descubrí torneos públicos: inscribí tu equipo en los que están abiertos o seguí los que están en juego.
         </p>
+    </div>
+
+    {{-- Herramienta de búsqueda y filtro --}}
+    <div class="bg-white border border-line rounded-md shadow-card p-4 mb-8 flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-mute pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.3-4.3"/></svg>
+            </span>
+            <input type="text" x-model="q" placeholder="Buscar por nombre del torneo…"
+                   class="w-full h-[44px] pl-10 pr-3 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0">
+        </div>
+        @php $cities = $open->merge($inProgress)->pluck('city')->filter()->unique()->sort()->values(); @endphp
+        @if ($cities->isNotEmpty())
+            <select x-model="city" class="h-[44px] px-3 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0 sm:w-52">
+                <option value="">Todas las ciudades</option>
+                @foreach ($cities as $c)
+                    <option value="{{ $c }}">{{ $c }}</option>
+                @endforeach
+            </select>
+        @endif
     </div>
 
     {{-- ── Inscripciones abiertas ──────────────────────────────────────────── --}}
@@ -40,7 +61,8 @@
         @else
             <div class="grid grid-cols-1 gap-5">
                 @foreach ($open as $t)
-                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
+                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                             x-show="match(@js($t->name), @js($t->city ?? ''))" x-cloak>
                         @if ($t->banner_url)
                             <img src="{{ $t->banner_url }}" alt="" class="h-24 w-full object-cover">
                         @endif
@@ -55,7 +77,12 @@
                                         {{ ucfirst($t->sport) }} · {{ $formatLabels[$t->format] ?? $t->format }}
                                     </p>
                                 </div>
-                                <span class="ml-auto shrink-0"><x-badge variant="win">Inscripción</x-badge></span>
+                                <span class="ml-auto shrink-0 flex items-center gap-1.5">
+                                    @if ($isPlatformAdmin && $t->visibility !== 'public')
+                                        <x-badge variant="default">Privado</x-badge>
+                                    @endif
+                                    <x-badge variant="win">Inscripción</x-badge>
+                                </span>
                             </div>
 
                             <dl class="grid grid-cols-2 gap-y-1.5 gap-x-4 mt-4 text-[13px]">
@@ -109,7 +136,8 @@
         @else
             <div class="grid grid-cols-1 gap-5">
                 @foreach ($inProgress as $t)
-                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col">
+                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                             x-show="match(@js($t->name), @js($t->city ?? ''))" x-cloak>
                         @if ($t->banner_url)
                             <img src="{{ $t->banner_url }}" alt="" class="h-24 w-full object-cover">
                         @endif
@@ -124,7 +152,12 @@
                                         {{ ucfirst($t->sport) }} · {{ $formatLabels[$t->format] ?? $t->format }}
                                     </p>
                                 </div>
-                                <span class="ml-auto shrink-0"><x-badge variant="live">En juego</x-badge></span>
+                                <span class="ml-auto shrink-0 flex items-center gap-1.5">
+                                    @if ($isPlatformAdmin && $t->visibility !== 'public')
+                                        <x-badge variant="default">Privado</x-badge>
+                                    @endif
+                                    <x-badge variant="live">En juego</x-badge>
+                                </span>
                             </div>
 
                             <dl class="grid grid-cols-2 gap-y-1.5 gap-x-4 mt-4 text-[13px]">

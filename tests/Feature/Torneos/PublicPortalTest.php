@@ -330,4 +330,90 @@ class PublicPortalTest extends TestCase
 
         $this->assertDatabaseHas('teams', ['id' => $team->id, 'status' => 'approved']);
     }
+
+    // ── E7/H10: ficha completa del torneo en "Ver detalle" ───────────────
+
+    public function test_ver_detalle_muestra_ficha_completa_e_inscripcion(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $tournament = Tournament::create([
+            'name' => 'Copa Ficha Completa', 'slug' => 'copa-ficha-' . uniqid(),
+            'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
+            'visibility' => 'public', 'category' => 'veteranos', 'city' => 'Girón', 'venue' => 'Cancha La 30',
+            'groups_count' => 1, 'teams_per_group' => 4, 'classifies_per_group' => 1, 'max_teams' => 4,
+            'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0,
+            'match_duration' => 80, 'min_players_per_team' => 7, 'max_players_per_team' => 18,
+            'registration_fee' => 80000, 'prize_description' => 'Trofeo + 1.000.000',
+            'rules' => 'Reglamento oficial FutGO.', 'created_by_user_id' => $admin->id,
+        ]);
+
+        $res = $this->get(route('torneos.public.show', $tournament));   // sin login
+
+        $res->assertOk();
+        $res->assertSee('Información del torneo');
+        $res->assertSee('$80.000');                  // costo en divisa
+        $res->assertSee('Cancha La 30');             // sede
+        $res->assertSee('Todos contra todos');       // formato traducido
+        $res->assertSee('Trofeo + 1.000.000');       // premio
+        $res->assertSee('Reglamento oficial FutGO.'); // reglamento
+        $res->assertSee('Ingresá para inscribir tu equipo'); // CTA inscripción (guest)
+    }
+
+    public function test_admin_de_plataforma_ve_torneos_privados_en_buscar(): void
+    {
+        // Un torneo privado en juego.
+        ['tournament' => $privateT] = $this->buildTournament('private');
+
+        $platformAdmin = User::factory()->create(['is_active' => true, 'role' => 'admin', 'modules' => 'full']);
+
+        // El admin de plataforma SÍ lo ve en el listado…
+        $this->actingAs($platformAdmin)
+            ->get(route('torneos.public.index'))
+            ->assertOk()
+            ->assertSee('Copa Pública Test')
+            ->assertSee('Privado');
+
+        // …y puede abrir su detalle (que para el público sería 404).
+        $this->actingAs($platformAdmin)
+            ->get(route('torneos.public.show', $privateT))
+            ->assertOk();
+    }
+
+    public function test_usuario_normal_no_ve_privados_ni_su_detalle(): void
+    {
+        ['tournament' => $privateT] = $this->buildTournament('private');
+        $user = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+
+        $this->actingAs($user)
+            ->get(route('torneos.public.index'))
+            ->assertOk()
+            ->assertDontSee('Copa Pública Test');
+
+        $this->actingAs($user)
+            ->get(route('torneos.public.show', $privateT))
+            ->assertNotFound();
+    }
+
+    public function test_capitan_ve_boton_inscribir_en_ver_detalle(): void
+    {
+        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $tournament = Tournament::create([
+            'name' => 'Copa Detalle Cap', 'slug' => 'copa-detalle-cap-' . uniqid(),
+            'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
+            'visibility' => 'public', 'category' => 'libre',
+            'groups_count' => 1, 'teams_per_group' => 4, 'classifies_per_group' => 1, 'max_teams' => 4,
+            'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0, 'created_by_user_id' => $admin->id,
+        ]);
+
+        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        \App\Models\Torneos\Club::create([
+            'name' => 'Club Detalle', 'slug' => 'club-detalle-' . uniqid(),
+            'captain_user_id' => $captain->id, 'created_by_user_id' => $captain->id,
+        ]);
+
+        $this->actingAs($captain)
+            ->get(route('torneos.public.show', $tournament))
+            ->assertOk()
+            ->assertSee('Inscribir mi equipo');
+    }
 }

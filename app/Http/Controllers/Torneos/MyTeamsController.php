@@ -19,6 +19,23 @@ class MyTeamsController extends Controller
     public function index(): View
     {
         $user = auth()->user();
+        $isPlatformAdmin = $user->isAdmin();
+
+        // E8/H13: el admin de plataforma ve TODOS los equipos de la plataforma.
+        if ($isPlatformAdmin) {
+            $captainClubs = Club::query()
+                ->with('captain')
+                ->withCount(['players as players_count' => fn ($q) => $q->where('status', 'active')])
+                ->withCount('teams as tournaments_count')
+                ->orderBy('name')
+                ->get();
+
+            return view('torneos.mis-equipos', [
+                'captainClubs'    => $captainClubs,
+                'memberClubs'     => collect(),
+                'isPlatformAdmin' => true,
+            ]);
+        }
 
         $captainClubs = Club::where('captain_user_id', $user->id)
             ->withCount(['players as players_count' => fn ($q) => $q->where('status', 'active')])
@@ -38,6 +55,10 @@ class MyTeamsController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('torneos.mis-equipos', compact('captainClubs', 'memberClubs'));
+        return view('torneos.mis-equipos', [
+            'captainClubs'    => $captainClubs,
+            'memberClubs'     => $memberClubs,
+            'isPlatformAdmin' => false,
+        ]);
     }
 }

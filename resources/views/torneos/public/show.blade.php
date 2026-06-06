@@ -84,6 +84,104 @@
         </div>
     </div>
 
+    {{-- ── Ficha del torneo (E7/H10): info de presentación + inscripción ──── --}}
+    @php
+        $formatLabels = [
+            'groups_and_knockout' => 'Grupos + Eliminación',
+            'knockout_only'       => 'Solo eliminación',
+            'round_robin'         => 'Todos contra todos',
+            'liga'                => 'Liga / Abierto',
+        ];
+        $fmtDate = fn ($d) => $d ? \Carbon\Carbon::parse($d)->locale('es')->isoFormat('D MMM YYYY') : null;
+        $hasSportInfo = $tournament->match_duration || $tournament->min_players_per_team || $tournament->max_players_per_team;
+    @endphp
+
+    <section class="bg-white border border-line rounded-md shadow-card-2 mb-5 overflow-hidden">
+        <div class="bg-pitch-mist border-b border-line px-4 py-2.5">
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Información del torneo</p>
+        </div>
+        <div class="p-5 space-y-5">
+            {{-- Inscripción --}}
+            <div>
+                <p class="font-display font-bold text-pitch uppercase text-[13px] mb-2">Inscripción</p>
+                <dl class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px]">
+                    <div class="flex justify-between"><dt class="text-ink-mute">Costo</dt><dd class="font-semibold text-pitch">{{ (int) $tournament->registration_fee > 0 ? '$' . number_format($tournament->registration_fee, 0, ',', '.') : 'Gratuita' }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-ink-mute">Cupos</dt><dd class="font-semibold text-pitch">{{ $approvedTeams }} / {{ $tournament->max_teams }}</dd></div>
+                    @if ($tournament->registration_opens_at)
+                        <div class="flex justify-between"><dt class="text-ink-mute">Abre</dt><dd class="font-mono text-pitch">{{ $fmtDate($tournament->registration_opens_at) }}</dd></div>
+                    @endif
+                    @if ($tournament->registration_closes_at)
+                        <div class="flex justify-between"><dt class="text-ink-mute">Cierra</dt><dd class="font-mono text-pitch">{{ $fmtDate($tournament->registration_closes_at) }}</dd></div>
+                    @endif
+                </dl>
+            </div>
+
+            {{-- Ubicación y fechas --}}
+            @if ($tournament->city || $tournament->venue || $tournament->starts_at || $tournament->ends_at)
+                <div class="pt-4 border-t border-line-soft">
+                    <p class="font-display font-bold text-pitch uppercase text-[13px] mb-2">Ubicación y fechas</p>
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px]">
+                        @if ($tournament->city)<div class="flex justify-between"><dt class="text-ink-mute">Ciudad</dt><dd class="font-semibold text-pitch">{{ $tournament->city }}</dd></div>@endif
+                        @if ($tournament->venue)<div class="flex justify-between"><dt class="text-ink-mute">Sede</dt><dd class="font-semibold text-pitch">{{ $tournament->venue }}</dd></div>@endif
+                        @if ($tournament->starts_at)<div class="flex justify-between"><dt class="text-ink-mute">Inicio</dt><dd class="font-mono text-pitch">{{ $fmtDate($tournament->starts_at) }}</dd></div>@endif
+                        @if ($tournament->ends_at)<div class="flex justify-between"><dt class="text-ink-mute">Fin</dt><dd class="font-mono text-pitch">{{ $fmtDate($tournament->ends_at) }}</dd></div>@endif
+                    </dl>
+                </div>
+            @endif
+
+            {{-- Formato y reglas deportivas --}}
+            <div class="pt-4 border-t border-line-soft">
+                <p class="font-display font-bold text-pitch uppercase text-[13px] mb-2">Formato y reglas</p>
+                <dl class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px]">
+                    <div class="flex justify-between"><dt class="text-ink-mute">Formato</dt><dd class="font-semibold text-pitch">{{ $formatLabels[$tournament->format] ?? $tournament->format }}</dd></div>
+                    @if ($tournament->category)<div class="flex justify-between"><dt class="text-ink-mute">Categoría</dt><dd class="font-semibold text-pitch capitalize">{{ $tournament->category }}</dd></div>@endif
+                    @if ($tournament->match_duration)<div class="flex justify-between"><dt class="text-ink-mute">Duración</dt><dd class="font-semibold text-pitch">{{ $tournament->match_duration }} min</dd></div>@endif
+                    @if ($tournament->min_players_per_team || $tournament->max_players_per_team)
+                        <div class="flex justify-between"><dt class="text-ink-mute">Jugadores</dt><dd class="font-semibold text-pitch">{{ $tournament->min_players_per_team }}–{{ $tournament->max_players_per_team }}</dd></div>
+                    @endif
+                    <div class="flex justify-between"><dt class="text-ink-mute">Puntos (V/E/D)</dt><dd class="font-mono text-pitch">{{ $tournament->points_win }}/{{ $tournament->points_draw }}/{{ $tournament->points_loss }}</dd></div>
+                </dl>
+            </div>
+
+            {{-- Premios y reglamento --}}
+            @if ($tournament->prize_description || $tournament->rules)
+                <div class="pt-4 border-t border-line-soft">
+                    <p class="font-display font-bold text-pitch uppercase text-[13px] mb-2">Premios y reglamento</p>
+                    @if ($tournament->prize_description)
+                        <p class="text-[13px] text-ink mb-2"><span class="text-ink-mute">🏆 Premio:</span> {{ $tournament->prize_description }}</p>
+                    @endif
+                    @if ($tournament->rules)
+                        <p class="text-[13px] text-ink-soft whitespace-pre-line">{{ $tournament->rules }}</p>
+                    @endif
+                </div>
+            @endif
+
+            {{-- Botón de inscripción --}}
+            @if ($canRegister)
+                <div class="pt-4 border-t border-line-soft">
+                    @auth
+                        @if ($isCaptain)
+                            <a href="{{ route('torneos.equipo.inscribir', $tournament) }}"
+                               class="inline-flex items-center gap-1.5 bg-gol-deep text-bone font-display font-bold text-[13px] uppercase tracking-wide-label px-5 py-2.5 rounded-md hover:opacity-90">
+                                Inscribir mi equipo
+                            </a>
+                        @else
+                            <a href="{{ route('torneos.mis-equipos') }}"
+                               class="inline-flex items-center gap-1.5 bg-gol-deep text-bone font-display font-bold text-[13px] uppercase tracking-wide-label px-5 py-2.5 rounded-md hover:opacity-90">
+                                Creá tu equipo para inscribirte
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}"
+                           class="inline-flex items-center gap-1.5 bg-gol-deep text-bone font-display font-bold text-[13px] uppercase tracking-wide-label px-5 py-2.5 rounded-md hover:opacity-90">
+                            Ingresá para inscribir tu equipo
+                        </a>
+                    @endauth
+                </div>
+            @endif
+        </div>
+    </section>
+
     {{-- ── Tabla de posiciones ─────────────────────────────────────────── --}}
     @foreach ($standings as $phase)
         @foreach ($phase->groups as $group)

@@ -22,7 +22,7 @@
         <div class="flex items-start gap-4">
             <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" />
             <div class="min-w-0 flex-1">
-                <h1 class="font-display font-bold text-display-m text-pitch uppercase break-words">{{ $club->name }}</h1>
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase break-words">{{ $club->name }}</h1>
                 <p class="font-mono text-[12px] text-ink-mute mt-1">Capitán: <span class="text-pitch font-semibold">{{ $club->captain?->name ?? '—' }}</span></p>
             </div>
         </div>
@@ -82,13 +82,42 @@
                         class="px-3 py-1.5 rounded-md font-display font-semibold text-[12px] uppercase tracking-wide-label">Sin cuenta (por verificar)</button>
             </div>
 
-            <form x-show="mode === 'registered'" method="POST" action="{{ route('torneos.clubes.players.add', $club) }}" class="flex flex-wrap items-end gap-3">
+            <form x-show="mode === 'registered'" method="POST" action="{{ route('torneos.clubes.players.add', $club) }}"
+                  class="flex flex-wrap items-end gap-3"
+                  x-data="{
+                      query: '', results: [], selected: null, open: false, searching: false,
+                      async search() {
+                          if (this.query.length < 2) { this.results = []; this.open = false; return; }
+                          this.searching = true;
+                          try {
+                              const res = await fetch(`{{ route('torneos.jugadores.buscar') }}?q=${encodeURIComponent(this.query)}`, { headers: { 'Accept': 'application/json' } });
+                              this.results = await res.json();
+                              this.open = true;
+                          } finally { this.searching = false; }
+                      },
+                      choose(r) { this.selected = r; this.query = r.name; this.open = false; },
+                      clearSel() { this.selected = null; }
+                  }">
                 @csrf
-                <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
-                    <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Email del jugador *</label>
-                    <input type="email" name="email" placeholder="jugador@email.com"
-                           class="h-[40px] px-3 bg-white border-[1.5px] {{ $errors->has('email') ? 'border-alerta' : 'border-line' }} rounded-md text-[14px] focus:border-pitch focus:ring-0">
-                    @error('email') <p class="text-[12px] text-alerta">{{ $message }}</p> @enderror
+                <input type="hidden" name="user_id" :value="selected ? selected.id : ''">
+                <div class="flex flex-col gap-1 flex-1 min-w-[220px] relative">
+                    <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Buscar jugador por nombre *</label>
+                    <input type="text" x-model="query" @input.debounce.300ms="clearSel(); search()" @focus="open = results.length > 0"
+                           autocomplete="off" placeholder="Ej: Fabian Pachón"
+                           class="h-[40px] px-3 bg-white border-[1.5px] {{ $errors->has('user_id') ? 'border-alerta' : 'border-line' }} rounded-md text-[14px] focus:border-pitch focus:ring-0">
+                    {{-- Sugerencias --}}
+                    <div x-show="open && results.length" x-cloak @click.outside="open = false"
+                         class="absolute top-full left-0 z-30 mt-1 w-full bg-white border border-line rounded-md shadow-card-2 max-h-60 overflow-y-auto">
+                        <template x-for="r in results" :key="r.id">
+                            <button type="button" @click="choose(r)" class="w-full text-left px-3 py-2 hover:bg-bone-soft border-b border-line-soft last:border-0">
+                                <span class="font-semibold text-pitch text-[14px]" x-text="r.name"></span>
+                                <span class="font-mono text-[11px] text-ink-mute block" x-text="r.email"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <p x-show="query.length >= 2 && open && results.length === 0 && !searching" x-cloak class="text-[12px] text-ink-mute mt-1">Sin coincidencias por ese nombre.</p>
+                    <p x-show="selected" x-cloak class="text-[12px] text-gol-deep mt-1">Seleccionado: <span class="font-semibold" x-text="selected ? selected.name : ''"></span></p>
+                    @error('user_id') <p class="text-[12px] text-alerta">{{ $message }}</p> @enderror
                 </div>
                 <div class="flex flex-col gap-1 w-20">
                     <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Dorsal</label>

@@ -17,7 +17,7 @@
 
     <div class="mb-6">
         <p class="eyebrow">{{ $match->phase?->name }}{{ $match->group ? ' · Grupo ' . $match->group->name : '' }}</p>
-        <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Programación</h1>
+        <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Programación</h1>
         <p class="text-ink-soft text-[15px] mt-2 font-display font-semibold">
             {{ $match->homeTeam?->name ?? 'Por definir' }}
             <span class="font-mono text-ink-mute mx-2">vs</span>

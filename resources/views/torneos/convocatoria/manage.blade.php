@@ -26,7 +26,7 @@
 
     <div class="mb-6">
         <p class="eyebrow">{{ $tournament->name }} · {{ $match->phase->name }}</p>
-        <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Convocatoria</h1>
+        <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Convocatoria</h1>
         <p class="text-ink-soft text-[14px] mt-1">
             {{ $match->homeTeam?->name ?? 'Local' }} vs {{ $match->awayTeam?->name ?? 'Visitante' }}
             · {{ $match->scheduled_at?->format('d/m/Y H:i') ?? 'Sin fecha' }}

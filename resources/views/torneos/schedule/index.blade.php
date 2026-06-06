@@ -44,7 +44,7 @@ $hasScheduledAt = $allMatches->whereNotNull('scheduled_at')->isNotEmpty();
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">Cronograma</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">{{ $tournament->name }}</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">{{ $tournament->name }}</h1>
             <div class="flex items-center gap-3 mt-1">
                 <x-badge :variant="$tVariant">{{ $tLabel }}</x-badge>
                 <span class="font-mono text-[12px] text-ink-mute">{{ ucfirst($tournament->sport) }}</span>

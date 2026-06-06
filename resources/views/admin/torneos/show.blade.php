@@ -42,7 +42,7 @@
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <div class="flex items-center gap-3">
-                <h1 class="font-display font-bold text-display-m text-pitch uppercase">{{ $tournament->name }}</h1>
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $tournament->name }}</h1>
                 <x-badge :variant="$variant">{{ $label }}</x-badge>
             </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">{{ $tournament->slug }} · {{ $formatLabels[$tournament->format] ?? $tournament->format }}</p>

@@ -48,7 +48,7 @@
             @endif
             <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                    <h1 class="font-display font-bold text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
+                    <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
                     <x-badge :variant="$tsVariant">{{ $tsLabel }}</x-badge>
                 </div>
                 <p class="font-mono text-[12px] text-ink-mute mt-1">

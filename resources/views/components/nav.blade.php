@@ -7,46 +7,50 @@
     $isActive = fn ($needle) => str_starts_with($routeName, $needle);
 
     // Navegación modular: solo se muestran enlaces de módulos habilitados.
-    // Cada enlace apunta a rutas siempre accesibles para el usuario (sin {param}
-    // contextual) para no generar 403/302/páginas inaccesibles desde el navbar.
     $pollaAccess   = $user?->hasPollaAccess() ?? false;
     $torneosAccess = $user?->hasTorneosAccess() ?? false;
+    $isPlatformAdmin = $user?->isAdmin() ?? false;
 
-    // Roles contextuales del módulo Torneos (solo se consultan si hay acceso).
-    $isTorneoAdmin = $torneosAccess && ($user?->isTorneoAdmin() ?? false);
-    $isCaptain     = $torneosAccess && ($user?->isCaptainAnywhere() ?? false);
-    $isTorneoPlayer = $torneosAccess && ($user?->isTorneoPlayerAnywhere() ?? false);
-
-    // ── Nuevo orden del nav (H17): Mi Carrera · Mis Equipos · Mis Torneos ·
-    //    Ranking · Pronósticos · Auditoría · Perfil | Admin (plataforma)
+    // ── Orden del nav (v2.0): Mi Carrera · Mis Equipos · Mis Torneos ·
+    //    Buscar Torneo · Ranking de la plataforma · Pronósticos ▾  | Perfil ▾
     $navLinks = [];
 
     if ($torneosAccess) {
-        $navLinks[] = ['route' => 'torneos.mi-carrera',   'label' => 'Mi Carrera',  'starts' => 'torneos.mi-carrera'];
-        $navLinks[] = ['route' => 'torneos.mis-equipos',  'label' => 'Mis Equipos', 'starts' => 'torneos.mis-equipos'];
-        // "Torneos": portal de exploración de torneos públicos (H9).
-        $navLinks[] = ['route' => 'torneos.public.index', 'label' => 'Torneos',     'starts' => 'torneos.public'];
-        $navLinks[] = ['route' => 'torneos.index',        'label' => 'Mis Torneos', 'starts' => 'torneos.index'];
-        $navLinks[] = ['route' => 'torneos.ranking',      'label' => 'Ranking',     'starts' => 'torneos.ranking'];
+        $navLinks[] = ['route' => 'torneos.mi-carrera',   'label' => 'Mi Carrera',            'starts' => 'torneos.mi-carrera'];
+        $navLinks[] = ['route' => 'torneos.mis-equipos',  'label' => 'Mis Equipos',           'starts' => 'torneos.mis-equipos'];
+        $navLinks[] = ['route' => 'torneos.index',        'label' => 'Mis Torneos',           'starts' => 'torneos.index'];
+        $navLinks[] = ['route' => 'torneos.public.index', 'label' => 'Buscar Torneo',         'starts' => 'torneos.public'];
+        $navLinks[] = ['route' => 'torneos.ranking',      'label' => 'Ranking de la plataforma', 'starts' => 'torneos.ranking'];
     }
 
+    // Subitems del dropdown "Pronósticos" (módulo polla + admin de plataforma).
+    $pronosItems = [];
     if ($pollaAccess) {
-        $navLinks[] = ['route' => 'predictions.index', 'label' => 'Pronósticos', 'starts' => 'predictions'];
-        $navLinks[] = ['route' => 'audit.index',       'label' => 'Auditoría',   'starts' => 'audit'];
+        $pronosItems[] = ['route' => 'predictions.index', 'label' => 'Mis Pronósticos', 'starts' => 'predictions'];
+        $pronosItems[] = ['route' => 'audit.index',       'label' => 'Auditoría',       'starts' => 'audit'];
+        $pronosItems[] = ['route' => 'how-it-works',      'label' => '¿Cómo funciona?', 'starts' => 'how-it-works'];
+        if ($isPlatformAdmin) {
+            $pronosItems[] = ['route' => 'admin.dashboard', 'label' => 'Admin', 'starts' => 'admin.dashboard'];
+        }
     }
+    $pronosActive = $isActive('predictions') || $isActive('audit') || $isActive('how-it-works') || $isActive('admin.dashboard');
 
-    $navLinks[] = ['route' => 'profile.show', 'label' => 'Perfil', 'starts' => 'profile'];
-
-    $homeRoute = route('inicio');
-
-    $homeRoute = route('inicio');
+    // Destino del logo: Mi Carrera para usuarios de torneos; degrada con gracia.
+    if ($torneosAccess) {
+        $homeRoute = route('torneos.mi-carrera');
+    } elseif ($pollaAccess) {
+        $homeRoute = route('predictions.index');
+    } else {
+        $homeRoute = route('profile.show');
+    }
 @endphp
 
 @if ($user)
     {{-- Auth nav --}}
-    <nav class="sticky top-0 z-40 bg-bg/80 backdrop-blur-md border-b border-border" x-data="{ open: false }">
+    <nav class="sticky top-0 z-40 bg-bg/80 backdrop-blur-md border-b border-border"
+         x-data="{ open: false, profileOpen: false, pronosOpen: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 gap-6">
+            <div class="flex items-center justify-between h-16 gap-4">
 
                 {{-- Brand --}}
                 <a href="{{ $homeRoute }}" class="shrink-0">
@@ -57,30 +61,81 @@
                 <nav class="hidden md:flex items-center gap-1">
                     @foreach ($navLinks as $meta)
                         <a href="{{ route($meta['route']) }}"
-                           class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive($meta['starts']) ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                           class="px-3 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive($meta['starts']) ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
                             {{ $meta['label'] }}
                         </a>
                     @endforeach
+
+                    {{-- Dropdown Pronósticos (polla + admin) --}}
+                    @if (! empty($pronosItems))
+                        <div class="relative" @click.outside="pronosOpen = false">
+                            <button type="button" @click="pronosOpen = !pronosOpen"
+                                    class="flex items-center gap-1 px-3 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $pronosActive ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                                Pronósticos
+                                <svg class="w-3.5 h-3.5" :class="pronosOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                            <div x-show="pronosOpen" x-cloak x-transition
+                                 class="absolute left-0 mt-1 w-52 bg-surface border border-border rounded-md shadow-card-2 py-1 z-50">
+                                @foreach ($pronosItems as $item)
+                                    <a href="{{ route($item['route']) }}"
+                                       class="block px-4 py-2 text-[14px] font-semibold {{ $isActive($item['starts']) ? 'text-text bg-surface-2' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                                        {{ $item['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </nav>
 
-                {{-- Right side --}}
-                <div class="hidden md:flex items-center gap-2">
-                    <x-theme-toggle />
-                    <span class="font-mono text-[11px] tracking-[.12em] uppercase px-3 py-1.5 bg-surface-2 border border-border text-muted rounded-pill">
-                        {{ explode(' ', $user->name)[0] }}
-                    </span>
-                    @if ($user->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm">Admin</a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-secondary btn-sm">Salir</button>
-                    </form>
+                {{-- Right side: menú de Perfil --}}
+                <div class="hidden md:flex items-center">
+                    <div class="relative" @click.outside="profileOpen = false">
+                        <button type="button" @click="profileOpen = !profileOpen"
+                                class="flex items-center gap-2 rounded-pill pl-1 pr-2 py-1 hover:bg-surface-2 transition-all duration-fast">
+                            <x-avatar :user="$user" size="sm" />
+                            <svg class="w-3.5 h-3.5 text-muted" :class="profileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+                        </button>
+
+                        <div x-show="profileOpen" x-cloak x-transition
+                             class="absolute right-0 mt-1 w-60 bg-surface border border-border rounded-md shadow-card-2 py-1 z-50">
+                            {{-- Cabecera: avatar + nombre --}}
+                            <div class="flex items-center gap-3 px-4 py-3 border-b border-border">
+                                <x-avatar :user="$user" size="sm" />
+                                <div class="min-w-0">
+                                    <p class="font-display font-bold text-text text-[14px] truncate">{{ $user->name }}</p>
+                                    <p class="font-mono text-[10px] text-muted truncate">{{ $user->email }}</p>
+                                </div>
+                            </div>
+
+                            {{-- Tema claro/oscuro --}}
+                            <button type="button" @click="$store.theme.toggle()"
+                                    class="w-full flex items-center justify-between px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                <span x-text="$store.theme.isDark ? 'Tema claro' : 'Tema oscuro'"></span>
+                                <svg x-show="$store.theme.isDark" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+                                <svg x-show="!$store.theme.isDark" x-cloak fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-4 h-4"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+                            </button>
+
+                            {{-- Configurar perfil --}}
+                            <a href="{{ route('profile.show') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                Configurar perfil
+                            </a>
+
+                            {{-- Salir --}}
+                            <form method="POST" action="{{ route('logout') }}" class="border-t border-border mt-1">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-[14px] font-semibold text-alerta hover:bg-surface-2">Salir</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Mobile hamburguesa --}}
                 <div class="md:hidden flex items-center gap-1">
-                    <x-theme-toggle />
+                    <button type="button" @click="$store.theme.toggle()" class="btn btn-icon btn-ghost btn-sm" aria-label="Tema">
+                        <svg x-show="$store.theme.isDark" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+                        <svg x-show="!$store.theme.isDark" x-cloak fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32 1.41-1.41"/></svg>
+                    </button>
                     <button type="button" class="btn btn-icon btn-ghost btn-sm" @click="open = !open" aria-label="Menu">
                         <svg x-show="!open" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -99,14 +154,27 @@
                         {{ $meta['label'] }}
                     </a>
                 @endforeach
-                <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">¿Cómo funciona?</a>
-                @if ($user->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">Admin</a>
+
+                @if (! empty($pronosItems))
+                    <p class="px-3 pt-2 pb-1 font-mono text-[10px] uppercase tracking-wide-label text-muted">Pronósticos</p>
+                    @foreach ($pronosItems as $item)
+                        <a href="{{ route($item['route']) }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">
+                            {{ $item['label'] }}
+                        </a>
+                    @endforeach
                 @endif
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="w-full text-left px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Salir</button>
-                </form>
+
+                <div class="border-t border-border mt-2 pt-2">
+                    <div class="flex items-center gap-3 px-3 py-2">
+                        <x-avatar :user="$user" size="sm" />
+                        <span class="font-display font-bold text-text text-[14px] truncate">{{ $user->name }}</span>
+                    </div>
+                    <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Configurar perfil</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-sm font-semibold text-alerta hover:bg-surface-2">Salir</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>

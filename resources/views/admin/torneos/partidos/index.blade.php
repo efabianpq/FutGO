@@ -16,7 +16,7 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-     x-data="{ filterPhase: 'all', filterGroup: 'all' }">
+     x-data="{ filterPhase: 'all', filterGroup: 'all', q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-2 font-mono text-[12px] text-ink-mute mb-5">
@@ -28,7 +28,7 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
     <div class="flex items-center justify-between mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1">Fixture y Resultados</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Fixture y Resultados</h1>
         </div>
         <a href="{{ route('admin.torneos.show', $tournament) }}"
            class="text-pitch font-display font-semibold text-[13px] uppercase hover:underline">← Dashboard</a>
@@ -76,6 +76,8 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
                     </select>
                 </div>
             @endif
+
+            <div class="flex-1 min-w-[200px]"><x-search-input placeholder="Buscar equipo en el fixture…" class="w-full" /></div>
         </div>
 
         @foreach ($phases as $phase)
@@ -105,7 +107,7 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
                                 @foreach ($phase->matches as $match)
                                     @php [$label, $variant] = $statusMeta[$match->status] ?? [$match->status, 'default']; @endphp
                                     <tr class="hover:bg-bone-soft transition-colors duration-fast"
-                                        x-show="filterGroup === 'all' || filterGroup === '{{ $match->group_id }}'">
+                                        x-show="(filterGroup === 'all' || filterGroup === '{{ $match->group_id }}') && (match(@js($match->homeTeam?->name ?? '')) || match(@js($match->awayTeam?->name ?? '')))">
                                         <td class="px-4 py-3 font-mono text-[12px] text-ink-mute">{{ $match->match_number }}</td>
                                         <td class="px-4 py-3">
                                             <span class="font-display font-semibold text-pitch">

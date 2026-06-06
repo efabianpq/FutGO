@@ -6,9 +6,10 @@
     $qs = fn (array $over) => http_build_query(array_merge(['type' => $type, 'scope' => $scopeType, 'value' => $scopeValue], $over));
 @endphp
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8"
+     x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
     <p class="eyebrow">📊 Reputación FUTGO</p>
-    <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-2 mb-1">Ranking global</h1>
+    <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Ranking de la plataforma</h1>
     <p class="text-[14px] text-ink-soft mb-6">Acumulado de toda la actividad en FUTGO. Se recalcula al finalizar torneos.</p>
 
     {{-- Tipo: jugadores / equipos --}}
@@ -56,6 +57,9 @@
         @endif
     </form>
 
+    {{-- Buscador por nombre --}}
+    <div class="mb-4"><x-search-input :placeholder="$type === 'player' ? 'Buscar jugador…' : 'Buscar equipo…'" /></div>
+
     {{-- Tabla de ranking --}}
     <div class="bg-white border border-line rounded-md shadow-card overflow-hidden">
         <div class="overflow-x-auto">
@@ -73,7 +77,8 @@
                 </thead>
                 <tbody class="divide-y divide-line-soft">
                     @forelse ($rankings as $r)
-                        <tr class="{{ $r->position <= 3 ? 'bg-gol/5' : '' }}">
+                        <tr class="{{ $r->position <= 3 ? 'bg-gol/5' : '' }}"
+                            x-show="match(@js($r->display_name))" x-cloak>
                             <td class="px-3 py-2.5 font-display font-extrabold {{ $r->position <= 3 ? 'text-gol-deep' : 'text-pitch' }}">{{ $r->position }}</td>
                             <td class="px-2 py-2.5 font-semibold text-ink whitespace-nowrap">{{ $r->display_name }}</td>
                             <td class="text-center px-2 py-2.5">{{ $r->matches_played }}</td>

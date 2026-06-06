@@ -164,7 +164,7 @@ class PlayerDashboardTest extends TestCase
         [$tournament, $teams] = $this->makeScenario();
 
         $this->actingAs($this->playerOf($teams[0]))
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertSee('Mi Carrera')
             ->assertDontSee('Gestión Torneos');
@@ -192,7 +192,7 @@ class PlayerDashboardTest extends TestCase
 
         // H16: "Mi Credencial" dejó de ser un ítem de menú (ahora es modal).
         $this->actingAs($this->playerOf($teams[0]))
-            ->get(route('inicio'))
+            ->get(route('profile.show'))
             ->assertOk()
             ->assertDontSee('Mi Credencial');
     }

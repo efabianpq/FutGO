@@ -32,8 +32,12 @@ class PublicTournamentController extends Controller
      */
     public function index(): View
     {
+        // E8/H13: el admin de plataforma ve también los torneos privados.
+        $user = auth()->user();
+        $isPlatformAdmin = $user?->isAdmin() ?? false;
+
         $base = Tournament::query()
-            ->where('visibility', 'public')
+            ->when(! $isPlatformAdmin, fn ($q) => $q->where('visibility', 'public'))
             ->withCount(['teams as approved_teams_count' => fn ($q) => $q->where('status', 'approved')]);
 
         $open = (clone $base)->where('status', 'open')
@@ -48,17 +52,18 @@ class PublicTournamentController extends Controller
         // Para usuarios autenticados con módulo torneos: clubs que capitanean
         // (para ofrecer "Inscribir mi equipo" directo).
         $isCaptain = false;
-        if (($user = auth()->user()) && $user->hasTorneosAccess()) {
+        if ($user && $user->hasTorneosAccess()) {
             $isCaptain = $user->isCaptainAnywhere();
         }
 
-        return view('torneos.public.index', compact('open', 'inProgress', 'isCaptain'));
+        return view('torneos.public.index', compact('open', 'inProgress', 'isCaptain', 'isPlatformAdmin'));
     }
 
     public function show(Tournament $tournament): View
     {
-        // Los torneos privados no existen para el público (404, no 403: no revela su existencia).
-        abort_unless($tournament->isPublic(), 404);
+        // Los torneos privados no existen para el público (404, no 403: no revela su
+        // existencia). E8/H13: el admin de plataforma sí puede verlos.
+        abort_unless($tournament->isPublic() || (auth()->user()?->isAdmin() ?? false), 404);
 
         $standings = $this->report->groupStandings($tournament);
         $results   = $this->report->finishedMatches($tournament, 12);
@@ -67,8 +72,15 @@ class PublicTournamentController extends Controller
         $summary   = $this->report->summary($tournament);
         $sponsors  = $tournament->sponsors()->active()->orderBy('sort_order')->orderBy('id')->get();
 
+        // E7/H10: datos para la inscripción desde la ficha del torneo.
+        // Reusa summary['teams'] (equipos aprobados) para no agregar otra consulta.
+        $approvedTeams = $summary['teams'];
+        $canRegister   = $tournament->status === 'open';
+        $isCaptain     = ($u = auth()->user()) && $u->hasTorneosAccess() ? $u->isCaptainAnywhere() : false;
+
         return view('torneos.public.show', compact(
-            'tournament', 'standings', 'results', 'upcoming', 'scorers', 'summary', 'sponsors'
+            'tournament', 'standings', 'results', 'upcoming', 'scorers', 'summary', 'sponsors',
+            'approvedTeams', 'canRegister', 'isCaptain'
         ));
     }
 }

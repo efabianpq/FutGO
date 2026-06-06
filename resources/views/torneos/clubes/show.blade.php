@@ -24,7 +24,7 @@
         <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" />
         <div class="min-w-0 flex-1">
             <p class="eyebrow">🛡️ Equipo</p>
-            <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 Capitán: {{ $club->captain?->name ?? '—' }} · {{ $participations->count() }} participación(es) · {{ $players->count() }} jugadores
             </p>

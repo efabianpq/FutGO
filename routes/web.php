@@ -31,7 +31,6 @@ use App\Http\Controllers\Torneos\TeamHubController;
 use App\Http\Controllers\Torneos\TournamentHubController;
 use App\Http\Controllers\Torneos\TournamentScheduleController;
 use App\Http\Controllers\AuditExportController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -113,18 +112,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/auditoria/exportar/csv', [AuditExportController::class, 'csv'])->name('audit.csv');
         Route::get('/auditoria/exportar/pdf', [AuditExportController::class, 'pdf'])->name('audit.pdf');
 
-        // Dashboard principal modular (tarjetas según módulos del usuario)
-        Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio');
-
-        // Alias compatible: los usuarios exclusivos de torneos aterrizan en el
-        // dashboard modular; el resto mantiene la compatibilidad con polla.
+        // La página /inicio se retiró (v2.0). El punto de entrada es Mi Carrera
+        // para usuarios de torneos; los de polla pura aterrizan en Mis Pronósticos.
         Route::get('/dashboard', function () {
             $user = auth()->user();
-            if ($user->hasTorneosAccess() && ! $user->hasPollaAccess()) {
-                return redirect()->route('inicio');
+            if ($user->hasTorneosAccess()) {
+                return redirect()->route('torneos.mi-carrera');
             }
             return redirect()->route('predictions.index');
         })->name('dashboard');
+
+        // Compatibilidad: enlaces viejos a /inicio redirigen al nuevo punto de entrada.
+        Route::get('/inicio', fn () => redirect()->route('dashboard'))->name('inicio');
 
         // ─── Módulo Torneos ──────────────────────────────────────────────
         Route::middleware(['ensure.module:torneos'])
@@ -158,6 +157,8 @@ Route::middleware('auth')->group(function () {
 
                 // ── Equipos PERMANENTES (clubs) — identidad transversal a torneos ──
                 Route::post('/equipos', [ClubController::class, 'store'])->name('equipos.store');
+                // E6/H9: búsqueda de jugadores por nombre (autocompletado).
+                Route::get('/jugadores/buscar', [ClubController::class, 'searchPlayers'])->name('jugadores.buscar');
                 Route::prefix('clubes/{club}')->name('clubes.')->group(function () {
                     Route::get('/', [ClubController::class, 'show'])->name('show');
                     Route::get('/gestionar', [ClubController::class, 'manage'])->name('manage');
