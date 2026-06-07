@@ -46,6 +46,11 @@ class PublicTournamentController extends Controller
             ->get();
 
         $inProgress = (clone $base)->where('status', 'in_progress')
+            ->withCount([
+                'matches as finished_matches_count' => fn ($q) => $q->where('tournament_matches.status', 'finished'),
+                'matches as total_matches_count',
+            ])
+            ->with(['phases' => fn ($q) => $q->where('is_active', true)->orderBy('order')->limit(1)])
             ->orderByDesc('starts_at')
             ->get();
 

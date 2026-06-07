@@ -28,6 +28,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- PWA --}}
+    <link rel="manifest" href="/FutGO/pwa/manifest.webmanifest">
+    <meta name="theme-color" content="#0b0f14">
+    <link rel="apple-touch-icon" href="/FutGO/pwa/icon-180.png">
+
     <style>[x-cloak]{ display:none !important; }</style>
 </head>
 <body class="bg-bone-soft text-ink font-sans antialiased min-h-screen flex flex-col">

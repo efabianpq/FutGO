@@ -33,7 +33,7 @@
             @endif
             <div class="min-w-0 flex-1">
                 <span class="inline-block {{ $statusBg }} text-bone font-display font-bold text-[11px] uppercase tracking-wide-label px-2 py-0.5 rounded-xs">{{ $statusLabel }}</span>
-                <h1 class="font-display font-extrabold text-display-s sm:text-display-m text-pitch uppercase mt-2 leading-tight break-words">{{ $tournament->name }}</h1>
+                <h1 class="font-display font-extrabold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-2 leading-tight break-words">{{ $tournament->name }}</h1>
                 <p class="font-mono text-[12px] text-ink-mute mt-1">
                     @if ($tournament->category){{ $tournament->category }} · @endif
                     @if ($tournament->city){{ $tournament->city }}@endif

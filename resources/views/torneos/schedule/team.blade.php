@@ -23,15 +23,15 @@ $statusMeta = [
 
     {{-- Cabecera del equipo --}}
     <div class="flex flex-wrap items-start justify-between gap-4 mb-8">
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4 min-w-0">
             @if ($team->color)
                 <div class="w-12 h-12 rounded-full border-2 border-line shrink-0 flex items-center justify-center"
                      style="background: {{ $team->color }}">
                 </div>
             @endif
-            <div>
-                <p class="eyebrow">{{ $tournament->name }}</p>
-                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">{{ $team->name }}</h1>
+            <div class="min-w-0">
+                <p class="eyebrow truncate">{{ $tournament->name }}</p>
+                <h1 class="font-display font-bold text-xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $team->name }}</h1>
                 <p class="font-mono text-[12px] text-ink-mute mt-0.5">
                     Capitán: {{ $team->captain?->name ?? '—' }}
                 </p>

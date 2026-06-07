@@ -20,8 +20,8 @@
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex items-center justify-between mb-6">
-        <div>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="min-w-0">
             <p class="eyebrow">Administración</p>
             <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Torneos</h1>
         </div>

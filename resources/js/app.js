@@ -1,5 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import './pwa';
 
 // ── Tema FutGO (dark-first, persistente en localStorage) ──────────────
 // El anti-FOUC del <head> ya aplicó data-theme antes de pintar; este store

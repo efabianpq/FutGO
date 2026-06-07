@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Tournament extends Model
 {
@@ -152,6 +153,16 @@ class Tournament extends Model
     public function phases(): HasMany
     {
         return $this->hasMany(TournamentPhase::class);
+    }
+
+    public function matches(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            TournamentMatch::class,
+            TournamentPhase::class,
+            'tournament_id', // FK en tournament_phases
+            'phase_id',      // FK en tournament_matches
+        );
     }
 
     public function invitations(): HasMany

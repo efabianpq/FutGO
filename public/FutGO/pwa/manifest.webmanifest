@@ -1,12 +1,12 @@
 {
-  "name": "FutGO · Fútbol amateur",
+  "name": "FutGO – Torneos de Fútbol Amateur",
   "short_name": "FutGO",
-  "description": "El sistema operativo del fútbol amateur. Organiza torneos, equipos, estadísticas y canchas.",
+  "description": "La plataforma de gestión de torneos deportivos y pronósticos del fútbol amateur.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
   "lang": "es",
@@ -14,25 +14,25 @@
   "categories": ["sports", "productivity"],
   "icons": [
     {
-      "src": "/pwa/icon-192.png",
+      "src": "/FutGO/pwa/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa/icon-512.png",
+      "src": "/FutGO/pwa/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa/icon-192-maskable.png",
+      "src": "/FutGO/pwa/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/pwa/icon-512-maskable.png",
+      "src": "/FutGO/pwa/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

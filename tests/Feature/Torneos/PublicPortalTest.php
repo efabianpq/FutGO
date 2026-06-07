@@ -283,7 +283,7 @@ class PublicPortalTest extends TestCase
         $this->actingAs($captain)
             ->get(route('torneos.public.index'))
             ->assertOk()
-            ->assertSee('Inscribir mi equipo');
+            ->assertSee('Inscribir equipo');
     }
 
     public function test_inscripcion_deja_equipo_pendiente_de_aprobacion_admin(): void

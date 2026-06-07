@@ -87,8 +87,18 @@
                     @endif
                 </nav>
 
-                {{-- Right side: menú de Perfil --}}
-                <div class="hidden md:flex items-center">
+                {{-- Right side: botón instalar PWA (desktop auth) + menú de Perfil --}}
+                <div class="hidden md:flex items-center gap-2">
+                    <button
+                        x-show="$store.pwa.canInstall"
+                        x-cloak
+                        @click="$store.pwa.install()"
+                        class="flex items-center gap-1.5 px-3 py-2 rounded-xs text-[13px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all duration-fast">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/>
+                        </svg>
+                        Instalar app
+                    </button>
                     <div class="relative" @click.outside="profileOpen = false">
                         <button type="button" @click="profileOpen = !profileOpen"
                                 class="flex items-center gap-2 rounded-pill pl-1 pr-2 py-1 hover:bg-surface-2 transition-all duration-fast">
@@ -164,6 +174,18 @@
                     @endforeach
                 @endif
 
+                {{-- Instalar PWA (mobile auth) --}}
+                <button
+                    x-show="$store.pwa.canInstall"
+                    x-cloak
+                    @click="$store.pwa.install()"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2 text-left">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/>
+                    </svg>
+                    Instalar aplicación
+                </button>
+
                 <div class="border-t border-border mt-2 pt-2">
                     <div class="flex items-center gap-3 px-3 py-2">
                         <x-avatar :user="$user" size="sm" />
@@ -194,6 +216,17 @@
                         ¿Cómo funciona?
                     </a>
                     <x-theme-toggle />
+                    {{-- Instalar PWA (desktop guest) --}}
+                    <button
+                        x-show="$store.pwa.canInstall"
+                        x-cloak
+                        @click="$store.pwa.install()"
+                        class="btn btn-secondary btn-sm flex items-center gap-1.5">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/>
+                        </svg>
+                        Instalar app
+                    </button>
                     <a href="{{ route('login') }}" class="btn btn-secondary btn-sm">Iniciar sesión</a>
                     <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Crear cuenta</a>
                 </div>
@@ -217,6 +250,17 @@
                 <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">¿Cómo funciona?</a>
                 <a href="{{ route('login') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Iniciar sesión</a>
                 <a href="{{ route('register') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">Crear cuenta</a>
+                {{-- Instalar PWA (mobile guest) --}}
+                <button
+                    x-show="$store.pwa.canInstall"
+                    x-cloak
+                    @click="$store.pwa.install()"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2 text-left">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/>
+                    </svg>
+                    Instalar aplicación
+                </button>
             </div>
         </div>
     </nav>

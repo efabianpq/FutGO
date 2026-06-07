@@ -25,13 +25,13 @@ $allGroups = $phases->flatMap(fn ($p) => $p->groups)->unique('id')->values();
         <span class="text-pitch font-semibold">Partidos</span>
     </nav>
 
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <p class="eyebrow">{{ $tournament->name }}</p>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="min-w-0">
+            <p class="eyebrow truncate">{{ $tournament->name }}</p>
             <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Fixture y Resultados</h1>
         </div>
         <a href="{{ route('admin.torneos.show', $tournament) }}"
-           class="text-pitch font-display font-semibold text-[13px] uppercase hover:underline">← Dashboard</a>
+           class="text-pitch font-display font-semibold text-[13px] uppercase hover:underline shrink-0">← Dashboard</a>
     </div>
 
     @if (session('status'))

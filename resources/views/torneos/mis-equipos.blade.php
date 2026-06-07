@@ -66,7 +66,7 @@
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">
                         <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" />
                         <div class="min-w-0 flex-1">
-                            <h2 class="font-display font-bold text-pitch text-display-s uppercase leading-tight break-words">{{ $club->name }}</h2>
+                            <h2 class="font-display font-bold text-pitch text-xl sm:text-display-s uppercase leading-tight break-words">{{ $club->name }}</h2>
                             <p class="font-mono text-[11px] text-ink-mute mt-1">Capitán · {{ $club->players_count }} jugadores · {{ $club->tournaments_count }} torneo(s)</p>
                         </div>
                     </div>
@@ -91,7 +91,7 @@
                     <div class="p-5 border-b border-line-soft flex items-center gap-4">
                         <x-avatar :name="$club->name" :src="$club->shield_url" size="lg" />
                         <div class="min-w-0 flex-1">
-                            <h2 class="font-display font-bold text-pitch text-display-s uppercase leading-tight break-words">{{ $club->name }}</h2>
+                            <h2 class="font-display font-bold text-pitch text-xl sm:text-display-s uppercase leading-tight break-words">{{ $club->name }}</h2>
                             <p class="font-mono text-[11px] text-ink-mute mt-1">Jugador · Capitán: {{ $club->captain?->name ?? '—' }}</p>
                         </div>
                     </div>

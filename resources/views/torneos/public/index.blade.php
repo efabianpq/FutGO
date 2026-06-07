@@ -61,52 +61,71 @@
         @else
             <div class="grid grid-cols-1 gap-5">
                 @foreach ($open as $t)
-                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                    @php
+                        $fee = (int) $t->registration_fee > 0
+                            ? '$' . number_format($t->registration_fee, 0, ',', '.')
+                            : 'Gratuita';
+                        $pct = $t->max_teams > 0
+                            ? min(100, ($t->approved_teams_count / $t->max_teams) * 100)
+                            : 0;
+                    @endphp
+                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden"
                              x-show="match(@js($t->name), @js($t->city ?? ''))" x-cloak>
                         @if ($t->banner_url)
                             <img src="{{ $t->banner_url }}" alt="" class="h-24 w-full object-cover">
                         @endif
-                        <div class="p-5 flex flex-col flex-1">
-                            <div class="flex items-start gap-3">
+
+                        {{-- Cabecera: logo · nombre · badge --}}
+                        <div class="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0 flex-1">
                                 @if ($t->logo_url)
-                                    <img src="{{ $t->logo_url }}" alt="" class="h-12 w-12 object-cover rounded-md border border-line shrink-0">
+                                    <img src="{{ $t->logo_url }}" alt="" class="h-10 w-10 object-cover rounded-md border border-line shrink-0">
                                 @endif
                                 <div class="min-w-0">
-                                    <a href="{{ route('torneos.public.show', $t) }}" class="font-display font-bold text-pitch text-[16px] uppercase leading-tight hover:underline block truncate">{{ $t->name }}</a>
-                                    <p class="font-mono text-[11px] text-ink-mute mt-1">
+                                    <a href="{{ route('torneos.public.show', $t) }}"
+                                       class="font-display font-bold text-pitch text-[16px] uppercase leading-tight hover:underline block">{{ $t->name }}</a>
+                                    <p class="font-mono text-[11px] text-ink-mute mt-0.5">
                                         {{ ucfirst($t->sport) }} · {{ $formatLabels[$t->format] ?? $t->format }}
                                     </p>
                                 </div>
-                                <span class="ml-auto shrink-0 flex items-center gap-1.5">
-                                    @if ($isPlatformAdmin && $t->visibility !== 'public')
-                                        <x-badge variant="default">Privado</x-badge>
-                                    @endif
-                                    <x-badge variant="win">Inscripción</x-badge>
-                                </span>
                             </div>
-
-                            <dl class="grid grid-cols-2 gap-y-1.5 gap-x-4 mt-4 text-[13px]">
-                                @if ($t->city)
-                                    <div class="flex justify-between col-span-2"><dt class="text-ink-mute">Ciudad</dt><dd class="font-semibold text-pitch">{{ $t->city }}</dd></div>
+                            <span class="shrink-0 flex flex-col items-end gap-1">
+                                @if ($isPlatformAdmin && $t->visibility !== 'public')
+                                    <x-badge variant="default">Privado</x-badge>
                                 @endif
-                                <div class="flex justify-between col-span-2">
-                                    <dt class="text-ink-mute">Equipos</dt>
-                                    <dd class="font-semibold text-pitch">{{ $t->approved_teams_count }} / {{ $t->max_teams }}</dd>
-                                </div>
-                                <div class="flex justify-between col-span-2">
-                                    <dt class="text-ink-mute">Inscripción</dt>
-                                    <dd class="font-semibold text-pitch">{{ (int) $t->registration_fee > 0 ? '$' . number_format($t->registration_fee, 0, ',', '.') : 'Gratuita' }}</dd>
-                                </div>
-                                @if ($t->starts_at)
-                                    <div class="flex justify-between col-span-2"><dt class="text-ink-mute">Inicio</dt><dd class="font-mono text-pitch">{{ $t->starts_at->format('d/m/Y') }}</dd></div>
-                                @endif
-                            </dl>
+                                <x-badge variant="win">Inscripción</x-badge>
+                            </span>
+                        </div>
 
-                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-line-soft mt-auto">
+                        {{-- Franja de datos: 4 col en desktop, 2×2 en móvil --}}
+                        <div class="grid grid-cols-2 sm:grid-cols-4 border-t border-b border-line-soft">
+                            <div class="px-4 py-3 border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Ciudad</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5 truncate">{{ $t->city ?: '—' }}</p>
+                            </div>
+                            <div class="px-4 py-3 sm:border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Equipos</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5">{{ $t->approved_teams_count }} / {{ $t->max_teams }}</p>
+                            </div>
+                            <div class="px-4 py-3 border-t sm:border-t-0 border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Inscripción</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5">{{ $fee }}</p>
+                            </div>
+                            <div class="px-4 py-3 border-t sm:border-t-0 border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Inicio</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5">
+                                    {{ $t->starts_at ? $t->starts_at->format('d/m/Y') : '—' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Footer: botones + barra de cupos --}}
+                        <div class="px-5 py-4 flex flex-wrap items-center gap-3">
+                            <div class="flex flex-wrap gap-2">
                                 <x-btn :href="route('torneos.public.show', $t)" variant="ghost" size="sm">Ver detalle</x-btn>
                                 @auth
                                     @if ($isCaptain)
-                                        <x-btn :href="route('torneos.equipo.inscribir', $t)" variant="primary" size="sm">Inscribir mi equipo</x-btn>
+                                        <x-btn :href="route('torneos.equipo.inscribir', $t)" variant="primary" size="sm">Inscribir equipo</x-btn>
                                     @else
                                         <x-btn :href="route('torneos.mis-equipos')" variant="primary" size="sm">Creá tu equipo para inscribirte</x-btn>
                                     @endif
@@ -114,6 +133,14 @@
                                     <x-btn :href="route('login')" variant="primary" size="sm">Ingresá para inscribirte</x-btn>
                                 @endauth
                             </div>
+                            @if ($t->max_teams > 0)
+                                <div class="ml-auto flex items-center gap-2 shrink-0">
+                                    <div class="w-20 h-1.5 bg-line rounded-full overflow-hidden">
+                                        <div class="h-full bg-gol rounded-full" style="width:{{ $pct }}%"></div>
+                                    </div>
+                                    <span class="font-mono text-[11px] text-ink-mute whitespace-nowrap">{{ $t->approved_teams_count }} de {{ $t->max_teams }} cupos</span>
+                                </div>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -136,43 +163,77 @@
         @else
             <div class="grid grid-cols-1 gap-5">
                 @foreach ($inProgress as $t)
-                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden flex flex-col"
+                    @php
+                        $activePhase = $t->phases->first();
+                        $matchPct = $t->total_matches_count > 0
+                            ? min(100, ($t->finished_matches_count / $t->total_matches_count) * 100)
+                            : 0;
+                    @endphp
+                    <article class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden"
                              x-show="match(@js($t->name), @js($t->city ?? ''))" x-cloak>
                         @if ($t->banner_url)
                             <img src="{{ $t->banner_url }}" alt="" class="h-24 w-full object-cover">
                         @endif
-                        <div class="p-5 flex flex-col flex-1">
-                            <div class="flex items-start gap-3">
+
+                        {{-- Cabecera: logo · nombre · badge --}}
+                        <div class="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 min-w-0 flex-1">
                                 @if ($t->logo_url)
-                                    <img src="{{ $t->logo_url }}" alt="" class="h-12 w-12 object-cover rounded-md border border-line shrink-0">
+                                    <img src="{{ $t->logo_url }}" alt="" class="h-10 w-10 object-cover rounded-md border border-line shrink-0">
                                 @endif
                                 <div class="min-w-0">
-                                    <a href="{{ route('torneos.public.show', $t) }}" class="font-display font-bold text-pitch text-[16px] uppercase leading-tight hover:underline block truncate">{{ $t->name }}</a>
-                                    <p class="font-mono text-[11px] text-ink-mute mt-1">
+                                    <a href="{{ route('torneos.public.show', $t) }}"
+                                       class="font-display font-bold text-pitch text-[16px] uppercase leading-tight hover:underline block">{{ $t->name }}</a>
+                                    <p class="font-mono text-[11px] text-ink-mute mt-0.5">
                                         {{ ucfirst($t->sport) }} · {{ $formatLabels[$t->format] ?? $t->format }}
                                     </p>
                                 </div>
-                                <span class="ml-auto shrink-0 flex items-center gap-1.5">
-                                    @if ($isPlatformAdmin && $t->visibility !== 'public')
-                                        <x-badge variant="default">Privado</x-badge>
-                                    @endif
-                                    <x-badge variant="live">En juego</x-badge>
-                                </span>
                             </div>
-
-                            <dl class="grid grid-cols-2 gap-y-1.5 gap-x-4 mt-4 text-[13px]">
-                                @if ($t->city)
-                                    <div class="flex justify-between col-span-2"><dt class="text-ink-mute">Ciudad</dt><dd class="font-semibold text-pitch">{{ $t->city }}</dd></div>
+                            <span class="shrink-0 flex flex-col items-end gap-1">
+                                @if ($isPlatformAdmin && $t->visibility !== 'public')
+                                    <x-badge variant="default">Privado</x-badge>
                                 @endif
-                                <div class="flex justify-between col-span-2">
-                                    <dt class="text-ink-mute">Equipos</dt>
-                                    <dd class="font-semibold text-pitch">{{ $t->approved_teams_count }}</dd>
-                                </div>
-                            </dl>
+                                <x-badge variant="live">En juego</x-badge>
+                            </span>
+                        </div>
 
-                            <div class="mt-4 pt-4 border-t border-line-soft mt-auto">
-                                <x-btn :href="route('torneos.public.show', $t)" variant="primary" size="sm">Ver torneo en vivo</x-btn>
+                        {{-- Franja de datos: 4 col en desktop, 2×2 en móvil --}}
+                        <div class="grid grid-cols-2 sm:grid-cols-4 border-t border-b border-line-soft">
+                            <div class="px-4 py-3 border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Ciudad</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5 truncate">{{ $t->city ?: '—' }}</p>
                             </div>
+                            <div class="px-4 py-3 sm:border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Equipos</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5">{{ $t->approved_teams_count }}</p>
+                            </div>
+                            <div class="px-4 py-3 border-t sm:border-t-0 border-r border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Partidos</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5">
+                                    {{ $t->finished_matches_count }} / {{ $t->total_matches_count }}
+                                </p>
+                            </div>
+                            <div class="px-4 py-3 border-t sm:border-t-0 border-line-soft">
+                                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Fase</p>
+                                <p class="font-display font-semibold text-pitch text-[14px] mt-0.5 truncate">
+                                    {{ $activePhase?->name ?? '—' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- Footer: botón + barra de progreso --}}
+                        <div class="px-5 py-4 flex flex-wrap items-center gap-3">
+                            <x-btn :href="route('torneos.public.show', $t)" variant="primary" size="sm">Ver torneo en vivo</x-btn>
+                            @if ($t->total_matches_count > 0)
+                                <div class="ml-auto flex items-center gap-2 shrink-0">
+                                    <div class="w-20 h-1.5 bg-line rounded-full overflow-hidden">
+                                        <div class="h-full bg-alerta rounded-full" style="width:{{ $matchPct }}%"></div>
+                                    </div>
+                                    <span class="font-mono text-[11px] text-ink-mute whitespace-nowrap">
+                                        {{ $t->finished_matches_count }} de {{ $t->total_matches_count }} jugados
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     </article>
                 @endforeach
