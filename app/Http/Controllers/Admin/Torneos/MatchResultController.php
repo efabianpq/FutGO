@@ -31,6 +31,7 @@ class MatchResultController extends Controller
         private PlayerStatsCalculatorService $playerStats,
         private FixtureGeneratorService $fixture,
         private \App\Services\Torneos\PlayerCareerStatsService $careerStats,
+        private \App\Services\Social\FeedService $feed,
     ) {}
 
     public function index(Tournament $tournament): View
@@ -337,6 +338,10 @@ class MatchResultController extends Controller
             $this->maybeCompletePhase($phase);
         });
 
+        // Feed (post-commit, no bloqueante): resultado de torneo para los
+        // seguidores de cualquiera de los dos clubs.
+        $this->recordTournamentResultFeed($tournament, $match);
+
         return redirect()
             ->route('admin.torneos.partidos.index', $tournament)
             ->with('status', "Resultado del partido #{$match->match_number} guardado correctamente.");
@@ -412,9 +417,40 @@ class MatchResultController extends Controller
             $this->maybeCompletePhase($phase);
         });
 
+        $this->recordTournamentResultFeed($tournament, $match);
+
         return redirect()
             ->route('admin.torneos.partidos.index', $tournament)
             ->with('status', "Partido #{$match->match_number} registrado como W.O.");
+    }
+
+    /**
+     * Feed: resultado de torneo. Conecta los clubs de ambos equipos
+     * (actor=local, subject=visitante) y se distribuye por la ciudad del torneo.
+     * No bloqueante: nunca rompe el guardado del resultado.
+     */
+    private function recordTournamentResultFeed(Tournament $tournament, TournamentMatch $match): void
+    {
+        $homeTeam = $match->home_team_id ? Team::with('club')->find($match->home_team_id) : null;
+        $awayTeam = $match->away_team_id ? Team::with('club')->find($match->away_team_id) : null;
+
+        $this->feed->record(
+            \App\Models\Social\FeedEvent::TYPE_RESULTADO_TORNEO,
+            $homeTeam?->club,
+            $awayTeam?->club,
+            [
+                'city'    => $tournament->city,
+                'payload' => [
+                    'tournament_id'    => $tournament->id,
+                    'tournament_name'  => $tournament->name,
+                    'tournament_match_id' => $match->id,
+                    'home'             => $homeTeam?->club?->name ?? $homeTeam?->name,
+                    'away'             => $awayTeam?->club?->name ?? $awayTeam?->name,
+                    'home_score'       => $match->home_score,
+                    'away_score'       => $match->away_score,
+                ],
+            ]
+        );
     }
 
     public function markLive(Tournament $tournament, TournamentMatch $match): RedirectResponse

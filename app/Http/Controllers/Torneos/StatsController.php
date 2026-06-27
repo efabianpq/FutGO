@@ -58,16 +58,16 @@ class StatsController extends Controller
                 'homeTeam',
                 'awayTeam',
                 'phase',
-                'events' => fn($q) => $q->where('team_player_id', $teamPlayer->id)->orderBy('minute'),
+                'events'  => fn($q) => $q->where('team_player_id', $teamPlayer->id)->orderBy('minute'),
+                'lineups' => fn($q) => $q->where('team_player_id', $teamPlayer->id),
             ])
             ->orderBy('match_number')
             ->get()
-            ->map(function ($match) use ($teamPlayer) {
-                $lineup = $match->lineups()->where('team_player_id', $teamPlayer->id)->first();
+            ->map(function ($match) {
                 return [
-                    'match'    => $match,
-                    'lineup'   => $lineup,
-                    'events'   => $match->events,
+                    'match'  => $match,
+                    'lineup' => $match->lineups->first(),
+                    'events' => $match->events,
                 ];
             });
 

@@ -399,22 +399,31 @@ class TournamentController extends Controller
      */
     private function handleImageUploads(Tournament $tournament, Request $request): void
     {
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-        $dirty = false;
+        $diskName = config('filesystems.media_disk', 'public');
+        $disk     = \Illuminate\Support\Facades\Storage::disk($diskName);
+        $dirty    = false;
 
         foreach (['logo' => 'logo_url', 'banner' => 'banner_url'] as $input => $column) {
             if (! $request->hasFile($input)) {
                 continue;
             }
 
-            // Borrar la imagen anterior si estaba en el disco público.
+            // Borrar la imagen anterior del disco configurado.
             $previous = $tournament->{$column};
-            if ($previous && str_starts_with($previous, '/storage/')) {
-                $disk->delete(str_replace('/storage/', '', $previous));
+            if ($previous) {
+                $base = rtrim($disk->url(''), '/');
+                if ($base && str_starts_with($previous, $base . '/')) {
+                    $disk->delete(substr($previous, strlen($base) + 1));
+                } elseif (str_starts_with($previous, '/storage/')) {
+                    // Compatibilidad con URLs relativas almacenadas por versiones anteriores.
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete(
+                        str_replace('/storage/', '', $previous)
+                    );
+                }
             }
 
-            $path = $request->file($input)->store("torneos/{$tournament->id}", 'public');
-            $tournament->{$column} = '/storage/' . $path;
+            $path = $request->file($input)->store("torneos/{$tournament->id}", $diskName);
+            $tournament->{$column} = $disk->url($path);
             $dirty = true;
         }
 

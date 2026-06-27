@@ -7,6 +7,8 @@ use App\Models\Torneos\MatchEvent;
 use App\Models\Torneos\PlayerStat;
 use App\Models\Torneos\TeamPlayer;
 use App\Models\Torneos\TournamentMatch;
+use App\Services\Social\FriendlyMatchService;
+use App\Services\Social\PlayedWithService;
 use App\Services\Torneos\PlayerCareerStatsService;
 use Illuminate\View\View;
 
@@ -18,7 +20,11 @@ use Illuminate\View\View;
  */
 class PlayerCareerController extends Controller
 {
-    public function __construct(private PlayerCareerStatsService $career) {}
+    public function __construct(
+        private PlayerCareerStatsService $career,
+        private FriendlyMatchService $friendlies,
+        private PlayedWithService $playedWith,
+    ) {}
 
     public function show(): View
     {
@@ -95,10 +101,18 @@ class PlayerCareerController extends Controller
         // H16: credencial como modal dentro de Mi Carrera (QR + identificador FUTGO).
         $credentialQrSvg = \App\Services\Torneos\CredentialService::qrSvgFor($user);
 
+        // ── FutGO Social (S1-C): amistosos + métricas sociales ────────────────
+        $friendlies     = $this->friendlies->userFriendlies($user);
+        $socialMetrics  = $this->friendlies->userMetrics($user, $careerStat);
+
+        // ── FutGO Social (S2-A): "Jugué con vos" — jugadores con quienes compartió
+        // cancha (derivado, sin tabla propia). Top por cantidad de partidos.
+        $playedWith = $this->playedWith->sharedPlayers($user)->take(12);
+
         return view('torneos.mi-carrera', compact(
             'user', 'careerStat', 'statsByTournament', 'tournaments', 'clubs',
             'upcomingMatches', 'recentResults', 'activeSuspensions', 'disciplinary', 'myCallUps',
-            'fairPlay', 'credentialQrSvg'
+            'fairPlay', 'credentialQrSvg', 'friendlies', 'socialMetrics', 'playedWith'
         ));
     }
 }

@@ -39,6 +39,12 @@ class ClubPlayer extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** Reclamos de perfil sobre este registro (vinculación de cuenta a 'por_verificar'). */
+    public function profileClaims(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProfileClaim::class);
+    }
+
     public function isCaptain(): bool
     {
         return (bool) $this->is_captain;

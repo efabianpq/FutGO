@@ -45,6 +45,15 @@
                 @error('telefono')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
 
+            <div class="flex flex-col gap-1.5">
+                <label for="documento" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Documento <span class="text-ink-mute normal-case tracking-normal">(opcional)</span></label>
+                <input id="documento" name="documento" type="text" inputmode="numeric"
+                       value="{{ old('documento') }}" placeholder="Cédula / documento"
+                       class="h-[46px] px-3.5 bg-white border-[1.5px] {{ $errors->has('documento') ? 'border-alerta' : 'border-line' }} rounded-md text-[15px] focus:border-pitch focus:ring-0">
+                <p class="text-[12px] text-ink-mute">Si un capitán ya te anotó en un equipo, lo usamos para encontrar tu historial y dejarte reclamarlo.</p>
+                @error('documento')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1.5">
                     <label for="password" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Contraseña</label>

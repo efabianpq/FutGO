@@ -78,6 +78,28 @@
                 @error('document')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="flex flex-col gap-1.5">
+                    <label for="city" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Ciudad <span class="text-ink-mute normal-case">(FutGO Social)</span></label>
+                    <input id="city" name="city" type="text" maxlength="120"
+                           value="{{ old('city', auth()->user()->city) }}"
+                           class="h-[46px] px-3.5 bg-white border-[1.5px] {{ $errors->has('city') ? 'border-alerta' : 'border-line' }} rounded-md text-[15px] focus:border-pitch focus:ring-0">
+                    <p class="text-[12px] text-ink-mute">Tu ciudad alimenta el Feed y las oportunidades cercanas.</p>
+                    @error('city')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label for="play_level" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Nivel de juego</label>
+                    <select id="play_level" name="play_level"
+                            class="h-[46px] px-3.5 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0">
+                        <option value="">Sin declarar</option>
+                        @foreach (\App\Models\User::PLAY_LEVELS as $lvl)
+                            <option value="{{ $lvl }}" @selected(old('play_level', auth()->user()->play_level) === $lvl)>{{ ucfirst(str_replace('_', ' ', $lvl)) }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-[12px] text-ink-mute">Es el filtro del matching de oportunidades.</p>
+                </div>
+            </div>
+
             <label class="inline-flex items-center gap-2 text-body-s">
                 <input type="checkbox" name="notifications_enabled" value="1"
                        @checked(auth()->user()->notifications_enabled)

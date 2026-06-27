@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPlayLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, HasPlayLevel, Notifiable;
 
     public function predictions(): HasMany
     {
@@ -25,8 +28,14 @@ class User extends Authenticatable
         'document',
         'phone_whatsapp',
         'avatar_url',
+        'play_level',
+        'city',
+        'feed_last_read_at',
         'invitation_code',
         'is_active',
+        'is_suspended',
+        'suspended_until',
+        'suspended_reason',
         'role',
         'modules',
         'notifications_enabled',
@@ -54,11 +63,33 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
+            'email_verified_at'  => 'datetime',
+            'password'           => 'hashed',
+            'is_active'          => 'boolean',
+            'is_suspended'       => 'boolean',
+            'suspended_until'    => 'datetime',
             'notifications_enabled' => 'boolean',
+            'feed_last_read_at'  => 'datetime',
         ];
+    }
+
+    /**
+     * ¿El usuario está actualmente suspendido?
+     * Considera tanto el flag como el vencimiento: si `suspended_until` ya pasó
+     * la cuenta sigue activa (la pausa venció por tiempo).
+     */
+    public function isSuspended(): bool
+    {
+        if (! $this->is_suspended) {
+            return false;
+        }
+
+        // Suspensión indefinida (sin fecha de vencimiento).
+        if ($this->suspended_until === null) {
+            return true;
+        }
+
+        return $this->suspended_until->isFuture();
     }
 
     public function isAdmin(): bool
@@ -113,6 +144,12 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\Torneos\PlayerCareerStat::class);
     }
 
+    /** Reclamos de perfil iniciados por este usuario (vincular cuenta a 'por_verificar'). */
+    public function profileClaims(): HasMany
+    {
+        return $this->hasMany(\App\Models\Torneos\ProfileClaim::class);
+    }
+
     /** Logros (gamificación) obtenidos por el jugador. */
     public function achievements(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
@@ -141,5 +178,49 @@ class User extends Authenticatable
     public function isTorneoPlayerAnywhere(): bool
     {
         return \App\Models\Torneos\TeamPlayer::where('user_id', $this->id)->exists();
+    }
+
+    // --- FutGO Social (Fase 1) ---
+
+    /** Oportunidades publicadas por este usuario (BUSCAR_EQUIPO, etc.). */
+    public function opportunities(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\Opportunity::class);
+    }
+
+    /** Respuestas que este usuario dio a oportunidades de otros. */
+    public function opportunityResponses(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\OpportunityResponse::class);
+    }
+
+    /** Entidades que sigue (clubs, jugadores, torneos). */
+    public function follows(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\Follow::class);
+    }
+
+    /** Seguidores de este usuario (otros usuarios que lo siguen como jugador). */
+    public function followers(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Social\Follow::class, 'followable');
+    }
+
+    /** Eventos de confiabilidad de este usuario (no-shows, respuestas, etc.). */
+    public function reliabilityEvents(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Social\ReliabilityEvent::class, 'subject');
+    }
+
+    /** Score de confiabilidad cacheado del usuario. */
+    public function reliabilityScore(): MorphOne
+    {
+        return $this->morphOne(\App\Models\Social\ReliabilityScore::class, 'subject');
+    }
+
+    /** Reportes de contenido emitidos por este usuario. */
+    public function contentReports(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\ContentReport::class, 'reporter_user_id');
     }
 }

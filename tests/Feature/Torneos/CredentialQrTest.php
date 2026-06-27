@@ -9,6 +9,7 @@ use App\Models\Torneos\Tournament;
 use App\Models\User;
 use App\Services\Torneos\CredentialService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,12 @@ use Tests\TestCase;
 class CredentialQrTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(ThrottleRequests::class);
+    }
 
     private function makeReferee(): User
     {

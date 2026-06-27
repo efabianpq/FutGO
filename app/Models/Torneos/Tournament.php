@@ -150,6 +150,12 @@ class Tournament extends Model
         return $this->hasMany(Team::class);
     }
 
+    /** Seguidores del torneo (FutGO Social — usuarios que lo siguen). */
+    public function followers(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(\App\Models\Social\Follow::class, 'followable');
+    }
+
     public function phases(): HasMany
     {
         return $this->hasMany(TournamentPhase::class);

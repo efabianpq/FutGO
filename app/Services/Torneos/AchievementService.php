@@ -22,6 +22,7 @@ class AchievementService
     public function __construct(
         private PlayerCareerStatsService $career,
         private FairPlayService $fairPlay,
+        private \App\Services\Social\FeedService $feed,
     ) {}
 
     /**
@@ -57,6 +58,18 @@ class AchievementService
 
             if ($assignment->wasRecentlyCreated) {
                 $granted[] = $achievement;
+
+                // Feed (no bloqueante): los seguidores del jugador ven el logro.
+                $this->feed->record(
+                    \App\Models\Social\FeedEvent::TYPE_LOGRO_DESBLOQUEADO,
+                    $user,
+                    $achievement,
+                    ['payload' => [
+                        'achievement_id'   => $achievement->id,
+                        'achievement_name' => $achievement->name ?? null,
+                        'player'           => $user->name,
+                    ]]
+                );
             }
         }
 

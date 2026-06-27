@@ -25,6 +25,8 @@ use App\Http\Controllers\Torneos\TournamentShareController;
 use App\Http\Controllers\Torneos\PlayerCareerController;
 use App\Http\Controllers\Torneos\MyTeamsController;
 use App\Http\Controllers\Torneos\MyTournamentsController;
+use App\Http\Controllers\Torneos\ProfileClaimController;
+use App\Http\Controllers\Admin\Torneos\ProfileClaimController as AdminProfileClaimController;
 use App\Http\Controllers\Torneos\StatsController;
 use App\Http\Controllers\Torneos\TeamController;
 use App\Http\Controllers\Torneos\TeamHubController;
@@ -38,6 +40,16 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PredictionsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Social\OpportunityController;
+use App\Http\Controllers\Social\FriendlyMatchController;
+use App\Http\Controllers\Social\FeedController;
+use App\Http\Controllers\Social\FollowController;
+use App\Http\Controllers\Social\AgendaController;
+use App\Http\Controllers\Social\ConversationController;
+use App\Http\Controllers\Admin\Social\FriendlyMatchController as AdminFriendlyMatchController;
+use App\Http\Controllers\Admin\Social\ModerationController as AdminModerationController;
+use App\Http\Controllers\Social\PlayerPublicController;
+use App\Http\Controllers\Social\VenueController;
 use App\Http\Controllers\RankingController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,25 +74,64 @@ Route::prefix('t')->name('torneos.public.')->group(function () {
         ->whereIn('format', ['pdf', 'csv'])
         ->name('export');
 
-    // Tarjetas compartibles (SVG). El partido va ANTES del comodín {card}.
-    Route::get('/{tournament:slug}/img/partido/{match}', [TournamentShareController::class, 'matchCard'])->name('img.match');
+    // Tarjetas compartibles — SVG (inline) y PNG (descargable). Partido antes del comodín {card}.
+    Route::get('/{tournament:slug}/img/partido/{match}', [TournamentShareController::class, 'matchCard'])->whereNumber('match')->name('img.match');
     Route::get('/{tournament:slug}/img/{card}', [TournamentShareController::class, 'card'])
         ->whereIn('card', ['goleadores', 'posiciones', 'mvp'])
         ->name('img');
+    // PNG: sirve desde caché o genera en el momento con GD; degrada a SVG si GD no está disponible.
+    // Throttle: generación GD es CPU-bound; 20 req/min por IP es suficiente para uso normal.
+    Route::middleware('throttle:share-card-png')->group(function () {
+        Route::get('/{tournament:slug}/img/partido/{match}/png', [TournamentShareController::class, 'matchCardPng'])->whereNumber('match')->name('img.match.png');
+        Route::get('/{tournament:slug}/img/{card}/png', [TournamentShareController::class, 'cardPng'])
+            ->whereIn('card', ['goleadores', 'posiciones', 'mvp'])
+            ->name('img.png');
+    });
+});
+
+// ─── FutGO Social · Tarjetas compartibles de amistosos (sin auth) ─────────
+// Solo amistosos en estado "jugado" (resultado confirmado) tienen tarjeta.
+Route::prefix('amistosos/{friendlyMatch}/img')->name('social.amistosos.img.')->whereNumber('friendlyMatch')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Social\FriendlyMatchShareController::class, 'card'])->name('card');
+    Route::middleware('throttle:share-card-png')->get('/png', [\App\Http\Controllers\Social\FriendlyMatchShareController::class, 'cardPng'])->name('png');
+});
+
+// ─── FutGO Social · Ficha pública de jugador (sin auth) ────────────────────
+// Patrón análogo al portal de torneo /t/{slug}. El futgo_id es el identificador
+// público del ecosistema (FG-XXXXXX). No expone datos de contacto.
+Route::get('/j/{futgo_id}', [PlayerPublicController::class, 'show'])
+    ->where('futgo_id', 'FG-[A-Z0-9]{6}')
+    ->name('social.player.show');
+
+// ─── FutGO Social · Canchas — listado y perfil PÚBLICO (sin auth) ──────────
+Route::prefix('canchas')->name('social.canchas.')->group(function () {
+    Route::get('/', [VenueController::class, 'index'])->name('index');
+    Route::get('/buscar', [VenueController::class, 'search'])->name('search'); // JSON autocompletado
+    Route::get('/{venue:slug}', [VenueController::class, 'show'])->name('show');
+});
+
+// ─── FutGO Social · Oportunidades — exploración PÚBLICA (sin auth) ─────────
+// Descubrimiento sin login (igual que el portal de torneos). Responder/publicar
+// sí requiere cuenta: esas rutas viven bajo `auth` más abajo. {opportunity} se
+// restringe a numérico para no capturar /crear ni /mias.
+Route::prefix('oportunidades')->name('social.oportunidades.')->group(function () {
+    Route::get('/', [OpportunityController::class, 'index'])->name('index');
+    Route::get('/{opportunity}', [OpportunityController::class, 'show'])
+        ->whereNumber('opportunity')->name('show');
 });
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:auth')->name('register.store');
 
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:auth')->name('login.store');
 
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'show'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:password-reset')->name('password.email');
 
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'show'])->name('password.reset');
-    Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('throttle:password-reset')->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -106,6 +157,94 @@ Route::middleware('auth')->group(function () {
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
         Route::post('/perfil/foto', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
+
+        // ─── Reclamo de perfil (Limitación #2) — jugador + capitán ─────────
+        // Fuera del módulo torneos: es el camino de un usuario nuevo para
+        // vincularse a un registro 'por_verificar' aunque aún no tenga el módulo.
+        Route::prefix('reclamos')->name('torneos.reclamos.')->group(function () {
+            Route::get('/', [ProfileClaimController::class, 'index'])->name('index');
+            Route::post('/', [ProfileClaimController::class, 'store'])->name('store');
+            Route::post('/{claim}/escalar', [ProfileClaimController::class, 'escalate'])
+                ->whereNumber('claim')->name('escalate');
+            // Bandeja del capitán.
+            Route::get('/aprobaciones', [ProfileClaimController::class, 'approvals'])->name('approvals');
+            Route::post('/{claim}/aprobar', [ProfileClaimController::class, 'approve'])
+                ->whereNumber('claim')->name('approve');
+            Route::post('/{claim}/rechazar', [ProfileClaimController::class, 'reject'])
+                ->whereNumber('claim')->name('reject');
+        });
+
+        // ─── FutGO Social · Oportunidades — acciones (requieren cuenta) ────
+        // La exploración pública (index/show) está arriba, fuera de `auth`.
+        Route::prefix('oportunidades')->name('social.oportunidades.')->group(function () {
+            Route::get('/crear', [OpportunityController::class, 'create'])->name('create');
+            // S3-A · Modo rápido: formulario simplificado para rival de último momento.
+            Route::get('/rapida', [OpportunityController::class, 'createExpress'])->name('express');
+            Route::post('/', [OpportunityController::class, 'store'])->name('store');
+            Route::get('/mias', [OpportunityController::class, 'mine'])->name('mine');
+            Route::get('/reactivar', [OpportunityController::class, 'reactivar'])->name('reactivar');
+            Route::post('/reactivar', [OpportunityController::class, 'confirmarReactivacion'])->name('reactivar.confirmar');
+
+            Route::post('/{opportunity}/responder', [OpportunityController::class, 'respond'])
+                ->whereNumber('opportunity')->name('respond');
+            Route::post('/{opportunity}/cancelar', [OpportunityController::class, 'cancel'])
+                ->whereNumber('opportunity')->name('cancel');
+            Route::post('/{opportunity}/reportar', [OpportunityController::class, 'report'])
+                ->whereNumber('opportunity')->name('report');
+
+            Route::post('/respuestas/{response}/aceptar', [OpportunityController::class, 'acceptResponse'])
+                ->whereNumber('response')->name('responses.accept');
+            Route::post('/respuestas/{response}/rechazar', [OpportunityController::class, 'rejectResponse'])
+                ->whereNumber('response')->name('responses.reject');
+            Route::post('/respuestas/{response}/contrapropuesta', [OpportunityController::class, 'counterResponse'])
+                ->whereNumber('response')->name('responses.counter');
+        });
+
+        // ─── FutGO Social · Feed de sistema + Seguir — Sesión S1-E ─────────
+        Route::get('/feed', [FeedController::class, 'index'])->name('social.feed.index');
+        Route::post('/feed/leido', [FeedController::class, 'markRead'])->name('social.feed.read');
+
+        // ─── FutGO Social · Agenda deportiva unificada — Sesión S2-A ───────
+        Route::get('/agenda', [AgendaController::class, 'index'])->name('social.agenda.index');
+
+        // Seguir / dejar de seguir (toggle) — {type} = club|user|tournament.
+        Route::post('/seguir/{type}/{id}', [FollowController::class, 'toggle'])
+            ->whereIn('type', ['club', 'user', 'tournament'])
+            ->whereNumber('id')
+            ->name('social.follow.toggle');
+
+        // ─── FutGO Social · Amistosos (capitán) — Sesión S1-C ──────────────
+        Route::prefix('amistosos')->name('social.amistosos.')->group(function () {
+            Route::get('/', [FriendlyMatchController::class, 'index'])->name('index');
+            Route::post('/{friendlyMatch}/resultado', [FriendlyMatchController::class, 'report'])
+                ->whereNumber('friendlyMatch')->name('report');
+            Route::post('/{friendlyMatch}/escalar', [FriendlyMatchController::class, 'escalate'])
+                ->whereNumber('friendlyMatch')->name('escalate');
+            Route::post('/{friendlyMatch}/cancelar', [FriendlyMatchController::class, 'cancel'])
+                ->whereNumber('friendlyMatch')->name('cancel');
+        });
+
+        // ─── FutGO Social · Canchas — acciones autenticadas (S3-B) ────────────
+        Route::prefix('canchas')->name('social.canchas.')->group(function () {
+            Route::get('/nueva', [VenueController::class, 'create'])->name('create');
+            Route::post('/', [VenueController::class, 'store'])->name('store');
+            Route::get('/{venue:slug}/editar', [VenueController::class, 'edit'])->name('edit');
+            Route::patch('/{venue:slug}', [VenueController::class, 'update'])->name('update');
+        });
+
+        // ─── FutGO Social · Mensajería en conversaciones existentes — S2-B ──
+        Route::prefix('mensajes')->name('social.conversaciones.')->group(function () {
+            Route::get('/', [ConversationController::class, 'index'])->name('index');
+            // El reporte va ANTES del show numérico para no colisionar con {conversation}.
+            Route::post('/mensaje/{message}/reportar', [ConversationController::class, 'reportMessage'])
+                ->whereNumber('message')->name('messages.report');
+            Route::get('/{conversation}', [ConversationController::class, 'show'])
+                ->whereNumber('conversation')->name('show');
+            Route::post('/{conversation}', [ConversationController::class, 'store'])
+                ->whereNumber('conversation')->name('store');
+            Route::post('/{conversation}/compartir-contacto', [ConversationController::class, 'shareContact'])
+                ->whereNumber('conversation')->name('share-contact');
+        });
 
         // Auditoría exportable (usuarios activos)
         Route::get('/auditoria/exportar',     [AuditExportController::class, 'index'])->name('audit.index');
@@ -150,7 +289,7 @@ Route::middleware('auth')->group(function () {
 
                 // Validación por árbitros/admin (escaneo de QR o ingreso manual).
                 // Va ANTES del comodín /{tournament} para no ser capturada por él.
-                Route::middleware('ensure.torneo_admin')->group(function () {
+                Route::middleware(['ensure.torneo_admin', 'throttle:credential-validate'])->group(function () {
                     Route::get('/validar', [CredentialValidationController::class, 'index'])->name('validar');
                     Route::post('/validar', [CredentialValidationController::class, 'validate'])->name('validar.run');
                 });
@@ -168,6 +307,9 @@ Route::middleware('auth')->group(function () {
                     Route::post('/jugadores-invitado', [ClubController::class, 'addGuestPlayer'])->name('players.addGuest');
                     Route::delete('/jugadores/{clubPlayer}', [ClubController::class, 'removePlayer'])->name('players.remove');
                     Route::patch('/capitan', [ClubController::class, 'setCaptain'])->name('captain');
+                    // S3-A: ignorar la sugerencia de recategorización de nivel.
+                    Route::post('/sugerencia-nivel/ignorar', [ClubController::class, 'dismissLevelSuggestion'])
+                        ->name('level-suggestion.dismiss');
                 });
 
                 // Inscripción a un torneo = enrolar un equipo permamente existente.
@@ -327,6 +469,23 @@ Route::middleware('auth')->group(function () {
             // Usuarios
             Route::get('/usuarios', [AdminUsersController::class, 'index'])->name('users.index');
             Route::patch('/usuarios/{user}/toggle', [AdminUsersController::class, 'toggleActive'])->name('users.toggle');
+
+            // FutGO Social — disputas y cancelaciones de amistosos (Sesión S1-C)
+            Route::get('/amistosos', [AdminFriendlyMatchController::class, 'index'])->name('amistosos.index');
+            Route::post('/amistosos/{friendlyMatch}/resolver', [AdminFriendlyMatchController::class, 'resolve'])
+                ->whereNumber('friendlyMatch')->name('amistosos.resolve');
+
+            // FutGO Social — Moderación de contenido (Sesión S1-F)
+            Route::get('/moderacion', [AdminModerationController::class, 'index'])->name('social.moderacion.index');
+            Route::post('/moderacion/{report}/resolver', [AdminModerationController::class, 'resolve'])
+                ->whereNumber('report')->name('social.moderacion.resolve');
+
+            // Reclamos de perfil ESCALADOS (Limitación #2) — sin capitán activo.
+            Route::get('/torneos/reclamos', [AdminProfileClaimController::class, 'index'])->name('torneos.reclamos.index');
+            Route::post('/torneos/reclamos/{claim}/aprobar', [AdminProfileClaimController::class, 'approve'])
+                ->whereNumber('claim')->name('torneos.reclamos.approve');
+            Route::post('/torneos/reclamos/{claim}/rechazar', [AdminProfileClaimController::class, 'reject'])
+                ->whereNumber('claim')->name('torneos.reclamos.reject');
 
             // Fixture
             Route::get('/fixture', [AdminFixtureController::class, 'index'])->name('fixture.index');

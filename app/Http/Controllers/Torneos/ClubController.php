@@ -124,15 +124,11 @@ class ClubController extends Controller
             'shield.max'      => 'La imagen no puede superar los 2 MB.',
         ]);
 
-        if ($club->shield_url) {
-            $path = ltrim(parse_url($club->shield_url, PHP_URL_PATH) ?? '', '/');
-            if (str_starts_with($path, 'storage/')) {
-                Storage::disk('public')->delete(substr($path, strlen('storage/')));
-            }
-        }
+        $this->deleteFromMediaDisk($club->shield_url);
 
-        $path = $request->file('shield')->store('clubs', 'public');
-        $club->update(['shield_url' => Storage::disk('public')->url($path)]);
+        $disk = config('filesystems.media_disk', 'public');
+        $path = $request->file('shield')->store('clubs', $disk);
+        $club->update(['shield_url' => Storage::disk($disk)->url($path)]);
 
         return back()->with('status', 'Escudo del equipo actualizado.');
     }
@@ -339,12 +335,78 @@ class ClubController extends Controller
 
         $canManage = $club->isCaptainedBy(auth()->user()) || auth()->user()->isAdmin();
 
+        // ── FutGO Social (S1-C): historial de amistosos + métricas ────────────
+        $friendlyService = app(\App\Services\Social\FriendlyMatchService::class);
+        $friendlies      = $friendlyService->clubFriendlies($club);
+        $friendlyMetrics = $friendlyService->clubMetrics($club);
+
+        // ── FutGO Social (S3-A): historial de compatibilidad (head-to-head) ───
+        $headToHead = $friendlyService->clubHeadToHead($club);
+
+        // ── FutGO Social (S3-A): sugerencia de recategorización (solo capitán/admin)
+        $levelSuggestion = $canManage
+            ? app(\App\Services\Social\SuggestionService::class)->levelRecategorization($club)
+            : null;
+
+        // ── FutGO Social (S1-F): score de confiabilidad + oportunidades abiertas
+        $reliabilityScore    = null;
+        $reliabilityForOwner = null;
+        $score = \App\Models\Social\ReliabilityScore::where('subject_type', 'club')
+            ->where('subject_id', $club->id)
+            ->first();
+        if ($score) {
+            // Score propio: siempre visible para capitán/admin.
+            if ($canManage) {
+                $reliabilityForOwner = $score;
+            }
+            // Score público: solo si supera el umbral.
+            if ($score->score >= 80) {
+                $reliabilityScore = $score;
+            }
+        }
+
+        $openOpportunities = \App\Models\Social\Opportunity::query()
+            ->where('club_id', $club->id)
+            ->active()
+            ->visible()
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
         return view('torneos.clubes.show', compact(
-            'club', 'participations', 'agg', 'players', 'topScorers', 'canManage'
+            'club', 'participations', 'agg', 'players', 'topScorers', 'canManage',
+            'friendlies', 'friendlyMetrics', 'headToHead', 'levelSuggestion',
+            'reliabilityScore', 'reliabilityForOwner', 'openOpportunities',
         ));
     }
 
+    /**
+     * S3-A · El capitán ignora la sugerencia de recategorización de nivel:
+     * se persiste para no volver a mostrarla. No cambia el nivel del club.
+     */
+    public function dismissLevelSuggestion(Club $club): RedirectResponse
+    {
+        $this->authorizeManage($club);
+
+        $club->update(['level_suggestion_dismissed_at' => now()]);
+
+        return back()->with('status', 'Listo, no te volveremos a sugerir cambiar el nivel.');
+    }
+
     // ─────────────────────────────────────────────────────────────────
+
+    /** Borra del disco de medios configurado un archivo a partir de su URL pública. */
+    private function deleteFromMediaDisk(?string $url): void
+    {
+        if (! $url) {
+            return;
+        }
+        $disk = config('filesystems.media_disk', 'public');
+        $base = rtrim(Storage::disk($disk)->url(''), '/');
+        if ($base && str_starts_with($url, $base . '/')) {
+            Storage::disk($disk)->delete(substr($url, strlen($base) + 1));
+        }
+    }
 
     private function authorizeManage(Club $club): void
     {

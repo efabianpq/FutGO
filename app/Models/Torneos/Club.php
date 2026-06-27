@@ -2,10 +2,13 @@
 
 namespace App\Models\Torneos;
 
+use App\Models\Concerns\HasPlayLevel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
  * Club: identidad PERMANENTE de un equipo que persiste entre torneos.
@@ -13,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Club extends Model
 {
+    use HasPlayLevel;
+
     protected $fillable = [
         'name',
         'slug',
@@ -21,7 +26,22 @@ class Club extends Model
         'created_by_user_id',
         'captain_user_id',
         'status',
+        'play_level',
+        'level_suggestion_dismissed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'level_suggestion_dismissed_at' => 'datetime',
+        ];
+    }
+
+    /** ¿El capitán ya ignoró la sugerencia de recategorización de nivel? */
+    public function dismissedLevelSuggestion(): bool
+    {
+        return $this->level_suggestion_dismissed_at !== null;
+    }
 
     public function creator(): BelongsTo
     {
@@ -90,5 +110,49 @@ class Club extends Model
         return $this->teams()
             ->whereHas('tournament', fn ($q) => $q->whereIn('status', ['open', 'in_progress']))
             ->exists();
+    }
+
+    // --- FutGO Social (Fase 1) ---
+
+    /** Oportunidades publicadas por este club (BUSCAR_RIVAL, BUSCAR_JUGADOR, etc.). */
+    public function opportunities(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\Opportunity::class);
+    }
+
+    /** Respuestas que este club dio a oportunidades de otros. */
+    public function opportunityResponses(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\OpportunityResponse::class);
+    }
+
+    /** Amistosos jugados como local. */
+    public function homeFriendlyMatches(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\FriendlyMatch::class, 'home_club_id');
+    }
+
+    /** Amistosos jugados como visitante. */
+    public function awayFriendlyMatches(): HasMany
+    {
+        return $this->hasMany(\App\Models\Social\FriendlyMatch::class, 'away_club_id');
+    }
+
+    /** Seguidores del club (usuarios que lo siguen). */
+    public function followers(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Social\Follow::class, 'followable');
+    }
+
+    /** Eventos de confiabilidad del club. */
+    public function reliabilityEvents(): MorphMany
+    {
+        return $this->morphMany(\App\Models\Social\ReliabilityEvent::class, 'subject');
+    }
+
+    /** Score de confiabilidad cacheado del club. */
+    public function reliabilityScore(): MorphOne
+    {
+        return $this->morphOne(\App\Models\Social\ReliabilityScore::class, 'subject');
     }
 }

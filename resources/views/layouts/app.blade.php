@@ -20,6 +20,19 @@
     @endphp
     <title>{{ $fullTitle }}</title>
 
+    {{-- Open Graph: permite preview cuando se comparte un link (WhatsApp, redes). --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="FutGO">
+    <meta property="og:title" content="{{ $pageTitle ?: 'FutGO' }}">
+    <meta property="og:description" content="@yield('og_description', 'Gestión de torneos, equipos y estadísticas en FutGO.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @hasSection('og_image')
+        <meta property="og:image" content="@yield('og_image')">
+        <meta name="twitter:card" content="summary_large_image">
+    @else
+        <meta name="twitter:card" content="summary">
+    @endif
+
     {{-- Fuentes FutGO: Archivo (display/Expanded), Inter (UI), JetBrains Mono (datos) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,6 +60,26 @@
             <div class="max-w-3xl mx-auto mt-4 px-4">
                 <div class="badge-green border border-green/40 bg-green-tint text-green px-4 py-3 rounded-md font-semibold">
                     {{ session('status') }}
+                </div>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="max-w-3xl mx-auto mt-4 px-4">
+                <div class="border border-alerta/40 bg-alerta/10 text-alerta px-4 py-3 rounded-md font-semibold">
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
+
+        {{-- Aviso de perfiles reclamables detectados (Limitación #2). --}}
+        @if (session('claim_candidates'))
+            <div class="max-w-3xl mx-auto mt-4 px-4">
+                <div class="border border-green/40 bg-green-tint text-green px-4 py-3 rounded-md flex items-center justify-between gap-4">
+                    <span class="font-semibold">
+                        Encontramos {{ session('claim_candidates') }} {{ session('claim_candidates') == 1 ? 'registro' : 'registros' }} a tu nombre que podés reclamar para heredar tu historial.
+                    </span>
+                    <a href="{{ route('torneos.reclamos.index') }}" class="btn btn-primary btn-sm shrink-0">Ver y reclamar</a>
                 </div>
             </div>
         @endif

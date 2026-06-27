@@ -87,6 +87,96 @@
         @endforeach
     </div>
 
+    {{-- ══ 1b · Actividad social: partidos totales, presentación, amistosos ══ --}}
+    @php $rec = $socialMetrics['friendly_record']; @endphp
+    <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Actividad (torneos + amistosos)</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <div class="bg-white border border-line rounded-md shadow-card p-3 text-center border-l-4 border-l-pitch">
+            <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Partidos totales</p>
+            <p class="font-display font-extrabold text-2xl mt-0.5 text-pitch">{{ $socialMetrics['total_matches'] }}</p>
+            <p class="font-mono text-[10px] text-ink-mute">{{ $socialMetrics['tournament_matches'] }} torneo · {{ $socialMetrics['friendlies_played'] }} amistoso</p>
+        </div>
+        <div class="bg-white border border-line rounded-md shadow-card p-3 text-center border-l-4 border-l-gol">
+            <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Presentación</p>
+            <p class="font-display font-extrabold text-2xl mt-0.5 text-gol-deep">{{ $socialMetrics['presentation_pct'] !== null ? $socialMetrics['presentation_pct'] . '%' : '—' }}</p>
+            <p class="font-mono text-[10px] text-ink-mute">{{ $socialMetrics['accepted_callups'] }} convocatoria(s) aceptada(s)</p>
+        </div>
+        <div class="bg-bone-soft border border-line rounded-md p-3 text-center">
+            <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">Récord amistosos</p>
+            <p class="font-display font-bold text-xl mt-0.5 text-pitch">{{ $rec['won'] }}V · {{ $rec['drawn'] }}E · {{ $rec['lost'] }}D</p>
+            <p class="font-mono text-[10px] text-ink-mute">{{ $rec['gf'] }} GF · {{ $rec['ga'] }} GC</p>
+        </div>
+        <a href="{{ route('social.amistosos.index') }}" class="bg-pitch text-bone rounded-md p-3 text-center flex flex-col items-center justify-center hover:bg-pitch-deep transition-all duration-fast">
+            <p class="font-mono text-[10px] uppercase tracking-wide-label text-bone/70">Gestionar</p>
+            <p class="font-display font-bold text-[15px] mt-0.5">Mis amistosos →</p>
+        </a>
+    </div>
+
+    {{-- ══ 1c · Amistosos jugados ════════════════════════════════════════════ --}}
+    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-8">
+        <div class="bg-pitch-mist border-b border-line px-4 py-3 flex items-center justify-between">
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Amistosos ({{ $friendlies->count() }})</p>
+        </div>
+        @if ($friendlies->isEmpty())
+            <div class="p-6 text-center text-ink-soft text-[14px]">Todavía no jugaste amistosos. <a href="{{ route('social.oportunidades.index', ['tipo' => 'BUSCAR_RIVAL']) }}" class="text-pitch underline">Buscá un rival</a>.</div>
+        @else
+            <ul class="divide-y divide-line-soft">
+                @foreach ($friendlies as $row)
+                    <li class="px-4 py-3 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-display font-semibold text-pitch text-[14px] truncate">
+                                {{ $row->club?->name }} <span class="text-ink-mute font-normal">vs</span> {{ $row->opponent?->name ?? '—' }}
+                            </p>
+                            <p class="font-mono text-[11px] text-ink-mute">{{ $row->date?->format('d/m/Y') ?? 'Sin fecha' }}</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-display font-extrabold text-pitch text-[15px]">{{ $row->for }}–{{ $row->against }}</span>
+                            <span class="px-2 py-0.5 rounded-pill font-display font-bold text-[10px] uppercase
+                                {{ $row->outcome === 'V' ? 'bg-gol/20 text-pitch-deep' : ($row->outcome === 'D' ? 'bg-alerta/15 text-alerta-deep' : 'bg-bone-soft text-ink-mute') }}">
+                                {{ $row->outcome === 'V' ? 'G' : ($row->outcome === 'D' ? 'P' : 'E') }}
+                            </span>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
+    {{-- ══ 1d · Jugué con vos (S2-A): jugadores con quienes compartí cancha ══ --}}
+    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-8">
+        <div class="bg-pitch-mist border-b border-line px-4 py-3 flex items-center justify-between">
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Jugué con ({{ $playedWith->count() }})</p>
+            <span class="font-mono text-[10px] text-ink-mute">Torneos + amistosos</span>
+        </div>
+        @if ($playedWith->isEmpty())
+            <div class="p-6 text-center text-ink-soft text-[14px]">
+                Todavía no compartiste cancha con otros jugadores registrados. Se completa solo cuando jugás partidos.
+            </div>
+        @else
+            <ul class="divide-y divide-line-soft">
+                @foreach ($playedWith as $row)
+                    <li class="px-4 py-3 flex items-center gap-3">
+                        <x-avatar :name="$row->user->name" :src="$row->user->avatar_url" size="sm" class="shrink-0" />
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ route('social.player.show', $row->user->futgo_id) }}" class="font-display font-semibold text-pitch text-[14px] hover:underline truncate block">{{ $row->user->name }}</a>
+                            <p class="font-mono text-[11px] text-ink-mute">
+                                {{ $row->shared }} {{ Str::plural('partido', $row->shared) }} juntos
+                                @if ($row->user->city) · {{ $row->user->city }} @endif
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a href="{{ route('social.oportunidades.create', ['tipo' => 'BUSCAR_RIVAL', 'target' => $row->user->futgo_id]) }}"
+                               class="font-display font-bold text-[11px] uppercase text-gol-deep hover:underline tracking-wide-cta" title="Retar a un amistoso">Retar</a>
+                            <span class="text-line">·</span>
+                            <a href="{{ route('social.oportunidades.create', ['tipo' => 'BUSCAR_JUGADOR', 'target' => $row->user->futgo_id]) }}"
+                               class="font-display font-bold text-[11px] uppercase text-pitch hover:underline tracking-wide-cta" title="Invitar a mi equipo">Invitar</a>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+
     {{-- ══ 2 · Mis equipos  +  3 · Mis torneos ═══════════════════════════════ --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {{-- Mis equipos --}}

@@ -17,8 +17,12 @@
 
     if ($torneosAccess) {
         $navLinks[] = ['route' => 'torneos.mi-carrera',   'label' => 'Mi Carrera',            'starts' => 'torneos.mi-carrera'];
+        $navLinks[] = ['route' => 'social.agenda.index',  'label' => 'Agenda',                'starts' => 'social.agenda'];
         $navLinks[] = ['route' => 'torneos.mis-equipos',  'label' => 'Mis Equipos',           'starts' => 'torneos.mis-equipos'];
         $navLinks[] = ['route' => 'torneos.index',        'label' => 'Mis Torneos',           'starts' => 'torneos.index'];
+        $navLinks[] = ['route' => 'social.oportunidades.index', 'label' => 'Oportunidades',   'starts' => 'social.oportunidades'];
+        $navLinks[] = ['route' => 'social.amistosos.index', 'label' => 'Amistosos',           'starts' => 'social.amistosos'];
+        $navLinks[] = ['route' => 'social.canchas.index',  'label' => 'Canchas',              'starts' => 'social.canchas'];
         $navLinks[] = ['route' => 'torneos.public.index', 'label' => 'Buscar Torneo',         'starts' => 'torneos.public'];
         $navLinks[] = ['route' => 'torneos.ranking',      'label' => 'Ranking de la plataforma', 'starts' => 'torneos.ranking'];
     }
@@ -65,6 +69,26 @@
                             {{ $meta['label'] }}
                         </a>
                     @endforeach
+
+                    {{-- Feed de FutGO Social con badge de no leídos --}}
+                    @if ($torneosAccess)
+                        <a href="{{ route('social.feed.index') }}"
+                           class="relative px-3 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('social.feed') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                            Feed
+                            @if (($feedUnreadCount ?? 0) > 0)
+                                <span class="absolute top-0.5 right-0 min-w-[1rem] h-4 px-1 rounded-full bg-green text-white text-[10px] font-bold leading-4 text-center">{{ $feedUnreadCount > 9 ? '9+' : $feedUnreadCount }}</span>
+                            @endif
+                        </a>
+
+                        {{-- Mensajes (conversaciones) con badge de no leídos --}}
+                        <a href="{{ route('social.conversaciones.index') }}"
+                           class="relative px-3 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('social.conversaciones') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                            Mensajes
+                            @if (($messagesUnreadCount ?? 0) > 0)
+                                <span class="absolute top-0.5 right-0 min-w-[1rem] h-4 px-1 rounded-full bg-green text-white text-[10px] font-bold leading-4 text-center">{{ $messagesUnreadCount > 9 ? '9+' : $messagesUnreadCount }}</span>
+                            @endif
+                        </a>
+                    @endif
 
                     {{-- Dropdown Pronósticos (polla + admin) --}}
                     @if (! empty($pronosItems))
@@ -131,6 +155,19 @@
                                 Configurar perfil
                             </a>
 
+                            {{-- Reclamos de perfil (Limitación #2) --}}
+                            <a href="{{ route('torneos.reclamos.index') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                Reclamar mi perfil
+                            </a>
+                            @if (($pendingClaimApprovals ?? 0) > 0)
+                                <a href="{{ route('torneos.reclamos.approvals') }}"
+                                   class="flex items-center justify-between px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                    <span>Reclamos por aprobar</span>
+                                    <span class="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-green text-white text-[11px] font-bold leading-5 text-center">{{ $pendingClaimApprovals > 9 ? '9+' : $pendingClaimApprovals }}</span>
+                                </a>
+                            @endif
+
                             {{-- Salir --}}
                             <form method="POST" action="{{ route('logout') }}" class="border-t border-border mt-1">
                                 @csrf
@@ -165,6 +202,21 @@
                     </a>
                 @endforeach
 
+                @if ($torneosAccess)
+                    <a href="{{ route('social.feed.index') }}" class="flex items-center justify-between px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">
+                        <span>Feed</span>
+                        @if (($feedUnreadCount ?? 0) > 0)
+                            <span class="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-green text-white text-[11px] font-bold leading-5 text-center">{{ $feedUnreadCount > 9 ? '9+' : $feedUnreadCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('social.conversaciones.index') }}" class="flex items-center justify-between px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">
+                        <span>Mensajes</span>
+                        @if (($messagesUnreadCount ?? 0) > 0)
+                            <span class="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-green text-white text-[11px] font-bold leading-5 text-center">{{ $messagesUnreadCount > 9 ? '9+' : $messagesUnreadCount }}</span>
+                        @endif
+                    </a>
+                @endif
+
                 @if (! empty($pronosItems))
                     <p class="px-3 pt-2 pb-1 font-mono text-[10px] uppercase tracking-wide-label text-muted">Pronósticos</p>
                     @foreach ($pronosItems as $item)
@@ -192,6 +244,13 @@
                         <span class="font-display font-bold text-text text-[14px] truncate">{{ $user->name }}</span>
                     </div>
                     <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Configurar perfil</a>
+                    <a href="{{ route('torneos.reclamos.index') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Reclamar mi perfil</a>
+                    @if (($pendingClaimApprovals ?? 0) > 0)
+                        <a href="{{ route('torneos.reclamos.approvals') }}" class="flex items-center justify-between px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">
+                            <span>Reclamos por aprobar</span>
+                            <span class="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-green text-white text-[11px] font-bold leading-5 text-center">{{ $pendingClaimApprovals > 9 ? '9+' : $pendingClaimApprovals }}</span>
+                        </a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left px-3 py-2 rounded-sm font-semibold text-alerta hover:bg-surface-2">Salir</button>

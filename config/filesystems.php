@@ -17,6 +17,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Media Disk
+    |--------------------------------------------------------------------------
+    | Disco usado para subir imágenes de usuario (avatares, escudos, logos).
+    | Dev: 'public' (local). Producción: 'r2' (Cloudflare R2).
+    | Controlado por la variable de entorno MEDIA_DISK.
+    */
+    'media_disk' => env('MEDIA_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -53,6 +63,26 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+        ],
+
+        /*
+        |----------------------------------------------------------------------
+        | Cloudflare R2 — storage de medios y backups en producción
+        |----------------------------------------------------------------------
+        | Usar MEDIA_DISK=r2 en .env para activar este disco en producción.
+        | Compatible con el driver 's3' de Laravel (R2 implementa S3 API).
+        */
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => env('R2_DEFAULT_REGION', 'auto'),
+            'bucket' => env('R2_BUCKET'),
+            'url' => env('R2_URL'),
+            'endpoint' => env('R2_ENDPOINT'),
+            'use_path_style_endpoint' => false,
+            'visibility' => 'public',
             'throw' => false,
         ],
 
