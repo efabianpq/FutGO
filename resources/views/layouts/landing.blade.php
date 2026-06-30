@@ -40,6 +40,7 @@
         {{-- Desktop nav --}}
         <nav class="hidden md:flex gap-0.5">
             <a href="{{ route('torneos.public.index') }}" class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Torneos</a>
+            <a href="{{ route('social.oportunidades.index') }}" class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Oportunidades</a>
         </nav>
 
         <div class="flex items-center gap-2">
@@ -63,6 +64,7 @@
         <div x-show="mopen" x-cloak
              class="absolute top-16 inset-x-0 bg-surface border-b border-border p-4 space-y-1 md:hidden shadow-card-2">
             <a href="{{ route('torneos.public.index') }}" @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Torneos</a>
+            <a href="{{ route('social.oportunidades.index') }}" @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Oportunidades</a>
             @guest
                 <div class="pt-2 grid grid-cols-2 gap-2">
                     <a href="{{ route('login') }}"    class="btn btn-secondary btn-block">Iniciar sesión</a>
@@ -82,6 +84,7 @@
             <x-logo size="sm" />
             <div class="flex flex-wrap gap-5">
                 <a href="{{ route('torneos.public.index') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Torneos</a>
+                <a href="{{ route('social.oportunidades.index') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Oportunidades</a>
                 @guest
                     <a href="{{ route('login') }}"    class="text-[14px] font-semibold text-muted hover:text-text transition-all">Iniciar sesión</a>
                     <a href="{{ route('register') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Crear cuenta</a>

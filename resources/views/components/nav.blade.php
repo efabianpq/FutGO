@@ -466,6 +466,10 @@
                        class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('torneos.public') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
                         Torneos
                     </a>
+                    <a href="{{ route('social.oportunidades.index') }}"
+                       class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('social.oportunidades') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                        Oportunidades
+                    </a>
                     <x-theme-toggle />
                     <button
                         x-show="$store.pwa.canInstall"
@@ -498,6 +502,7 @@
             {{-- Mobile menu (guest) --}}
             <div x-show="open" x-cloak class="sm:hidden pb-3 space-y-1">
                 <a href="{{ route('torneos.public.index') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Torneos</a>
+                <a href="{{ route('social.oportunidades.index') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Oportunidades</a>
                 <a href="{{ route('login') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Iniciar sesión</a>
                 <a href="{{ route('register') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">Crear cuenta</a>
                 <button

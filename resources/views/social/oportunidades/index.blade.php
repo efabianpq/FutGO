@@ -36,6 +36,20 @@
         @endauth
     </div>
 
+    @guest
+        {{-- Embudo de registro: el invitado explora libre, pero aplicar/publicar pide cuenta. --}}
+        <div class="bg-pitch text-white rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div class="flex-1">
+                <p class="font-display font-bold text-[17px]">Sumate al fútbol amateur de tu ciudad</p>
+                <p class="text-white/80 text-[13.5px] mt-1">Creá tu cuenta gratis para responder estas oportunidades, conseguir rival o jugador y publicar las tuyas.</p>
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <a href="{{ route('register') }}" class="btn btn-sm w-full sm:w-auto bg-white text-pitch hover:bg-white/90 font-bold">Crear cuenta</a>
+                <a href="{{ route('login') }}" class="btn btn-sm w-full sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/20">Ingresar</a>
+            </div>
+        </div>
+    @endguest
+
     @if (session('status'))
         <div class="mb-4 bg-gol/20 border border-gol text-pitch-deep px-4 py-3 rounded-md font-display font-semibold">{{ session('status') }}</div>
     @endif
