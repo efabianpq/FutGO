@@ -55,7 +55,7 @@
 
     <x-nav :user="auth()->user()" />
 
-    <main class="flex-1">
+    <main class="flex-1 pb-20 md:pb-0">
         @if (session('status'))
             <div class="max-w-3xl mx-auto mt-4 px-4">
                 <div class="badge-green border border-green/40 bg-green-tint text-green px-4 py-3 rounded-md font-semibold">
@@ -155,7 +155,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-4"
-             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+             class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[48] pointer-events-none">
             <div class="flex items-center gap-2.5 bg-surface border border-green/30 text-text font-display font-semibold text-[14px] px-5 py-3 rounded-pill shadow-modal whitespace-nowrap">
                 <svg class="w-5 h-5 text-green shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
