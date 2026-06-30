@@ -39,9 +39,7 @@
 
         {{-- Desktop nav --}}
         <nav class="hidden md:flex gap-0.5">
-            <a href="#features"    class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Producto</a>
-            <a href="#eco"         class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Ecosistema</a>
-            <a href="#testimonios" class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Testimonios</a>
+            <a href="{{ route('torneos.public.index') }}" class="px-3.5 py-2 rounded-xs text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 transition-all">Torneos</a>
         </nav>
 
         <div class="flex items-center gap-2">
@@ -64,9 +62,7 @@
         {{-- Mobile drawer --}}
         <div x-show="mopen" x-cloak
              class="absolute top-16 inset-x-0 bg-surface border-b border-border p-4 space-y-1 md:hidden shadow-card-2">
-            <a href="#features"    @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Producto</a>
-            <a href="#eco"         @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Ecosistema</a>
-            <a href="#testimonios" @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Testimonios</a>
+            <a href="{{ route('torneos.public.index') }}" @click="mopen=false" class="block px-3 py-2.5 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Torneos</a>
             @guest
                 <div class="pt-2 grid grid-cols-2 gap-2">
                     <a href="{{ route('login') }}"    class="btn btn-secondary btn-block">Iniciar sesión</a>
@@ -85,7 +81,7 @@
         <div class="max-w-[1200px] mx-auto px-6 flex flex-wrap items-center justify-between gap-5">
             <x-logo size="sm" />
             <div class="flex flex-wrap gap-5">
-                <a href="{{ route('how-it-works') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">¿Cómo funciona?</a>
+                <a href="{{ route('torneos.public.index') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Torneos</a>
                 @guest
                     <a href="{{ route('login') }}"    class="text-[14px] font-semibold text-muted hover:text-text transition-all">Iniciar sesión</a>
                     <a href="{{ route('register') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Crear cuenta</a>

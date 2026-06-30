@@ -462,9 +462,9 @@
 
                 {{-- Desktop: links inline --}}
                 <div class="hidden sm:flex items-center gap-2">
-                    <a href="{{ route('how-it-works') }}"
-                       class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('how-it-works') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
-                        ¿Cómo funciona?
+                    <a href="{{ route('torneos.public.index') }}"
+                       class="px-3.5 py-2 rounded-xs text-[14px] font-semibold transition-all duration-fast {{ $isActive('torneos.public') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                        Torneos
                     </a>
                     <x-theme-toggle />
                     <button
@@ -497,7 +497,7 @@
 
             {{-- Mobile menu (guest) --}}
             <div x-show="open" x-cloak class="sm:hidden pb-3 space-y-1">
-                <a href="{{ route('how-it-works') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">¿Cómo funciona?</a>
+                <a href="{{ route('torneos.public.index') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Torneos</a>
                 <a href="{{ route('login') }}" class="block px-3 py-2 rounded-sm font-semibold text-muted hover:text-text hover:bg-surface-2">Iniciar sesión</a>
                 <a href="{{ route('register') }}" class="block px-3 py-2 rounded-sm font-semibold bg-green-tint text-green">Crear cuenta</a>
                 <button
