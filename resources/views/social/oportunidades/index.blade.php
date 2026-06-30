@@ -37,15 +37,16 @@
     </div>
 
     @guest
-        {{-- Embudo de registro: el invitado explora libre, pero aplicar/publicar pide cuenta. --}}
-        <div class="bg-pitch text-white rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        {{-- Embudo de registro: el invitado explora libre, pero aplicar/publicar pide cuenta.
+             Paleta FutGO: fondo verde de marca + text-on-green (theme-aware, siempre legible). --}}
+        <div class="bg-green text-on-green rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
             <div class="flex-1">
                 <p class="font-display font-bold text-[17px]">Sumate al fútbol amateur de tu ciudad</p>
-                <p class="text-white/80 text-[13.5px] mt-1">Creá tu cuenta gratis para responder estas oportunidades, conseguir rival o jugador y publicar las tuyas.</p>
+                <p class="text-on-green/85 text-[13.5px] mt-1">Creá tu cuenta gratis para responder estas oportunidades, conseguir rival o jugador y publicar las tuyas.</p>
             </div>
             <div class="flex gap-2 shrink-0">
-                <a href="{{ route('register') }}" class="btn btn-sm w-full sm:w-auto bg-white text-pitch hover:bg-white/90 font-bold">Crear cuenta</a>
-                <a href="{{ route('login') }}" class="btn btn-sm w-full sm:w-auto bg-white/10 text-white border border-white/20 hover:bg-white/20">Ingresar</a>
+                <a href="{{ route('register') }}" class="btn btn-sm w-full sm:w-auto bg-on-green text-green hover:opacity-90 font-bold">Crear cuenta</a>
+                <a href="{{ route('login') }}" class="btn btn-sm w-full sm:w-auto bg-transparent text-on-green border border-on-green/40 hover:bg-on-green/10">Ingresar</a>
             </div>
         </div>
     @endguest
