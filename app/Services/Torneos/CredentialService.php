@@ -83,8 +83,12 @@ class CredentialService
     }
 
     /** QR como SVG inline (PHP puro, sin dependencias de extensión binaria). */
-    public static function qrSvgFor(User $user, int $size = 220): string
+    public static function qrSvgFor(User $user, int $size = 220): ?string
     {
+        if (! $user->futgo_id) {
+            return null;
+        }
+
         $writer = new Writer(new ImageRenderer(new RendererStyle($size), new SvgImageBackEnd()));
 
         return $writer->writeString(self::qrUrlFor($user));

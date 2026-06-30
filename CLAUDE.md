@@ -7,7 +7,7 @@ URL local: http://futgo.test:8080
 ## 2. Módulos
 - **Polla Mundial:** CONGELADO — no tocar.
 - **Torneos:** v2.1 completo (Sesiones A–G). 458 tests passing.
-- **FutGO Social:** Fase 1 **COMPLETA** — modelo de datos base (S1-A) + **Oportunidades** publicar/responder/aceptar (S1-B) + **Amistosos** con doble confirmación, disputa/escalamiento/resolución admin, cancelación con penalización (S1-C) + **Confiabilidad**: score, penalizaciones y pausa automática (S1-D) + **Seguir entidades + Feed de sistema** con contador de no leídos en el navbar (S1-E) + **Moderación** panel admin, ocultamiento, suspensión; **fichas públicas** de jugador `/j/{futgo_id}` y club extendida; score de confiabilidad con umbral de visibilidad (S1-F, ver §7.1 y §11). Fase 2 **COMPLETA**: **"Jugué con vos"** (historial de partidos compartidos derivado + acciones retar/invitar) y **Agenda deportiva unificada** (S2-A, ver §7.2 y §11) + **Mensajería libre** en conversaciones existentes (S2-B: chat sin tiempo real vinculado a oportunidad aceptada o amistoso confirmado, primer mensaje estructurado, compartir contacto explícito, reporte de mensaje; ver §7.3 y §11). **Fase 3 COMPLETA**: **Recomendaciones por reglas (sin ML) + modo rápido** (S3-A: sugerencias de rivales compatibles, recategorización de nivel, oportunidad express con vencimiento corto, historial de compatibilidad head-to-head; ver §7.4 y §11) + **Venues/canchas** catálogo compartido (S3-B: registro por cualquier usuario, perfil público `/c/{slug}`, búsqueda por ciudad con autocompletado, vinculación a amistosos y oportunidades BUSCAR_RIVAL; ver §7.5 y §11). **Sesión TX-1**: **Reclamo de perfil** de jugadores `por_verificar` (deuda #2, ver §12). **607 tests passing.** Pendiente: score de confiabilidad en tabla de perfiles; eventos de Feed para seguidores de un torneo. Visión en `PROPUESTA_FUTGO_SOCIAL_v3.md`.
+- **FutGO Social:** Fase 1 **COMPLETA** — modelo de datos base (S1-A) + **Oportunidades** publicar/responder/aceptar (S1-B) + **Amistosos** con doble confirmación, disputa/escalamiento/resolución admin, cancelación con penalización (S1-C) + **Confiabilidad**: score, penalizaciones y pausa automática (S1-D) + **Seguir entidades + Feed de sistema** con contador de no leídos en el navbar (S1-E) + **Moderación** panel admin, ocultamiento, suspensión; **fichas públicas** de jugador `/j/{futgo_id}` y club extendida; score de confiabilidad con umbral de visibilidad (S1-F, ver §7.1 y §11). Fase 2 **COMPLETA**: **"Jugué con vos"** (historial de partidos compartidos derivado + acciones retar/invitar) y **Agenda deportiva unificada** (S2-A, ver §7.2 y §11) + **Mensajería libre** en conversaciones existentes (S2-B: chat sin tiempo real vinculado a oportunidad aceptada o amistoso confirmado, primer mensaje estructurado, compartir contacto explícito, reporte de mensaje; ver §7.3 y §11). **Fase 3 COMPLETA**: **Recomendaciones por reglas (sin ML) + modo rápido** (S3-A: sugerencias de rivales compatibles, recategorización de nivel, oportunidad express con vencimiento corto, historial de compatibilidad head-to-head; ver §7.4 y §11) + **Venues/canchas** catálogo compartido (S3-B: registro por cualquier usuario, perfil público `/c/{slug}`, búsqueda por ciudad con autocompletado, vinculación a amistosos y oportunidades BUSCAR_RIVAL; ver §7.5 y §11). **Sesión TX-1**: **Reclamo de perfil** de jugadores `por_verificar` (deuda #2, ver §12). **Sesión TX-2**: tarjetas PNG, WhatsApp y OG tags (deuda #8, ver §13). **Sesión UX-1**: **rediseño de navegación (nav v3)** — bar reagrupado en 4 dominios + header transversal (buscar/Feed/Mensajes/avatar), **dashboard de Inicio** y **buscador global** (ver §14). **620 tests passing** (la suite quedó en verde tras UX-1). Pendiente: score de confiabilidad en tabla de perfiles; eventos de Feed para seguidores de un torneo. Visión en `PROPUESTA_FUTGO_SOCIAL_v3.md`.
 
 ## 3. Stack
 - PHP 8.3.30 (Laragon) · Laravel 11.46 · MySQL 8.0.30
@@ -307,6 +307,7 @@ Migraciones: `2026_06_27_000003_create_venues_table` (tabla `venues`) y `2026_06
 - ✅ **Fase 3 COMPLETA** — S3-A + S3-B implementadas.
 - ✅ **Sesión TX-1 — Reclamo de perfil de jugadores `por_verificar`** (deuda técnica #2, ver §12): migración `2026_06_28_000001` (tabla `profile_claims`), `ProfileClaim` (Torneos), `ProfileClaimService`, detección automática en registro (documento opcional) y al cargar documento en el perfil, flujo capitán/admin con notificaciones, herencia de historial + refresco de career/fair play. Resuelve deuda #2, #12 (fair play del equipo) y #13/#11 (notificaciones de partido). 7 tests nuevos → **607 passing**.
 - ✅ **Sesión TX-2 — Tarjetas PNG, WhatsApp y OG tags** (deuda técnica #8, ver §13): `ShareCardPngService` con GD (gradiente, texto TTF con lookup multi-ruta + fallback bitmap), `GenerateShareCardPng` job encolable. Endpoints `/{slug}/img/{card}/png` y `/{slug}/img/partido/{match}/png` (sin migraciones). Tarjeta SVG de amistoso (`social.share.amistoso`, ruta `social.amistosos.img.card`) + endpoint PNG `social.amistosos.img.png`. Botón "WhatsApp" nativo (`wa.me`) en portal público de torneo y perfil de club. Menú "Imágenes" ampliado con columnas SVG/PNG. OG tags dinámicos en ficha pública de jugador (`og_description` con métricas, `og_image` con avatar) y soporte OG en `layouts.app` (perfil de club con escudo). Font lookup: `SHARE_CARD_FONT_PATH` → `resources/fonts/` → `/usr/share/fonts/` → `C:\Windows\Fonts\` → fallback bitmap. Degrada a SVG si GD no disponible. 13 tests nuevos → **620 passing**.
+- ✅ **Sesión UX-1 — Rediseño de navegación (nav v3) + dashboard de Inicio + buscador global** (ver §14): nav reagrupado de 11 enlaces planos a 4 dominios con dropdown (Inicio · Jugar · Competir · Comunidad) + herramientas transversales en el header derecho (🔍 buscar · 🔔 Feed · 💬 Mensajes · avatar = hub de Perfil/cuenta). Nueva pantalla de Inicio (`DashboardController` + `inicio.blade.php`) que agrega agenda/recordatorios/sugeridas/novedades (todo derivado de servicios ya existentes). `GlobalSearchController` (`/buscar`) cruza jugadores/clubes/torneos/canchas. `/dashboard` pasa de redirect a vista real (polla pura sigue redirigiendo a pronósticos). Sin migraciones. 1 test actualizado (NavigationTest) → suite en verde.
 - Pendiente próximas fases: score de confiabilidad en tabla de perfiles; eventos de Feed para seguidores de un torneo; mensajería estructurada/plantillas y adjuntos (foto) desde UI; fotos de canchas (upload a R2).
 
 ---
@@ -373,6 +374,55 @@ Sin migraciones nuevas. Ningún cambio al módulo Torneos ni a la lógica de neg
 El servicio busca en orden: `SHARE_CARD_FONT_PATH` (env) → `resources/fonts/Inter-Bold.ttf` → `/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf` → otros paths de Linux/Windows. Si no se encuentra ninguna, degrada a fonts bitmap GD (siempre disponible). Para mejor calidad en prod: copiar un `.ttf` a `resources/fonts/` y hacer `git add resources/fonts/`.
 
 Tests: `tests/Feature/Torneos/ShareCardPngTest.php` (13): endpoint PNG válido (goleadores/posiciones/partido), torneo privado 404, `gdAvailable()` sin crash, `storagePath` correcto, tarjeta SVG amistoso válida, amistoso no jugado 404, PNG amistoso válido, OG description en ficha jugador, OG image con/sin avatar, job serializable.
+
+---
+
+## 14. Navegación v3 — nav agrupado, dashboard de Inicio y buscador global (Sesión UX-1)
+
+Rediseño de la experiencia de navegación. El navbar pasó de **11 enlaces planos** (Mi Carrera, Agenda, Mis Equipos, Mis Torneos, Oportunidades, Amistosos, Canchas, Buscar Torneo, Ranking, Feed, Mensajes) a una estructura por **dominios de acción + herramientas transversales**, alineada a patrones de apps sociales (LinkedIn/Instagram). Sin migraciones; ningún cambio a la lógica de negocio.
+
+### Estructura del nav (`resources/views/components/nav.blade.php`)
+
+**Barra principal (desktop): 4 dominios.** El componente reutilizable `<x-nav-dropdown>` (`components/nav-dropdown.blade.php`) renderiza cada grupo con label + descripción; el estado Alpine vive en el `x-data` del `<nav>` padre y se referencia por nombre (`state="jugarOpen"`, etc.).
+
+| Grupo | Destino / dropdown |
+|---|---|
+| 🏠 **Inicio** | enlace directo → `dashboard` |
+| ⚽ **Jugar** ▾ | Oportunidades · Amistosos · Modo rápido ⚡ (`social.oportunidades.express`) · Agenda |
+| 🏆 **Competir** ▾ | Mis Torneos · Buscar Torneo · Ranking de la plataforma |
+| 👥 **Comunidad** ▾ | Canchas · Buscar jugadores y clubes (→ `social.search`) |
+| **Pronósticos** ▾ | solo si el usuario tiene módulo polla (sin cambios; admin incluido) |
+
+**Header derecho (siempre visible, herramientas transversales):**
+- 🔍 **Buscar** — botón que despliega un panel con input (Alpine `searchOpen` + `$refs.searchInput`), submit GET a `social.search`. En mobile es un enlace directo a `/buscar`.
+- 🔔 **Feed** — enlace a `social.feed.index` con badge de no leídos (`feedUnreadCount`).
+- 💬 **Mensajes** — enlace a `social.conversaciones.index` con badge (`messagesUnreadCount`).
+- 👤 **Avatar ▾** — hub de Perfil/cuenta (reemplaza al ítem "Perfil" del bar): Mi Carrera, Mis Equipos (gated por `torneosAccess`), tema claro/oscuro, Configurar perfil, Reclamar mi perfil (+ badge `pendingClaimApprovals`), instalar PWA, Salir.
+
+**Decisiones de diseño** (feedback del usuario): la **Agenda** dejó de ser menú propio (es una vista, no un dominio) y se integra al Inicio + dropdown Jugar; los **Mensajes** salieron del bar al header porque son transversales (llegan desde cualquier módulo); el **Perfil** es el avatar arriba a la derecha, evitando duplicar un dropdown homónimo. El menú mobile se reorganizó por secciones (Jugar/Competir/Comunidad/Mi perfil) con accesos rápidos a buscar y mensajes.
+
+### Dashboard de Inicio (`App\Http\Controllers\DashboardController` + `resources/views/inicio.blade.php`)
+
+`/dashboard` pasó de **redirect** (a Mi Carrera) a **vista real**. Es una pantalla de agregación de LECTURA (no inventa datos; reutiliza servicios existentes). Los usuarios sin módulo Torneos (polla pura) siguen redirigiendo a `predictions.index` desde el controlador. Secciones:
+- **Saludo** + acciones rápidas (⚡ Modo rápido, Publicar oportunidad).
+- **Recordatorios** destacados: ítems de la agenda con `status` `convocatoria_pendiente` (confirmar/declinar inline vía `torneos.convocatoria.respond`) o `resultado_pendiente` (cargar resultado del amistoso).
+- **Tu semana**: próximos ítems de `SportsAgendaService::for()` con fecha ≥ hoy, agrupados por día (máx. 8).
+- **Sugeridas para vos**: `Opportunity::visible()->active()->inCity($user->city)` excluyendo las propias (vacío si el usuario no cargó ciudad → CTA a completar perfil).
+- **Novedades**: preview de `FeedService::relevantQuery()` (5 ítems) **sin marcar leído** — el badge del navbar baja recién al abrir `/feed`.
+
+El logo y el ítem Inicio apuntan a `dashboard` (degrada a `predictions.index` / `profile.show` según módulos).
+
+### Buscador global (`App\Http\Controllers\Social\GlobalSearchController` + `social/search/index.blade.php`)
+
+Ruta `social.search` (`/buscar`, bajo `auth`). Con término ≥ 2 caracteres cruza cuatro entidades descubribles (máx. 8 por grupo), agrupadas en la vista:
+- **Jugadores** — `User` con `futgo_id` no nulo, por nombre o `futgo_id`; nunca expone email/teléfono/documento. Enlace a `social.player.show`.
+- **Clubes** — por nombre → `torneos.clubes.show`.
+- **Torneos** — solo `visibility=public`, por nombre → `torneos.public.show`.
+- **Canchas** — activas, por nombre o ciudad → `social.canchas.show`.
+
+> ⚠️ Gotcha Blade encontrado y evitado: `@if` pegado a una palabra (ej. `Cancha@if(...)`) NO se compila como directiva (queda literal) pero su `@endif` sí, produciendo un `endif` huérfano. Usar ternario o separar con un carácter no-palabra (`}`, espacio).
+
+Tests: `tests/Feature/UI/NavigationTest.php` actualizado (`test_dashboard_torneos_renderiza_inicio` reemplaza al viejo redirect a Mi Carrera). Suite completa en verde.
 
 ---
 

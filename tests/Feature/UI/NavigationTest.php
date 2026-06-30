@@ -99,14 +99,15 @@ class NavigationTest extends TestCase
             ->assertRedirect(route('predictions.index'));
     }
 
-    public function test_dashboard_redirige_torneos_a_mi_carrera(): void
+    public function test_dashboard_torneos_renderiza_inicio(): void
     {
-        // v2.0: /inicio se retiró; los usuarios de torneos aterrizan en Mi Carrera.
+        // v3: /dashboard es el Inicio (dashboard) para usuarios de torneos.
         $user = $this->userWithModules('torneos');
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertRedirect(route('torneos.mi-carrera'));
+            ->assertOk()
+            ->assertSee('Tu semana');
     }
 
     public function test_inicio_redirige_al_nuevo_punto_de_entrada(): void

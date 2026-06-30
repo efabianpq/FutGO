@@ -207,6 +207,10 @@ Route::middleware('auth')->group(function () {
         // ─── FutGO Social · Agenda deportiva unificada — Sesión S2-A ───────
         Route::get('/agenda', [AgendaController::class, 'index'])->name('social.agenda.index');
 
+        // ─── Buscador global del header (🔍) — jugadores/clubes/torneos/canchas
+        Route::get('/buscar', [\App\Http\Controllers\Social\GlobalSearchController::class, 'index'])
+            ->name('social.search');
+
         // Seguir / dejar de seguir (toggle) — {type} = club|user|tournament.
         Route::post('/seguir/{type}/{id}', [FollowController::class, 'toggle'])
             ->whereIn('type', ['club', 'user', 'tournament'])
@@ -251,15 +255,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/auditoria/exportar/csv', [AuditExportController::class, 'csv'])->name('audit.csv');
         Route::get('/auditoria/exportar/pdf', [AuditExportController::class, 'pdf'])->name('audit.pdf');
 
-        // La página /inicio se retiró (v2.0). El punto de entrada es Mi Carrera
-        // para usuarios de torneos; los de polla pura aterrizan en Mis Pronósticos.
-        Route::get('/dashboard', function () {
-            $user = auth()->user();
-            if ($user->hasTorneosAccess()) {
-                return redirect()->route('torneos.mi-carrera');
-            }
-            return redirect()->route('predictions.index');
-        })->name('dashboard');
+        // Inicio (v3): dashboard de entrada para usuarios de torneos; los de polla
+        // pura siguen aterrizando en Mis Pronósticos (el controlador redirige).
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
         // Compatibilidad: enlaces viejos a /inicio redirigen al nuevo punto de entrada.
         Route::get('/inicio', fn () => redirect()->route('dashboard'))->name('inicio');
