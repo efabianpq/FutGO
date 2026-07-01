@@ -19,11 +19,11 @@
 
     if ($torneosAccess) {
         $jugarItems = [
+            ['route' => 'torneos.mis-equipos',        'label' => 'Mis Equipos',   'starts' => 'torneos.mis-equipos',  'desc' => 'Tus equipos en torneos activos'],
             ['route' => 'social.oportunidades.index', 'label' => 'Oportunidades', 'starts' => 'social.oportunidades', 'desc' => 'Buscá o publicá rival, jugadores o refuerzos'],
             ['route' => 'social.amistosos.index',     'label' => 'Amistosos',     'starts' => 'social.amistosos',     'desc' => 'Reportá resultados y resolvé disputas'],
             ['route' => 'social.oportunidades.express','label' => 'Modo rápido ⚡','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitás rival para mañana?'],
             ['route' => 'social.agenda.index',        'label' => 'Agenda',        'starts' => 'social.agenda',        'desc' => 'Todo lo programado, en un solo lugar'],
-            ['route' => 'torneos.mis-equipos',        'label' => 'Mis Equipos',   'starts' => 'torneos.mis-equipos',  'desc' => 'Tus equipos en torneos activos'],
         ];
         $competirItems = [
             ['route' => 'torneos.index',       'label' => 'Mis Torneos',   'starts' => 'torneos.index',  'desc' => 'Tus torneos en curso e históricos'],
