@@ -2,7 +2,6 @@
 @section('title', 'Admin · ' . $tournament->name)
 
 @section('content')
-@include('admin.torneos._nav')
 
 @php
     $statusMeta = [
@@ -50,22 +49,6 @@
         <div class="flex gap-2 sm:gap-3 shrink-0">
             <x-btn :href="route('admin.torneos.edit', $tournament)" variant="ghost">Editar</x-btn>
             <x-btn :href="route('admin.torneos.index')" variant="link">← Volver</x-btn>
-        </div>
-    </div>
-
-    {{-- Estadísticas rápidas --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white border border-line rounded-md shadow-card-2 p-5">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Equipos inscritos</p>
-            <p class="font-display font-extrabold text-4xl text-pitch mt-1">{{ $stats['teams_count'] }}</p>
-        </div>
-        <div class="bg-white border border-line rounded-md shadow-card-2 p-5">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Partidos programados</p>
-            <p class="font-display font-extrabold text-4xl text-pitch mt-1">{{ $stats['matches_scheduled'] }}</p>
-        </div>
-        <div class="bg-white border border-line rounded-md shadow-card-2 p-5">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Partidos jugados</p>
-            <p class="font-display font-extrabold text-4xl text-pitch mt-1">{{ $stats['matches_played'] }}</p>
         </div>
     </div>
 
@@ -283,6 +266,30 @@
         </div>
     @endif
 
+    {{-- Datos generales (multi-columna) --}}
+    <div class="bg-white border border-line rounded-md shadow-card p-4 mb-6">
+        <p class="font-display font-bold text-pitch uppercase text-[13px] mb-3">Datos generales</p>
+        <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-[13px]">
+            <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Deporte</dt><dd class="capitalize font-semibold">{{ $tournament->sport }}</dd></div>
+            <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Formato</dt><dd class="font-semibold">{{ $formatLabels[$tournament->format] ?? $tournament->format }}</dd></div>
+            @if ($tournament->groups_count)
+                <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Grupos</dt><dd class="font-mono">{{ $tournament->groups_count }}</dd></div>
+            @endif
+            @if ($tournament->teams_per_group)
+                <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Equipos/grupo</dt><dd class="font-mono">{{ $tournament->teams_per_group }}</dd></div>
+            @endif
+            @if ($tournament->classifies_per_group)
+                <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Clasifican</dt><dd class="font-mono">{{ $tournament->classifies_per_group }}</dd></div>
+            @endif
+            <div><dt class="font-mono text-[10px] uppercase text-ink-mute">3er puesto</dt><dd class="font-semibold">{{ $tournament->third_place_match ? 'Sí' : 'No' }}</dd></div>
+            @if ($tournament->starts_at)
+                <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Inicio</dt><dd class="font-mono">{{ $tournament->starts_at->format('d/m/Y H:i') }}</dd></div>
+            @endif
+            <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Inscritos</dt><dd class="font-mono font-bold text-pitch">{{ $stats['teams_count'] }}</dd></div>
+            <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Partidos jugados</dt><dd class="font-mono font-bold text-pitch">{{ $stats['matches_played'] }}/{{ $stats['matches_scheduled'] }}</dd></div>
+        </dl>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Accesos rápidos --}}
         <div class="lg:col-span-2">
@@ -350,21 +357,27 @@
                     </div>
                 @endif
 
-                {{-- Standings: activo si hay fixture con grupos --}}
-                @if ($hasFixture && in_array($tournament->format, ['groups_and_knockout', 'round_robin']))
+                {{-- Standings / Llaves: activo si hay fixture --}}
+                @if ($hasFixture)
                     <a href="{{ route('admin.torneos.standings.index', $tournament) }}"
                        class="bg-white border border-pitch rounded-md p-4 hover:bg-pitch hover:text-bone transition-colors duration-fast group">
                         <p class="font-display font-bold text-pitch uppercase text-[14px] group-hover:text-bone">Posiciones</p>
-                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">Tabla de posiciones por grupo</p>
-                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2 group-hover:text-gol">Ver tabla</p>
+                        <p class="text-[12px] text-ink-mute mt-1 group-hover:text-bone/70">
+                            @if ($hasGroupPhase && $hasKnockout)
+                                Tabla de posiciones y llaves eliminatorias
+                            @elseif ($hasGroupPhase)
+                                Tabla de posiciones por grupo
+                            @else
+                                Llaves eliminatorias
+                            @endif
+                        </p>
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-gol mt-2 group-hover:text-gol">Ver</p>
                     </a>
                 @else
                     <div class="bg-bone-soft border border-line rounded-md p-4 opacity-60">
                         <p class="font-display font-bold text-pitch uppercase text-[14px]">Posiciones</p>
-                        <p class="text-[12px] text-ink-mute mt-1">Tabla de posiciones por grupo</p>
-                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">
-                            {{ $hasFixture ? 'Solo torneos con grupos' : 'Requiere fixture' }}
-                        </p>
+                        <p class="text-[12px] text-ink-mute mt-1">Tabla de posiciones y llaves</p>
+                        <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mt-2">Requiere fixture</p>
                     </div>
                 @endif
 
@@ -384,6 +397,7 @@
                     </div>
                 @endif
             </div>
+
 
             {{-- Validar jugador (H17) --}}
             <div class="mt-4 bg-white border border-line rounded-md shadow-card p-4">
@@ -429,22 +443,8 @@
             </div>
         </div>
 
-        {{-- Datos + cambio de estado --}}
+        {{-- Cambio de estado --}}
         <div class="space-y-6">
-            <div class="bg-white border border-line rounded-md shadow-card-2 p-5">
-                <p class="font-display font-bold text-pitch uppercase text-[15px] mb-3">Datos generales</p>
-                <dl class="space-y-2 text-[13px]">
-                    <div class="flex justify-between"><dt class="text-ink-mute">Deporte</dt><dd class="capitalize font-semibold">{{ $tournament->sport }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-ink-mute">Grupos</dt><dd class="font-mono">{{ $tournament->groups_count }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-ink-mute">Equipos/grupo</dt><dd class="font-mono">{{ $tournament->teams_per_group }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-ink-mute">Clasifican</dt><dd class="font-mono">{{ $tournament->classifies_per_group }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-ink-mute">3er puesto</dt><dd class="font-semibold">{{ $tournament->third_place_match ? 'Sí' : 'No' }}</dd></div>
-                    @if ($tournament->starts_at)
-                        <div class="flex justify-between"><dt class="text-ink-mute">Inicio</dt><dd class="font-mono">{{ $tournament->starts_at->format('d/m/Y H:i') }}</dd></div>
-                    @endif
-                </dl>
-            </div>
-
             {{-- Cambio de estado con confirmación Alpine --}}
             <div class="bg-white border border-line rounded-md shadow-card-2 p-5">
                 <p class="font-display font-bold text-pitch uppercase text-[15px] mb-3">Estado</p>

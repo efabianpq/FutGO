@@ -31,9 +31,32 @@
         <a href="{{ route('social.conversaciones.index') }}" class="font-mono text-[11px] text-ink-mute hover:text-pitch">&larr; Mensajes</a>
         <div class="flex items-center justify-between gap-3 mt-1">
             <h1 class="font-display font-bold text-pitch text-[20px]">{{ $contextTitle }}</h1>
-            @if ($contextLink)
-                <a href="{{ $contextLink }}" class="btn btn-secondary btn-sm shrink-0">Ver detalle</a>
-            @endif
+            <div class="flex items-center gap-2 shrink-0">
+                @if ($contextLink)
+                    <a href="{{ $contextLink }}" class="btn btn-secondary btn-sm">Ver detalle</a>
+                @endif
+                {{-- H20: Bloquear — solo en DMs directos (sin subject vinculado) --}}
+                @if (is_null($conversation->subject_type))
+                    <div x-data="{ confirmBlock: false }">
+                        <template x-if="!confirmBlock">
+                            <button type="button" @click="confirmBlock = true"
+                                    class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute hover:text-alerta">
+                                Bloquear
+                            </button>
+                        </template>
+                        <template x-if="confirmBlock">
+                            <form method="POST" action="{{ route('social.conversaciones.block', $conversation) }}"
+                                  class="flex items-center gap-2">
+                                @csrf
+                                <span class="text-[12px] text-ink-soft">¿Bloquear este contacto?</span>
+                                <button type="submit" class="font-mono text-[11px] uppercase text-alerta font-bold hover:underline">Sí</button>
+                                <button type="button" @click="confirmBlock = false"
+                                        class="font-mono text-[11px] uppercase text-ink-mute hover:underline">No</button>
+                            </form>
+                        </template>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -64,8 +87,8 @@
                 </div>
             @else
                 <div class="flex flex-col {{ $mine ? 'items-end' : 'items-start' }}">
-                    <div class="max-w-[85%] {{ $mine ? 'bg-pitch text-white' : 'bg-bone text-pitch' }} rounded-md px-3 py-2">
-                        <p class="font-mono text-[10px] {{ $mine ? 'text-white/70' : 'text-ink-mute' }} mb-0.5">{{ $senderName($m) }}</p>
+                    <div class="max-w-[85%] {{ $mine ? 'bg-green text-on-green' : 'bg-bone text-pitch' }} rounded-md px-3 py-2">
+                        <p class="font-mono text-[10px] {{ $mine ? 'text-on-green/70' : 'text-ink-mute' }} mb-0.5">{{ $senderName($m) }}</p>
                         <p class="text-[14px] whitespace-pre-line break-words">{{ $m->body }}</p>
                     </div>
                     <div class="flex items-center gap-2 mt-0.5 px-1">

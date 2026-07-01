@@ -143,9 +143,10 @@
     </section>
 
     {{-- ══ 1d · Jugué con vos (S2-A): jugadores con quienes compartí cancha ══ --}}
-    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-8">
+    <section class="bg-white border border-line rounded-md shadow-card-2 overflow-hidden mb-8"
+             x-data="{ showAll: false }">
         <div class="bg-pitch-mist border-b border-line px-4 py-3 flex items-center justify-between">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Jugué con ({{ $playedWith->count() }})</p>
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Jugué con ({{ $playedWithTotal }})</p>
             <span class="font-mono text-[10px] text-ink-mute">Torneos + amistosos</span>
         </div>
         @if ($playedWith->isEmpty())
@@ -154,8 +155,8 @@
             </div>
         @else
             <ul class="divide-y divide-line-soft">
-                @foreach ($playedWith as $row)
-                    <li class="px-4 py-3 flex items-center gap-3">
+                @foreach ($playedWithFull as $i => $row)
+                    <li class="px-4 py-3 flex items-center gap-3" @if ($i >= 4) x-show="showAll" x-cloak @endif>
                         <x-avatar :name="$row->user->name" :src="$row->user->avatar_url" size="sm" class="shrink-0" />
                         <div class="min-w-0 flex-1">
                             <a href="{{ route('social.player.show', $row->user->futgo_id) }}" class="font-display font-semibold text-pitch text-[14px] hover:underline truncate block">{{ $row->user->name }}</a>
@@ -174,6 +175,14 @@
                     </li>
                 @endforeach
             </ul>
+            @if ($playedWithTotal > 4)
+                <div class="px-4 py-3 border-t border-line-soft text-center">
+                    <button type="button" @click="showAll = !showAll"
+                            class="font-mono text-[11px] uppercase tracking-wide-label text-pitch hover:underline font-bold"
+                            x-text="showAll ? 'Ver menos' : 'Ver más ({{ $playedWithTotal - 4 }} más)'">
+                    </button>
+                </div>
+            @endif
         @endif
     </section>
 

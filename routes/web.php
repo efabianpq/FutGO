@@ -239,6 +239,9 @@ Route::middleware('auth')->group(function () {
         // ─── FutGO Social · Mensajería en conversaciones existentes — S2-B ──
         Route::prefix('mensajes')->name('social.conversaciones.')->group(function () {
             Route::get('/', [ConversationController::class, 'index'])->name('index');
+            // H20: iniciar DM directo desde perfil de un jugador.
+            Route::post('/directo/{user}', [ConversationController::class, 'initiateDirect'])
+                ->whereNumber('user')->name('direct');
             // El reporte va ANTES del show numérico para no colisionar con {conversation}.
             Route::post('/mensaje/{message}/reportar', [ConversationController::class, 'reportMessage'])
                 ->whereNumber('message')->name('messages.report');
@@ -248,6 +251,9 @@ Route::middleware('auth')->group(function () {
                 ->whereNumber('conversation')->name('store');
             Route::post('/{conversation}/compartir-contacto', [ConversationController::class, 'shareContact'])
                 ->whereNumber('conversation')->name('share-contact');
+            // H20: bloquear al otro participante de una DM directa.
+            Route::post('/{conversation}/bloquear', [ConversationController::class, 'block'])
+                ->whereNumber('conversation')->name('block');
         });
 
         // Auditoría exportable (usuarios activos)

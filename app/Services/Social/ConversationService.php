@@ -102,6 +102,37 @@ class ConversationService
     }
 
     // ─────────────────────────────────────────────────────────────────────
+    // Mensajería directa (H20)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Inicia o encuentra una conversación directa entre dos usuarios (sin acuerdo
+     * previo). Solo posible si el destinatario acepta mensajes directos y no bloqueó
+     * al remitente. Subject es NULL (distingue los DMs de las convs vinculadas).
+     */
+    public function initiateOrFindDirect(User $from, User $to): Conversation
+    {
+        // Buscar conversación directa existente entre los dos.
+        $existing = Conversation::query()
+            ->whereNull('subject_type')
+            ->whereNull('subject_id')
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $from->id)->whereNull('club_id'))
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $to->id)->whereNull('club_id'))
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return DB::transaction(function () use ($from, $to) {
+            $conversation = Conversation::create(['last_message_at' => now()]);
+            $this->addParticipant($conversation, $from->id, null);
+            $this->addParticipant($conversation, $to->id, null);
+            return $conversation;
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
     // Mensajería libre
     // ─────────────────────────────────────────────────────────────────────
 

@@ -226,7 +226,13 @@
                             @forelse ($group->standings as $s)
                                 <tr>
                                     <td class="px-3 py-2 font-display font-bold text-pitch">{{ $s->position }}</td>
-                                    <td class="px-2 py-2 font-semibold text-ink whitespace-nowrap">{{ $s->team?->name ?? '—' }}</td>
+                                    <td class="px-2 py-2 font-semibold text-ink whitespace-nowrap">
+                                        @if ($s->team?->club)
+                                            <a href="{{ route('torneos.clubes.show', $s->team->club) }}" class="hover:underline">{{ $s->team->name }}</a>
+                                        @else
+                                            {{ $s->team?->name ?? '—' }}
+                                        @endif
+                                    </td>
                                     <td class="text-center px-2 py-2">{{ $s->played }}</td>
                                     <td class="text-center px-2 py-2">{{ $s->won }}</td>
                                     <td class="text-center px-2 py-2">{{ $s->drawn }}</td>
@@ -245,6 +251,18 @@
             </section>
         @endforeach
     @endforeach
+
+    {{-- ── Llaves eliminatorias ──────────────────────────────────────── --}}
+    @if ($knockoutPhases->isNotEmpty())
+        <section class="bg-white border border-line rounded-md shadow-card mb-4 overflow-hidden">
+            <div class="bg-pitch-mist border-b border-line px-4 py-2.5">
+                <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">Llaves eliminatorias</p>
+            </div>
+            <div class="p-4">
+                @include('torneos._bracket', ['knockoutPhases' => $knockoutPhases])
+            </div>
+        </section>
+    @endif
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {{-- ── Resultados ──────────────────────────────────────────────── --}}

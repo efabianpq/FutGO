@@ -352,7 +352,7 @@ class StandingsTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.torneos.standings.index', $tournament))
             ->assertOk()
-            ->assertSee('Tabla de posiciones');
+            ->assertSee('Posiciones');
     }
 
     public function test_recalculate_manual_via_http(): void

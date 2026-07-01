@@ -202,7 +202,8 @@ class PublicPortalTest extends TestCase
         DB::disableQueryLog();
 
         // Con eager loading el número de consultas es acotado y constante.
-        $this->assertLessThan(25, $count, "El portal ejecutó {$count} consultas (posible N+1).");
+        // Umbral actualizado a 30 para incluir la carga de fases de knockout (bracket).
+        $this->assertLessThan(30, $count, "El portal ejecutó {$count} consultas (posible N+1).");
     }
 
     // ── H9: portal de exploración de torneos públicos ────────────────────

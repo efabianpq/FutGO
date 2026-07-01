@@ -54,6 +54,18 @@
             @auth
                 @if (auth()->id() !== $player->id)
                     <x-social.follow-button :followable="$player" type="user" />
+                    {{-- H20: Mensajería directa --}}
+                    @if ($canDirectMessage)
+                        @if ($existingDmConversation)
+                            <a href="{{ route('social.conversaciones.show', $existingDmConversation) }}"
+                               class="btn btn-secondary btn-sm">💬 Ver conversación</a>
+                        @else
+                            <form method="POST" action="{{ route('social.conversaciones.direct', $player) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-secondary btn-sm">💬 Enviar mensaje</button>
+                            </form>
+                        @endif
+                    @endif
                 @endif
             @endauth
         </div>

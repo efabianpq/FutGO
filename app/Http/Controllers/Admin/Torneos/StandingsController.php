@@ -29,10 +29,17 @@ class StandingsController extends Controller
             ->orderBy('order')
             ->get();
 
+        // Fases knockout para el bracket eliminatorio
+        $knockoutPhases = $tournament->phases()
+            ->whereIn('type', ['knockout', 'third_place'])
+            ->with(['matches' => fn($q) => $q->orderBy('match_number'), 'matches.homeTeam', 'matches.awayTeam'])
+            ->orderBy('order')
+            ->get();
+
         $classifiesPerGroup = (int) ($tournament->classifies_per_group ?? 1);
 
         return view('admin.torneos.standings.index', compact(
-            'tournament', 'phases', 'classifiesPerGroup'
+            'tournament', 'phases', 'knockoutPhases', 'classifiesPerGroup'
         ));
     }
 

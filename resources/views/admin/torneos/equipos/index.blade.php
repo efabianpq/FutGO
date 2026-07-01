@@ -2,7 +2,6 @@
 @section('title', 'Admin · Equipos · ' . $tournament->name)
 
 @section('content')
-@include('admin.torneos._nav')
 
 @php
     $statusMeta = [

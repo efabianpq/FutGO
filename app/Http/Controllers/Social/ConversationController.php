@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Social\Conversation;
 use App\Models\Social\ContentReport;
 use App\Models\Social\Message;
+use App\Models\User;
+use App\Models\UserBlock;
 use App\Rules\CleanText;
 use App\Services\Social\ConversationService;
 use Illuminate\Http\RedirectResponse;
@@ -172,6 +174,53 @@ class ConversationController extends Controller
         }
 
         return back()->with('status', 'Gracias. Un administrador revisará el reporte.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Mensajería directa (H20)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Inicia una conversación directa con otro usuario desde su ficha pública.
+     * Valida que el destinatario acepte DMs y no haya bloqueado al remitente.
+     */
+    public function initiateDirect(Request $request, User $user): RedirectResponse
+    {
+        $from = $request->user();
+
+        abort_if($from->id === $user->id, 403, 'No podés enviarte un mensaje a vos mismo.');
+        abort_unless($user->accepts_direct_messages, 403, 'Este usuario no acepta mensajes directos.');
+        abort_if($user->hasBlocked($from), 403, 'No podés contactar a este usuario.');
+
+        $conversation = $this->service->initiateOrFindDirect($from, $user);
+
+        return redirect()->route('social.conversaciones.show', $conversation);
+    }
+
+    /**
+     * Bloquea al otro participante de una conversación. Idempotente (si ya bloqueó,
+     * no falla). El bloqueo impide que el bloqueado inicie nuevas DMs.
+     */
+    public function block(Request $request, Conversation $conversation): RedirectResponse
+    {
+        $user = $request->user();
+        $this->authorizeParticipant($conversation, $user);
+
+        // Encuentra el otro participante de la DM.
+        $other = $conversation->participants()
+            ->with('user')
+            ->where('user_id', '!=', $user->id)
+            ->whereNull('club_id')
+            ->first()?->user;
+
+        if ($other) {
+            UserBlock::firstOrCreate([
+                'user_id'         => $user->id,
+                'blocked_user_id' => $other->id,
+            ]);
+        }
+
+        return back()->with('status', 'Contacto bloqueado. Ya no podrá iniciarte nuevas conversaciones.');
     }
 
     // ─────────────────────────────────────────────────────────────────────

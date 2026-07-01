@@ -27,7 +27,8 @@ class TournamentReportService
             ->with([
                 'groups' => fn ($q) => $q->orderBy('order'),
                 'groups.standings' => fn ($q) => $q->orderBy('position'),
-                'groups.standings.team:id,name,color',
+                'groups.standings.team:id,name,color,club_id',
+                'groups.standings.team.club:id,slug,name',
             ])
             ->orderBy('order')
             ->get();

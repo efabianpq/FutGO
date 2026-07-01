@@ -170,12 +170,29 @@ class OpportunityService
             throw OpportunityException::make('Ya enviaste una respuesta a esta oportunidad.');
         }
 
-        return $opportunity->responses()->create([
+        $response = $opportunity->responses()->create([
             'user_id' => $responder->id,
             'club_id' => $clubId,
             'message' => $data['message'] ?? null,
             'status'  => OpportunityResponse::STATUS_PENDIENTE,
         ]);
+
+        // Notifica al dueño de la oportunidad vía Feed (no bloqueante).
+        $this->feed->record(
+            FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA,
+            $responder,
+            $opportunity,
+            [
+                'city'    => $opportunity->city,
+                'payload' => [
+                    'opportunity_id'   => $opportunity->id,
+                    'opportunity_type' => $opportunity->typeLabel(),
+                    'responder_name'   => $responder->name,
+                ],
+            ]
+        );
+
+        return $response;
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -192,7 +209,7 @@ class OpportunityService
             // Bloqueo pesimista para serializar aceptaciones concurrentes.
             $opportunity = Opportunity::whereKey($response->opportunity_id)->lockForUpdate()->firstOrFail();
 
-            if (! $opportunity->isAbierta()) {
+            if (! $opportunity->isAbierta() && ! $opportunity->isEnNegociacion()) {
                 throw OpportunityException::make('La oportunidad ya no está abierta.');
             }
             if ($opportunity->isVencida()) {

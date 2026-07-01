@@ -38,12 +38,7 @@
 </head>
 <body class="bg-bone-soft text-ink font-sans antialiased min-h-screen flex flex-col">
 
-    <header class="sticky top-0 z-40 bg-pitch border-b border-line/20">
-        <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-            <a href="{{ route('home') }}" class="shrink-0"><x-logo size="sm" /></a>
-            <a href="{{ route('login') }}" class="font-display font-semibold text-[13px] text-bone/90 hover:text-bone uppercase tracking-wide-label">Ingresar →</a>
-        </div>
-    </header>
+    <x-nav :user="auth()->user()" />
 
     <main class="flex-1">@yield('content')</main>
 

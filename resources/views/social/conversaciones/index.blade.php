@@ -30,7 +30,7 @@
     <div class="mb-6">
         <p class="eyebrow">FutGO Social</p>
         <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mensajes</h1>
-        <p class="text-ink-soft text-[14px] mt-1">Tus conversaciones con rivales, refuerzos y equipos. Se abren al cerrar un acuerdo.</p>
+        <p class="text-ink-soft text-[14px] mt-1">Tus conversaciones con rivales, refuerzos y equipos. Se abren automáticamente cuando aceptás una oportunidad o confirmás un amistoso.</p>
     </div>
 
     @if (session('status'))

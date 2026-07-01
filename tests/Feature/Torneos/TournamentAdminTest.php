@@ -375,7 +375,7 @@ class TournamentAdminTest extends TestCase
              ->get(route('admin.torneos.show', $t))
              ->assertOk()
              ->assertSee('Mi Dashboard')
-             ->assertSee('Equipos inscritos');
+             ->assertSee('Gestión del torneo');
     }
 
     public function test_torneo_admin_no_puede_ver_dashboard_de_torneo_ajeno(): void

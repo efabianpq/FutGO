@@ -24,7 +24,7 @@ class StatsController extends Controller
             ->get();
 
         // Jugadores con al menos un partido jugado, ordenados por goles DESC, asistencias DESC
-        $stats = PlayerStat::with(['teamPlayer.user', 'teamPlayer.team'])
+        $stats = PlayerStat::with(['teamPlayer.user', 'teamPlayer.team.club'])
             ->where('tournament_id', $tournament->id)
             ->where('matches_played', '>', 0)
             ->orderByDesc('goals')

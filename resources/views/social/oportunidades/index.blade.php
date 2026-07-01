@@ -37,17 +37,8 @@
     </div>
 
     @guest
-        {{-- Embudo de registro: el invitado explora libre, pero aplicar/publicar pide cuenta.
-             Paleta FutGO: fondo verde de marca + text-on-green (theme-aware, siempre legible). --}}
-        <div class="bg-green text-on-green rounded-md shadow-card-2 p-5 sm:p-6 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div class="flex-1">
-                <p class="font-display font-bold text-[17px]">Sumate al fútbol amateur de tu ciudad</p>
-                <p class="text-on-green/85 text-[13.5px] mt-1">Creá tu cuenta gratis para responder estas oportunidades, conseguir rival o jugador y publicar las tuyas.</p>
-            </div>
-            <div class="flex gap-2 shrink-0">
-                <a href="{{ route('register') }}" class="btn btn-sm w-full sm:w-auto bg-on-green text-green hover:opacity-90 font-bold">Crear cuenta</a>
-                <a href="{{ route('login') }}" class="btn btn-sm w-full sm:w-auto bg-transparent text-on-green border border-on-green/40 hover:bg-on-green/10">Ingresar</a>
-            </div>
+        <div class="bg-surface border border-border rounded-md px-4 py-3 mb-6 text-muted text-[13.5px]">
+            Sumate al fútbol amateur de tu ciudad — <a href="{{ route('register') }}" class="text-pitch font-semibold hover:underline">Creá tu cuenta gratis</a> para responder oportunidades y publicar las tuyas.
         </div>
     @endguest
 
@@ -68,14 +59,22 @@
         </div>
         <div class="flex flex-col gap-1">
             <label class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute">Ciudad</label>
-            <input type="text" name="ciudad" value="{{ $filters['city'] ?? '' }}" placeholder="Asunción"
-                   class="h-[40px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px]">
+            <select name="ciudad" class="h-[40px] px-2 bg-white border-[1.5px] border-line rounded-md text-[14px]">
+                <option value="">Todas las ciudades</option>
+                @foreach ($cities as $c)
+                    <option value="{{ $c }}" @selected(($filters['city'] ?? '') === $c)>{{ $c }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="flex flex-col gap-1">
             <label class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute">Nivel</label>
             <select name="nivel" class="h-[40px] px-2 bg-white border-[1.5px] border-line rounded-md text-[14px]">
-                <option value="">Mi nivel</option>
-                <option value="todos" @selected(($filters['level'] ?? '') === 'todos')>Todos los niveles</option>
+                <option value="">Todos los niveles</option>
+                @auth
+                    @if ($viewer?->hasPlayLevel())
+                        <option value="mio" @selected(($filters['level'] ?? '') === 'mio')>Mi nivel ({{ $levelLabels[$viewer->play_level] ?? $viewer->play_level }})</option>
+                    @endif
+                @endauth
                 @foreach ($levels as $l)
                     <option value="{{ $l }}" @selected(($filters['level'] ?? '') === $l)>{{ $levelLabels[$l] ?? $l }}</option>
                 @endforeach
@@ -92,10 +91,10 @@
         </div>
     </form>
 
-    @if ($effectiveLevel && ($filters['level'] ?? '') !== 'todos')
+    @if ($effectiveLevel)
         <p class="font-mono text-[11px] text-ink-mute mb-4">
-            Mostrando nivel <span class="font-semibold text-pitch">{{ $levelLabels[$effectiveLevel] ?? $effectiveLevel }}</span>
-            (y sin nivel). <a href="{{ request()->fullUrlWithQuery(['nivel' => 'todos']) }}" class="text-pitch underline">Ver todos los niveles</a>.
+            Filtrando por nivel <span class="font-semibold text-pitch">{{ $levelLabels[$effectiveLevel] ?? $effectiveLevel }}</span>
+            (incluye sin nivel). <a href="{{ route('social.oportunidades.index', array_merge(request()->query(), ['nivel' => ''])) }}" class="text-pitch underline">Ver todos los niveles</a>.
         </p>
     @endif
 
@@ -113,12 +112,15 @@
                 <a href="{{ route('social.oportunidades.show', $op) }}"
                    class="bg-white border rounded-md shadow-card-2 p-5 flex flex-col gap-3 hover:border-pitch transition-all duration-fast {{ $op->isExpress() ? 'border-alerta ring-1 ring-alerta/30' : 'border-line' }}">
                     <div class="flex items-center justify-between gap-2">
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="px-2.5 py-1 rounded-pill font-display font-bold text-[10.5px] uppercase tracking-wide-label {{ $typeBadge[$op->type] ?? 'bg-bone-soft text-ink' }}">
                                 {{ $op->typeLabel() }}
                             </span>
                             @if ($op->isExpress())
                                 <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-alerta text-white animate-pulse">⚡ Urgente</span>
+                            @endif
+                            @if ($viewer && $viewer->id === $op->user_id)
+                                <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-blue-100 text-blue-700">Mía</span>
                             @endif
                         </div>
                         @if ($op->required_level)
@@ -140,7 +142,12 @@
 
                     <div class="mt-auto flex items-center justify-between font-mono text-[11px] text-ink-mute pt-2 border-t border-line-soft">
                         <span>{{ $op->window_start ? $op->window_start->format('d/m H:i') : 'Sin fecha' }}</span>
-                        <span>{{ $op->responses_count }} resp.</span>
+                        <div class="flex items-center gap-2">
+                            @if ($op->expires_at)
+                                <span class="text-amber-600" title="Vence {{ $op->expires_at->format('d/m H:i') }}">⏱ {{ $op->expires_at->diffForHumans() }}</span>
+                            @endif
+                            <span>{{ $op->responses_count }} resp.</span>
+                        </div>
                     </div>
                 </a>
             @endforeach

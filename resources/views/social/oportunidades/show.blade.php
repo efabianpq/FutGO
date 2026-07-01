@@ -46,7 +46,16 @@
         <div class="flex items-center gap-3 mb-4">
             <x-avatar :name="$opportunity->authorName()" :src="$opportunity->club?->shield_url ?? $opportunity->user?->avatar_url" size="lg" />
             <div class="min-w-0">
-                <p class="font-display font-bold text-pitch text-xl">{{ $opportunity->authorName() }}</p>
+                @if ($opportunity->club)
+                    <a href="{{ route('torneos.clubes.show', $opportunity->club) }}" class="font-display font-bold text-pitch text-xl hover:underline">{{ $opportunity->club->name }}</a>
+                    @if ($opportunity->user)
+                        <p class="font-mono text-[11px] text-ink-mute">Cap.: <a href="{{ route('social.player.show', $opportunity->user->futgo_id) }}" class="hover:underline">{{ $opportunity->user->name }}</a></p>
+                    @endif
+                @elseif ($opportunity->user)
+                    <a href="{{ route('social.player.show', $opportunity->user->futgo_id) }}" class="font-display font-bold text-pitch text-xl hover:underline">{{ $opportunity->user->name }}</a>
+                @else
+                    <p class="font-display font-bold text-pitch text-xl">{{ $opportunity->authorName() }}</p>
+                @endif
                 <p class="font-mono text-[12px] text-ink-mute">{{ $opportunity->city }}{{ $opportunity->zone ? ' · ' . $opportunity->zone : '' }}</p>
             </div>
         </div>
@@ -58,12 +67,21 @@
             @if ($opportunity->window_start)
                 <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Fecha</dt><dd class="text-pitch font-semibold">{{ $opportunity->window_start->format('d/m/Y H:i') }}</dd></div>
             @endif
+            @if ($opportunity->expires_at)
+                <div><dt class="font-mono text-[10px] uppercase text-ink-mute">Válida hasta</dt><dd class="text-amber-700 font-semibold">{{ $opportunity->expires_at->format('d/m/Y H:i') }}</dd></div>
+            @endif
             @foreach (['partido' => 'Partido', 'posiciones' => 'Posiciones', 'posicion' => 'Posición', 'cupos' => 'Cupos', 'cancha_propuesta' => 'Cancha', 'disponibilidad' => 'Disponibilidad'] as $key => $label)
                 @if (! empty($opportunity->payload[$key]) || (isset($opportunity->payload[$key]) && $key === 'cupos'))
                     <div><dt class="font-mono text-[10px] uppercase text-ink-mute">{{ $label }}</dt><dd class="text-pitch font-semibold">{{ $opportunity->payload[$key] }}</dd></div>
                 @endif
             @endforeach
         </dl>
+
+        @if (! empty($opportunity->payload['directed_to_name']))
+            <p class="text-[13px] text-ink-mute mt-3">
+                🎯 Dirigida a: <a href="{{ route('social.player.show', $opportunity->payload['directed_to_user_id'] ?? '#') }}" class="text-pitch font-semibold hover:underline">{{ $opportunity->payload['directed_to_name'] }}</a>
+            </p>
+        @endif
 
         @if (! empty($opportunity->payload['descripcion']))
             <p class="text-[14px] text-ink-soft mt-4 whitespace-pre-line">{{ $opportunity->payload['descripcion'] }}</p>
@@ -188,7 +206,7 @@
                             @if ($resp->message)
                                 <p class="text-[13px] text-ink-soft mb-3">{{ $resp->message }}</p>
                             @endif
-                            @if (in_array($resp->status, ['pendiente', 'contrapropuesta'], true) && $opportunity->isAbierta())
+                            @if (in_array($resp->status, ['pendiente', 'contrapropuesta'], true) && in_array($opportunity->status, ['abierta', 'en_negociacion']))
                                 <div class="flex flex-wrap gap-2">
                                     <form method="POST" action="{{ route('social.oportunidades.responses.accept', $resp) }}">
                                         @csrf

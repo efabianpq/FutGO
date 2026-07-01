@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Social;
 
 use App\Http\Controllers\Controller;
+use App\Models\Social\Conversation;
 use App\Models\Social\Opportunity;
 use App\Models\Social\ReliabilityScore;
 use App\Models\Torneos\PlayerCareerStat;
@@ -40,6 +41,7 @@ class PlayerPublicController extends Controller
                 'id', 'name', 'futgo_id', 'avatar_url',
                 'play_level', 'city',
                 'is_suspended', 'suspended_until',
+                'accepts_direct_messages',
             ])
             ->firstOrFail();
 
@@ -113,10 +115,27 @@ class PlayerPublicController extends Controller
             $viewerIsCaptain = Club::where('captain_user_id', $authUser->id)->exists();
         }
 
+        // H20: mensajería directa — puede el visitante enviar un DM a este jugador?
+        $canDirectMessage = false;
+        $existingDmConversation = null;
+        if ($authUser && $authUser->id !== $player->id) {
+            $canDirectMessage = $player->accepts_direct_messages && ! $player->hasBlocked($authUser);
+            if ($canDirectMessage) {
+                // Si ya existe una conversación directa, mostrar "Ver conversación" en vez de "Enviar mensaje".
+                $existingDmConversation = Conversation::query()
+                    ->whereNull('subject_type')
+                    ->whereNull('subject_id')
+                    ->whereHas('participants', fn ($q) => $q->where('user_id', $authUser->id)->whereNull('club_id'))
+                    ->whereHas('participants', fn ($q) => $q->where('user_id', $player->id)->whereNull('club_id'))
+                    ->first();
+            }
+        }
+
         return view('social.jugador.show', compact(
             'player', 'isSuspended', 'career', 'achievements', 'seasons',
             'openOpportunities', 'friendlyMetrics', 'reliabilityScore',
             'followersCount', 'isFollowing', 'sharedCount', 'viewerIsCaptain',
+            'canDirectMessage', 'existingDmConversation',
         ));
     }
 }

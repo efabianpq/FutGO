@@ -39,7 +39,13 @@
             <p class="eyebrow">Equipo</p>
             <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
-                Capitán: {{ $club->captain?->name ?? '—' }} · {{ $participations->count() }} participación(es) · {{ $players->count() }} jugadores
+                Capitán:
+                @if ($club->captain?->futgo_id)
+                    <a href="{{ route('social.player.show', $club->captain->futgo_id) }}" class="hover:underline">{{ $club->captain->name }}</a>
+                @else
+                    {{ $club->captain?->name ?? '—' }}
+                @endif
+                · {{ $participations->count() }} participación(es) · {{ $players->count() }} jugadores
                 @if ($club->play_level)
                     @php $lvls = ['recreativo'=>'Recreativo','intermedio'=>'Intermedio','competitivo'=>'Competitivo','elite_amateur'=>'Élite Amateur']; @endphp
                     · {{ $lvls[$club->play_level] ?? $club->play_level }}

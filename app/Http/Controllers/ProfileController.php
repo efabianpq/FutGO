@@ -62,6 +62,7 @@ class ProfileController extends Controller
             'phone_whatsapp' => ['required', 'string', 'regex:/^[0-9]{7,15}$/'],
             'document' => ['nullable', 'string', 'max:40'],
             'notifications_enabled' => ['sometimes', 'boolean'],
+            'accepts_direct_messages' => ['sometimes', 'boolean'],
             // FutGO Social: ciudad y nivel alimentan el matching y el Feed.
             'city' => ['nullable', 'string', 'max:120'],
             'play_level' => ['nullable', \Illuminate\Validation\Rule::in(\App\Models\User::PLAY_LEVELS)],
@@ -76,6 +77,7 @@ class ProfileController extends Controller
         $user->phone_whatsapp = $data['phone_whatsapp'];
         $user->document = $data['document'] ?? null;
         $user->notifications_enabled = $request->boolean('notifications_enabled');
+        $user->accepts_direct_messages = $request->boolean('accepts_direct_messages');
         $user->city = $data['city'] ?? null;
         $user->play_level = $data['play_level'] ?? null;
         $user->save();

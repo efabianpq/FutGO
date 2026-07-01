@@ -83,9 +83,16 @@ class PublicTournamentController extends Controller
         $canRegister   = $tournament->status === 'open';
         $isCaptain     = ($u = auth()->user()) && $u->hasTorneosAccess() ? $u->isCaptainAnywhere() : false;
 
+        // Bracket: fases de eliminatoria ordenadas con sus partidos.
+        $knockoutPhases = $tournament->phases()
+            ->whereIn('type', ['knockout', 'third_place'])
+            ->with(['matches' => fn ($q) => $q->orderBy('match_number'), 'matches.homeTeam', 'matches.awayTeam'])
+            ->orderBy('order')
+            ->get();
+
         return view('torneos.public.show', compact(
             'tournament', 'standings', 'results', 'upcoming', 'scorers', 'summary', 'sponsors',
-            'approvedTeams', 'canRegister', 'isCaptain'
+            'approvedTeams', 'canRegister', 'isCaptain', 'knockoutPhases'
         ));
     }
 }

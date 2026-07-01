@@ -48,8 +48,7 @@
             <h1 class="font-display font-bold text-2xl sm:text-3xl text-text mt-1">Hola, {{ $firstName }} 👋</h1>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="{{ route('social.oportunidades.express') }}" class="btn btn-primary btn-sm">⚡ Modo rápido</a>
-            <a href="{{ route('social.oportunidades.create') }}" class="btn btn-secondary btn-sm">Publicar oportunidad</a>
+            <a href="{{ route('torneos.mi-carrera') }}" class="btn btn-primary btn-sm">Mi Carrera</a>
         </div>
     </div>
 

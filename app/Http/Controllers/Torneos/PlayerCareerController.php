@@ -107,12 +107,14 @@ class PlayerCareerController extends Controller
 
         // ── FutGO Social (S2-A): "Jugué con vos" — jugadores con quienes compartió
         // cancha (derivado, sin tabla propia). Top por cantidad de partidos.
-        $playedWith = $this->playedWith->sharedPlayers($user)->take(12);
+        $playedWithFull  = $this->playedWith->sharedPlayers($user);
+        $playedWith      = $playedWithFull->take(4);
+        $playedWithTotal = $playedWithFull->count();
 
         return view('torneos.mi-carrera', compact(
             'user', 'careerStat', 'statsByTournament', 'tournaments', 'clubs',
             'upcomingMatches', 'recentResults', 'activeSuspensions', 'disciplinary', 'myCallUps',
-            'fairPlay', 'credentialQrSvg', 'friendlies', 'socialMetrics', 'playedWith'
+            'fairPlay', 'credentialQrSvg', 'friendlies', 'socialMetrics', 'playedWith', 'playedWithFull', 'playedWithTotal'
         ));
     }
 }

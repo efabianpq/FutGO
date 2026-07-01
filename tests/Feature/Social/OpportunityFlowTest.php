@@ -232,12 +232,17 @@ class OpportunityFlowTest extends TestCase
 
         $viewer = $this->makeUser(['play_level' => 'recreativo']);
 
-        // Por defecto solo ve su nivel (recreativo), no la competitiva.
+        // Por defecto (sin parámetro) ve todas las oportunidades sin filtro de nivel.
         $this->actingAs($viewer)->get(route('social.oportunidades.index'))
+            ->assertSee('EquipoRecreativo')
+            ->assertSee('EquipoCompetitivo');
+
+        // Con "mio" solo ve su nivel (recreativo).
+        $this->actingAs($viewer)->get(route('social.oportunidades.index', ['nivel' => 'mio']))
             ->assertSee('EquipoRecreativo')
             ->assertDontSee('EquipoCompetitivo');
 
-        // Forzando "todos los niveles" ve ambas.
+        // Forzando "todos los niveles" también ve ambas.
         $this->actingAs($viewer)->get(route('social.oportunidades.index', ['nivel' => 'todos']))
             ->assertSee('EquipoRecreativo')
             ->assertSee('EquipoCompetitivo');

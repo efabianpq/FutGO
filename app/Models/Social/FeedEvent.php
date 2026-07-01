@@ -23,15 +23,17 @@ class FeedEvent extends Model
     public const TYPE_RESULTADO_AMISTOSO    = 'resultado_amistoso';
     public const TYPE_RESULTADO_TORNEO      = 'resultado_torneo';
     public const TYPE_LOGRO_DESBLOQUEADO    = 'logro_desbloqueado';
+    public const TYPE_OPORTUNIDAD_RESPONDIDA = 'oportunidad_respondida';
 
     /** Etiquetas legibles (voseo) para la UI. */
     public const TYPE_LABELS = [
-        self::TYPE_OPORTUNIDAD_PUBLICADA => 'Nueva oportunidad',
-        self::TYPE_OPORTUNIDAD_ACEPTADA  => 'Oportunidad aceptada',
-        self::TYPE_AMISTOSO_CONFIRMADO   => 'Amistoso confirmado',
-        self::TYPE_RESULTADO_AMISTOSO    => 'Resultado de amistoso',
-        self::TYPE_RESULTADO_TORNEO      => 'Resultado de torneo',
-        self::TYPE_LOGRO_DESBLOQUEADO    => 'Logro desbloqueado',
+        self::TYPE_OPORTUNIDAD_PUBLICADA  => 'Nueva oportunidad',
+        self::TYPE_OPORTUNIDAD_ACEPTADA   => 'Oportunidad aceptada',
+        self::TYPE_OPORTUNIDAD_RESPONDIDA => 'Respuesta a oportunidad',
+        self::TYPE_AMISTOSO_CONFIRMADO    => 'Amistoso confirmado',
+        self::TYPE_RESULTADO_AMISTOSO     => 'Resultado de amistoso',
+        self::TYPE_RESULTADO_TORNEO       => 'Resultado de torneo',
+        self::TYPE_LOGRO_DESBLOQUEADO     => 'Logro desbloqueado',
     ];
 
     protected $fillable = [

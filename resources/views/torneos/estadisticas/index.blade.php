@@ -14,7 +14,7 @@ $statusMeta = [
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-     x-data="{ filterTeam: 'all', q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
+     x-data="{ filterTeam: 'all', showAll: false, q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
 
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div class="min-w-0">
@@ -85,7 +85,7 @@ $statusMeta = [
                     @foreach ($stats as $i => $stat)
                         @php $team = $stat->teamPlayer?->team; @endphp
                         <tr class="hover:bg-bone-soft transition-colors duration-fast"
-                            x-show="(filterTeam === 'all' || filterTeam === '{{ $team?->id }}') && match(@js($stat->teamPlayer?->user?->name ?? ''))"
+                            x-show="(filterTeam === 'all' || filterTeam === '{{ $team?->id }}') && match(@js($stat->teamPlayer?->user?->name ?? '')) && (showAll || {{ $i }} < 10 || filterTeam !== 'all' || q !== '')"
                             x-transition>
                             <td class="px-4 py-3 font-mono text-[12px] text-ink-mute">{{ $i + 1 }}</td>
                             <td class="px-4 py-3">
@@ -103,7 +103,11 @@ $statusMeta = [
                                         <span class="w-2.5 h-2.5 rounded-full border border-line/50"
                                               style="background:{{ $team->color }}"></span>
                                     @endif
-                                    <span class="text-[13px] text-ink">{{ $team?->name ?? '—' }}</span>
+                                    @if ($team?->club)
+                                        <a href="{{ route('torneos.clubes.show', $team->club) }}" class="text-[13px] text-ink hover:underline hover:text-pitch">{{ $team->name }}</a>
+                                    @else
+                                        <span class="text-[13px] text-ink">{{ $team?->name ?? '—' }}</span>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-3 py-3 text-center font-mono font-bold text-[14px] text-pitch">{{ $stat->goals }}</td>
@@ -122,6 +126,15 @@ $statusMeta = [
                 </tbody>
             </table>
         </div>
+
+        @if ($stats->count() > 10)
+            <div class="mt-3 text-center" x-show="filterTeam === 'all' && q === ''">
+                <button type="button" @click="showAll = !showAll"
+                        class="font-mono text-[12px] uppercase tracking-wide-label text-pitch hover:underline font-bold"
+                        x-text="showAll ? 'Ver menos' : 'Ver todos ({{ $stats->count() }} jugadores)'">
+                </button>
+            </div>
+        @endif
     @endif
 </div>
 @endsection

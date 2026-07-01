@@ -1,8 +1,7 @@
 @extends('layouts.app')
-@section('title', 'Admin · Tabla de posiciones · ' . $tournament->name)
+@section('title', 'Admin · Posiciones · ' . $tournament->name)
 
 @section('content')
-@include('admin.torneos._nav')
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
      x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
@@ -11,13 +10,13 @@
     <nav class="flex items-center gap-2 font-mono text-[12px] text-ink-mute mb-5">
         <a href="{{ route('admin.torneos.show', $tournament) }}" class="hover:text-pitch">{{ $tournament->name }}</a>
         <span>›</span>
-        <span class="text-pitch font-semibold">Tabla de posiciones</span>
+        <span class="text-pitch font-semibold">Posiciones</span>
     </nav>
 
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Tabla de posiciones</h1>
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Posiciones</h1>
             @if ($tournament->tiebreaker_order)
                 <p class="font-mono text-[11px] text-ink-mute mt-1">
                     Desempate: {{ implode(' → ', $tournament->tiebreaker_order) }}
@@ -25,6 +24,7 @@
             @endif
         </div>
         <div class="flex gap-3">
+            @if ($phases->isNotEmpty())
             <form method="POST" action="{{ route('admin.torneos.standings.recalculate', $tournament) }}">
                 @csrf
                 <button type="submit"
@@ -32,6 +32,7 @@
                     ↻ Recalcular
                 </button>
             </form>
+            @endif
             <a href="{{ route('admin.torneos.show', $tournament) }}"
                class="text-pitch font-display font-semibold text-[13px] uppercase hover:underline self-center">
                 ← Dashboard
@@ -50,12 +51,13 @@
         </div>
     @endif
 
-    @if ($phases->isEmpty())
+    @if ($phases->isEmpty() && $knockoutPhases->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card-2 p-10 text-center">
-            <p class="text-ink-soft text-lg">Este torneo no tiene fases de grupos aún.</p>
+            <p class="text-ink-soft text-lg">Este torneo no tiene posiciones ni llaves aún.</p>
             <p class="text-[13px] text-ink-mute mt-2">Generá el fixture primero desde el dashboard.</p>
         </div>
     @else
+        @if ($phases->isNotEmpty())
         <div class="mb-5"><x-search-input placeholder="Buscar equipo por nombre…" /></div>
         @foreach ($phases as $phase)
             <div class="mb-8">
@@ -156,10 +158,18 @@
                 @endforeach
             </div>
         @endforeach
+        @endif
+
+        {{-- Bracket eliminatorio --}}
+        @if ($knockoutPhases->isNotEmpty())
+            <div class="mt-8 bg-white border border-line rounded-md shadow-card-2 p-5">
+                @include('torneos._bracket', ['knockoutPhases' => $knockoutPhases])
+            </div>
+        @endif
     @endif
 
     {{-- Info de sistema de puntos --}}
-    <div class="bg-bone-soft border border-line rounded-md p-4 mt-2">
+    <div class="bg-bone-soft border border-line rounded-md p-4 mt-6">
         <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute mb-2">Sistema de puntuación</p>
         <div class="flex gap-6 font-mono text-[13px]">
             <span><strong class="text-pitch">Victoria:</strong> {{ $tournament->points_win ?? 3 }} pts</span>

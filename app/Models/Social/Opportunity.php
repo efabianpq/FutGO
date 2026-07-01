@@ -178,10 +178,10 @@ class Opportunity extends Model
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
 
-    /** Acepta respuestas: abierta y no vencida. */
+    /** Acepta respuestas: abierta o en negociación, y no vencida. */
     public function canReceiveResponses(): bool
     {
-        return $this->isAbierta() && ! $this->isVencida();
+        return ($this->isAbierta() || $this->isEnNegociacion()) && ! $this->isVencida();
     }
 
     // --- Helpers de tipo ---

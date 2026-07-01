@@ -409,7 +409,7 @@ class FixtureGeneratorService
     {
         $phase = TournamentPhase::create([
             'tournament_id' => $tournament->id,
-            'name'          => 'Fase Única',
+            'name'          => 'Todos contra todos',
             'type'          => 'groups',
             'order'         => 1,
             'is_active'     => true,

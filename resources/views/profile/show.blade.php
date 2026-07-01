@@ -107,6 +107,16 @@
                 <span class="text-ink">Recibir notificaciones por email</span>
             </label>
 
+            <label class="inline-flex items-start gap-2 text-body-s">
+                <input type="checkbox" name="accepts_direct_messages" value="1"
+                       @checked(auth()->user()->accepts_direct_messages ?? true)
+                       class="w-[18px] h-[18px] rounded-sm accent-pitch border-line mt-0.5">
+                <div>
+                    <span class="text-ink">Recibir mensajes directos de otros jugadores</span>
+                    <p class="text-[12px] text-ink-mute mt-0.5">Si lo desactivás, los demás no podrán iniciarte conversaciones desde tu ficha pública.</p>
+                </div>
+            </label>
+
             <div class="flex justify-end">
                 <x-btn type="submit" variant="primary">Guardar cambios</x-btn>
             </div>

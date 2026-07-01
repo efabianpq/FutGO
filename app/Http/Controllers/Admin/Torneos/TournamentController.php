@@ -88,14 +88,26 @@ class TournamentController extends Controller
             ? $this->leagueSummary($tournament, $hasFixture, $approvedCount)
             : null;
 
+        // Bracket: fases de eliminatoria con sus partidos (para visualización de llaves).
+        $knockoutPhases = $hasFixture
+            ? $tournament->phases()
+                ->whereIn('type', ['knockout', 'third_place'])
+                ->with(['matches' => fn ($q) => $q->orderBy('match_number'), 'matches.homeTeam', 'matches.awayTeam'])
+                ->orderBy('order')
+                ->get()
+            : collect();
+
         return view('admin.torneos.show', [
-            'tournament'   => $tournament,
-            'stats'        => $stats,
-            'nextStatus'   => $this->nextStatus($tournament->status),
-            'hasFixture'   => $hasFixture,
-            'canGenerate'  => $tournament->isOpen() && ! $hasFixture && $this->hasEnoughApproved($tournament, $approvedCount),
-            'phaseSummary' => $this->groupPhaseSummary($tournament, $hasFixture),
-            'league'       => $league,
+            'tournament'      => $tournament,
+            'stats'           => $stats,
+            'nextStatus'      => $this->nextStatus($tournament->status),
+            'hasFixture'      => $hasFixture,
+            'hasGroupPhase'   => $hasFixture && $tournament->phases()->where('type', 'groups')->exists(),
+            'hasKnockout'     => $knockoutPhases->isNotEmpty(),
+            'knockoutPhases'  => $knockoutPhases,
+            'canGenerate'     => $tournament->isOpen() && ! $hasFixture && $this->hasEnoughApproved($tournament, $approvedCount),
+            'phaseSummary'    => $this->groupPhaseSummary($tournament, $hasFixture),
+            'league'          => $league,
         ]);
     }
 

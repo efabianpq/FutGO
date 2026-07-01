@@ -39,6 +39,7 @@ class User extends Authenticatable
         'role',
         'modules',
         'notifications_enabled',
+        'accepts_direct_messages',
         'email_verified_at',
     ];
 
@@ -68,8 +69,9 @@ class User extends Authenticatable
             'is_active'          => 'boolean',
             'is_suspended'       => 'boolean',
             'suspended_until'    => 'datetime',
-            'notifications_enabled' => 'boolean',
-            'feed_last_read_at'  => 'datetime',
+            'notifications_enabled'      => 'boolean',
+            'accepts_direct_messages'    => 'boolean',
+            'feed_last_read_at'          => 'datetime',
         ];
     }
 
@@ -222,5 +224,25 @@ class User extends Authenticatable
     public function contentReports(): HasMany
     {
         return $this->hasMany(\App\Models\Social\ContentReport::class, 'reporter_user_id');
+    }
+
+    // --- H20: mensajería directa ---
+
+    /** Usuarios que este usuario bloqueó. */
+    public function blockedUsers(): HasMany
+    {
+        return $this->hasMany(\App\Models\UserBlock::class, 'user_id');
+    }
+
+    /** ¿Este usuario bloqueó a $target? */
+    public function hasBlocked(User $target): bool
+    {
+        return $this->blockedUsers()->where('blocked_user_id', $target->id)->exists();
+    }
+
+    /** ¿Este usuario está bloqueado por $blocker? */
+    public function isBlockedBy(User $blocker): bool
+    {
+        return $blocker->hasBlocked($this);
     }
 }

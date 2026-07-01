@@ -89,10 +89,16 @@ class OpportunityController extends Controller
 
         $opportunities = $query->paginate(12)->withQueryString();
 
+        $cities = \Illuminate\Support\Collection::make()
+            ->concat(Opportunity::active()->visible()->distinct()->whereNotNull('city')->pluck('city'))
+            ->concat(\Illuminate\Support\Facades\DB::table('users')->whereNotNull('city')->whereNotNull('futgo_id')->distinct()->pluck('city'))
+            ->unique()->sort()->values();
+
         return view('social.oportunidades.index', [
             'opportunities'  => $opportunities,
             'types'          => Opportunity::TYPES,
             'levels'         => User::PLAY_LEVELS,
+            'cities'         => $cities,
             'filters'        => compact('type', 'city', 'level', 'date'),
             'effectiveLevel' => $effectiveLevel,
             'viewer'         => $viewer,
@@ -481,6 +487,23 @@ class OpportunityController extends Controller
             'is_express'     => $request->boolean('is_express'),
         ];
 
+        $needsClub = in_array($base['type'], [
+            Opportunity::TYPE_BUSCAR_RIVAL,
+            Opportunity::TYPE_BUSCAR_JUGADOR,
+            Opportunity::TYPE_BUSCAR_REFUERZO,
+        ], true);
+
+        if ($needsClub && $this->captainedClubs($request->user()->id)->isEmpty()) {
+            throw \App\Exceptions\Social\OpportunityException::make(
+                'Necesitás capitanear un equipo para publicar este tipo de oportunidad.'
+            );
+        }
+
+        $clubMessages = [
+            'club_id.required' => 'Elegí el equipo con el que publicás la oportunidad.',
+            'club_id.exists'   => 'El equipo seleccionado no existe.',
+        ];
+
         switch ($base['type']) {
             case Opportunity::TYPE_BUSCAR_RIVAL:
                 $extra = $request->validate([
@@ -488,7 +511,7 @@ class OpportunityController extends Controller
                     'window_start'     => ['required', 'date'],
                     'venue_id'         => ['nullable', 'integer', 'exists:venues,id'],
                     'cancha_propuesta' => ['nullable', 'string', 'max:255'],
-                ]);
+                ], $clubMessages + ['window_start.required' => 'Indicá la fecha y hora del partido.']);
                 $data['club_id']      = $extra['club_id'];
                 $data['window_start'] = $extra['window_start'];
                 $data['venue_id']     = $extra['venue_id'] ?? null;
@@ -502,7 +525,7 @@ class OpportunityController extends Controller
                     'club_id'    => ['required', 'integer', 'exists:clubs,id'],
                     'posiciones' => ['nullable', 'string', 'max:120'],
                     'cupos'      => ['required', 'integer', 'min:1', 'max:30'],
-                ]);
+                ], $clubMessages + ['cupos.required' => 'Indicá cuántos cupos tenés.']);
                 $data['club_id']        = $extra['club_id'];
                 $payload['posiciones']  = $extra['posiciones'] ?? null;
                 $payload['cupos']       = (int) $extra['cupos'];
@@ -514,7 +537,7 @@ class OpportunityController extends Controller
                     'partido'      => ['required', 'string', 'max:255'],
                     'posicion'     => ['nullable', 'string', 'max:60'],
                     'window_start' => ['nullable', 'date'],
-                ]);
+                ], $clubMessages + ['partido.required' => 'Describí el partido para el que necesitás refuerzo.']);
                 $data['club_id']      = $extra['club_id'];
                 $data['window_start'] = $extra['window_start'] ?? null;
                 $payload['partido']   = $extra['partido'];
@@ -525,7 +548,7 @@ class OpportunityController extends Controller
                 $extra = $request->validate([
                     'posicion'       => ['required', 'string', 'max:60'],
                     'disponibilidad' => ['nullable', 'string', 'max:255'],
-                ]);
+                ], ['posicion.required' => 'Indicá tu posición o perfil de juego.']);
                 $payload['posicion']       = $extra['posicion'];
                 $payload['disponibilidad'] = $extra['disponibilidad'] ?? null;
                 break;
@@ -542,17 +565,17 @@ class OpportunityController extends Controller
         return $data;
     }
 
-    /** Resuelve el nivel efectivo del filtro de exploración. */
+    /** Resuelve el nivel efectivo del filtro de exploración. Sin parámetro = sin filtro. */
     private function resolveLevelFilter(?string $param, $viewer): ?string
     {
-        if ($param === 'todos') {
+        if ($param === 'todos' || $param === null || $param === '') {
             return null;
         }
-        if ($param && in_array($param, User::PLAY_LEVELS, true)) {
-            return $param;
-        }
-        if ($viewer && $viewer->hasPlayLevel()) {
+        if ($param === 'mio' && $viewer && $viewer->hasPlayLevel()) {
             return $viewer->play_level;
+        }
+        if (in_array($param, User::PLAY_LEVELS, true)) {
+            return $param;
         }
 
         return null;

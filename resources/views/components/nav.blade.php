@@ -23,6 +23,7 @@
             ['route' => 'social.amistosos.index',     'label' => 'Amistosos',     'starts' => 'social.amistosos',     'desc' => 'Reportá resultados y resolvé disputas'],
             ['route' => 'social.oportunidades.express','label' => 'Modo rápido ⚡','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitás rival para mañana?'],
             ['route' => 'social.agenda.index',        'label' => 'Agenda',        'starts' => 'social.agenda',        'desc' => 'Todo lo programado, en un solo lugar'],
+            ['route' => 'torneos.mis-equipos',        'label' => 'Mis Equipos',   'starts' => 'torneos.mis-equipos',  'desc' => 'Tus equipos en torneos activos'],
         ];
         $competirItems = [
             ['route' => 'torneos.index',       'label' => 'Mis Torneos',   'starts' => 'torneos.index',  'desc' => 'Tus torneos en curso e históricos'],
@@ -35,7 +36,7 @@
         ];
     }
 
-    $jugarActive     = $anyActive(['social.oportunidades', 'social.amistosos', 'social.agenda']);
+    $jugarActive     = $anyActive(['social.oportunidades', 'social.amistosos', 'social.agenda', 'torneos.mis-equipos']);
     $competirActive  = $anyActive(['torneos.index', 'torneos.public', 'torneos.ranking']);
     $comunidadActive = $anyActive(['social.canchas', 'social.search']);
     $inicioActive    = $isActive('dashboard');
@@ -64,8 +65,8 @@
     $bottomTabs = [];
     $bottomTabs[] = ['key' => 'inicio', 'type' => 'link', 'href' => $homeRoute, 'label' => 'Inicio', 'active' => $inicioActive, 'icon' => 'home'];
     if ($torneosAccess) {
-        $bottomTabs[] = ['key' => 'jugar',     'type' => 'sheet', 'label' => 'Jugar',     'active' => $jugarActive,     'icon' => 'ball'];
         $bottomTabs[] = ['key' => 'competir',  'type' => 'sheet', 'label' => 'Competir',  'active' => $competirActive,  'icon' => 'trophy'];
+        $bottomTabs[] = ['key' => 'jugar',     'type' => 'sheet', 'label' => 'Jugar',     'active' => $jugarActive,     'icon' => 'ball'];
         $bottomTabs[] = ['key' => 'comunidad', 'type' => 'sheet', 'label' => 'Comunidad', 'active' => $comunidadActive, 'icon' => 'users'];
     } elseif (! empty($pronosItems)) {
         $bottomTabs[] = ['key' => 'pronos', 'type' => 'sheet', 'label' => 'Pronósticos', 'active' => $pronosActive, 'icon' => 'chart'];
@@ -75,8 +76,8 @@
     // Sheets de tipo "lista de enlaces" (Jugar / Competir / Comunidad / Pronósticos).
     $listSheets = [];
     if ($torneosAccess) {
-        $listSheets['jugar']     = ['title' => 'Jugar',     'items' => $jugarItems];
         $listSheets['competir']  = ['title' => 'Competir',  'items' => $competirItems, 'extra' => $pollaAccess ? $pronosItems : []];
+        $listSheets['jugar']     = ['title' => 'Jugar',     'items' => $jugarItems];
         $listSheets['comunidad'] = ['title' => 'Comunidad', 'items' => $comunidadItems];
     } elseif (! empty($pronosItems)) {
         $listSheets['pronos'] = ['title' => 'Pronósticos', 'items' => $pronosItems];
@@ -106,15 +107,15 @@
                             Inicio
                         </a>
 
-                        <x-nav-dropdown label="Jugar" :active="$jugarActive" state="jugarOpen" :items="$jugarItems" :is-active="$isActive">
-                            <x-slot:icon>
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.5 4.5L19 8l-3 3.5L17 16l-5-2-5 2 1-4.5L5 8l4.5-.5z"/></svg>
-                            </x-slot:icon>
-                        </x-nav-dropdown>
-
                         <x-nav-dropdown label="Competir" :active="$competirActive" state="competirOpen" :items="$competirItems" :is-active="$isActive">
                             <x-slot:icon>
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/></svg>
+                            </x-slot:icon>
+                        </x-nav-dropdown>
+
+                        <x-nav-dropdown label="Jugar" :active="$jugarActive" state="jugarOpen" :items="$jugarItems" :is-active="$isActive">
+                            <x-slot:icon>
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.5 4.5L19 8l-3 3.5L17 16l-5-2-5 2 1-4.5L5 8l4.5-.5z"/></svg>
                             </x-slot:icon>
                         </x-nav-dropdown>
 
@@ -209,10 +210,6 @@
                                 <a href="{{ route('torneos.mi-carrera') }}"
                                    class="block px-4 py-2 text-[14px] font-semibold {{ $isActive('torneos.mi-carrera') ? 'text-text bg-surface-2' : 'text-muted hover:text-text hover:bg-surface-2' }}">
                                     Mi Carrera
-                                </a>
-                                <a href="{{ route('torneos.mis-equipos') }}"
-                                   class="block px-4 py-2 text-[14px] font-semibold {{ $isActive('torneos.mis-equipos') ? 'text-text bg-surface-2' : 'text-muted hover:text-text hover:bg-surface-2' }}">
-                                    Mis Equipos
                                 </a>
                             @endif
 
@@ -378,11 +375,6 @@
                            class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] active:bg-surface-2 {{ $isActive('torneos.mi-carrera') ? 'bg-surface-2 text-text' : 'text-text' }}">
                             <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             Mi Carrera
-                        </a>
-                        <a href="{{ route('torneos.mis-equipos') }}" @click="sheet = null"
-                           class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] active:bg-surface-2 {{ $isActive('torneos.mis-equipos') ? 'bg-surface-2 text-text' : 'text-text' }}">
-                            <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-1a4 4 0 00-4-4M9 20H4v-1a4 4 0 014-4h2a4 4 0 014 4v1H9zm6-9a3 3 0 100-6 3 3 0 000 6zm-6 0a3 3 0 100-6 3 3 0 000 6z"/></svg>
-                            Mis Equipos
                         </a>
                     @endif
                     <a href="{{ route('profile.show') }}" @click="sheet = null"
