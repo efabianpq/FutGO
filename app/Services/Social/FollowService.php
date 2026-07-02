@@ -82,7 +82,7 @@ class FollowService
 
         // Un jugador no se sigue a sí mismo.
         if ($type === 'user' && (int) $followable->getKey() === (int) $follower->id) {
-            abort(422, 'No podés seguirte a vos mismo.');
+            abort(422, 'No puedes seguirte a ti mismo.');
         }
     }
 }

@@ -6,7 +6,7 @@
 
     <div class="flex items-center justify-between mb-5">
         <div>
-            <p class="eyebrow">🤝 Monetización</p>
+            <p class="eyebrow inline-flex items-center gap-1"><x-icon name="handshake" class="w-3.5 h-3.5" /> Monetización</p>
             <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Patrocinadores</h1>
             <p class="text-[13px] text-ink-soft mt-1">{{ $tournament->name }}</p>
         </div>

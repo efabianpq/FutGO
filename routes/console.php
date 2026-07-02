@@ -52,3 +52,28 @@ Schedule::command('backup:clean')
     ->dailyAt('03:30')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/backup.log'));
+
+// ─── Eliminación de cuenta (cumplimiento Play Store / App Store) ────────────
+// Reporta cuentas anonimizadas hace 30+ días para revisión manual (no borra
+// filas — ver comentario en PurgeDeletedAccounts sobre FKs cascadeOnDelete).
+Schedule::command('futgo:purge-deleted-accounts')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/purge-accounts.log'));
+
+// ─── Centro de Soporte ──────────────────────────────────────────────────────
+// Monitor de estado de componentes (cada 5 minutos). Actualiza
+// support_service_status y crea tickets internos si algún componente cae.
+Schedule::call(function () {
+    app(\App\Services\Support\StatusMonitorService::class)->runAllChecks();
+})
+    ->name('support-monitor')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/support-monitor.log'));
+
+// Envía emails de satisfacción a tickets resueltos pendientes (cada hora).
+Schedule::command('support:send-satisfaction-emails')
+    ->hourly()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/support-satisfaction.log'));

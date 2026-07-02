@@ -101,7 +101,7 @@
                                     <select name="action" required
                                         class="block w-full rounded-md border border-line px-3 py-2 text-[14px] focus:outline-none focus:ring-1 focus:ring-pitch"
                                         x-model="action" x-data="{ action: '' }">
-                                        <option value="">Elegí una acción…</option>
+                                        <option value="">Elige una acción…</option>
                                         <option value="dismissed">Desestimar (reporte infundado)</option>
                                         <option value="hidden">Ocultar contenido</option>
                                         <option value="suspended">Suspender usuario</option>

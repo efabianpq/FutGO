@@ -66,7 +66,7 @@
             <p class="font-display font-bold text-alerta-deep uppercase text-[14px] mb-1">No se puede cerrar todavía</p>
             <p class="text-[13px] text-ink-soft">
                 Quedan <strong>{{ $pending }}</strong> partido(s) sin finalizar. El cierre debe ser total:
-                cargá todos los resultados antes de cerrar la fase.
+                carga todos los resultados antes de cerrar la fase.
             </p>
             <x-btn :href="route('admin.torneos.partidos.index', $tournament)" variant="ghost" size="sm" class="mt-3">
                 Ir a resultados

@@ -19,7 +19,7 @@
             <span class="text-2xl">⚡</span>
             <h1 class="font-display font-bold text-display-s text-pitch uppercase">Modo rápido</h1>
         </div>
-        <p class="text-ink-soft text-[14px] mt-1">¿Necesitás rival para hoy o mañana? Publicalo en segundos. Vence solo al llegar la fecha.</p>
+        <p class="text-ink-soft text-[14px] mt-1">¿Necesitas rival para hoy o mañana? Publícalo en segundos. Vence solo al llegar la fecha.</p>
     </div>
 
     @if (session('error'))

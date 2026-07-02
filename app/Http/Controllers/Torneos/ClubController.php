@@ -34,7 +34,7 @@ class ClubController extends Controller
             'name'  => ['required', 'string', 'min:3', 'max:80'],
             'color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ], [
-            'name.required' => 'Indicá el nombre del equipo.',
+            'name.required' => 'Indica el nombre del equipo.',
             'color.regex'   => 'El color debe estar en formato hexadecimal (#RRGGBB).',
         ]);
 
@@ -43,7 +43,7 @@ class ClubController extends Controller
             ->whereRaw('LOWER(name) = ?', [Str::lower(trim($data['name']))])
             ->exists();
         if ($dup) {
-            return back()->withErrors(['name' => 'Ya tenés un equipo con ese nombre.'])->withInput();
+            return back()->withErrors(['name' => 'Ya tienes un equipo con ese nombre.'])->withInput();
         }
 
         $club = Club::create([
@@ -62,9 +62,11 @@ class ClubController extends Controller
             'status'              => 'active',
         ]);
 
+        \App\Services\Privacy\AuditLogger::record('team_created', $user, $club, ['name' => $club->name]);
+
         return redirect()
             ->route('torneos.clubes.manage', $club)
-            ->with('status', 'Equipo creado. Ya sos su capitán.');
+            ->with('status', 'Equipo creado. Ya eres su capitán.');
     }
 
     /** Panel de gestión de la plantilla permanente (solo capitán/admin). */
@@ -193,7 +195,7 @@ class ClubController extends Controller
         }
 
         if (! $player) {
-            return back()->withErrors(['user_id' => 'Elegí un jugador de la lista de sugerencias o ingresá un email válido.']);
+            return back()->withErrors(['user_id' => 'Elige un jugador de la lista de sugerencias o ingresa un email válido.']);
         }
 
         if ($club->players()->where('user_id', $player->id)->exists()) {
@@ -225,10 +227,11 @@ class ClubController extends Controller
             'jersey_number' => ['nullable', 'integer', 'min:1', 'max:99'],
             'position'      => ['nullable', 'string', 'max:30'],
         ], [
-            'full_name.required' => 'Indicá el nombre del jugador.',
+            'full_name.required' => 'Indica el nombre del jugador.',
         ]);
 
-        if (! empty($data['document']) && $club->players()->where('document', $data['document'])->exists()) {
+        // `document` está cifrado — el anti-duplicado usa el blind index (document_hash).
+        if (! empty($data['document']) && $club->players()->whereDocument($data['document'])->exists()) {
             return back()->withErrors(['document' => 'Ya hay un jugador con ese documento en la plantilla.']);
         }
 

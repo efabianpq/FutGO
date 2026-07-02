@@ -8,7 +8,7 @@
         <p class="eyebrow">{{ $tournament->name }}</p>
         <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Inscribir un equipo</h1>
         <p class="text-ink-soft text-[14px] mt-2">
-            Elegí uno de tus equipos para inscribirlo en este torneo. Su plantilla actual
+            Elige uno de tus equipos para inscribirlo en este torneo. Su plantilla actual
             se copia al torneo y el organizador deberá aprobar la inscripción.
         </p>
     </div>
@@ -22,8 +22,8 @@
 
     @if ($clubs->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card-2 p-6 text-center">
-            <p class="text-ink-soft">No tenés equipos disponibles para inscribir.</p>
-            <p class="text-[13px] text-ink-mute mt-2">Creá un equipo en «Mis Equipos» y después volvé a inscribirlo.</p>
+            <p class="text-ink-soft">No tienes equipos disponibles para inscribir.</p>
+            <p class="text-[13px] text-ink-mute mt-2">Crea un equipo en «Mis Equipos» y después vuelve a inscribirlo.</p>
             <div class="mt-4 flex justify-center gap-3">
                 <x-btn :href="route('torneos.mis-equipos')" variant="accent">Ir a Mis Equipos</x-btn>
                 <x-btn :href="route('torneos.index')" variant="ghost">Cancelar</x-btn>

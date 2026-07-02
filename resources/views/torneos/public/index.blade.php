@@ -22,7 +22,7 @@
         <p class="eyebrow">Torneos</p>
         <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Buscar Torneo</h1>
         <p class="text-ink-soft text-[14px] mt-1">
-            Descubrí torneos públicos: inscribí tu equipo en los que están abiertos o seguí los que están en juego.
+            Descubre torneos públicos: inscribe tu equipo en los que están abiertos o sigue los que están en juego.
         </p>
     </div>
 
@@ -127,10 +127,10 @@
                                     @if ($isCaptain)
                                         <x-btn :href="route('torneos.equipo.inscribir', $t)" variant="primary" size="sm">Inscribir equipo</x-btn>
                                     @else
-                                        <x-btn :href="route('torneos.mis-equipos')" variant="primary" size="sm">Creá tu equipo para inscribirte</x-btn>
+                                        <x-btn :href="route('torneos.mis-equipos')" variant="primary" size="sm">Crea tu equipo para inscribirte</x-btn>
                                     @endif
                                 @else
-                                    <x-btn :href="route('login')" variant="primary" size="sm">Ingresá para inscribirte</x-btn>
+                                    <x-btn :href="route('login')" variant="primary" size="sm">Ingresa para inscribirte</x-btn>
                                 @endauth
                             </div>
                             @if ($t->max_teams > 0)

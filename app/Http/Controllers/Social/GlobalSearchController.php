@@ -30,9 +30,12 @@ class GlobalSearchController extends Controller
             $like = '%' . $term . '%';
 
             // Jugadores: solo identidades públicas (con futgo_id). Nunca email/tel.
+            // Respeta privacy_settings: excluye a quien desactivó searchable o
+            // public_profile (si no tiene fila, cuenta como visible — defaults).
             $players = User::query()
                 ->whereNotNull('futgo_id')
                 ->where(fn ($q) => $q->where('name', 'like', $like)->orWhere('futgo_id', 'like', $like))
+                ->whereDoesntHave('privacySetting', fn ($q) => $q->where('searchable', false)->orWhere('public_profile', false))
                 ->orderBy('name')
                 ->limit(self::PER_GROUP)
                 ->get(['id', 'name', 'futgo_id', 'avatar_url', 'city', 'play_level']);

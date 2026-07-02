@@ -109,7 +109,7 @@
                        class="w-[18px] h-[18px] rounded-sm accent-pitch border-line mt-0.5">
                 <div>
                     <span class="text-ink">Recibir mensajes directos de otros jugadores</span>
-                    <p class="text-[12px] text-ink-mute mt-0.5">Si lo desactivás, los demás no podrán iniciarte conversaciones desde tu ficha pública.</p>
+                    <p class="text-[12px] text-ink-mute mt-0.5">Si lo desactivas, los demás no podrán iniciarte conversaciones desde tu ficha pública.</p>
                 </div>
             </label>
 
@@ -117,6 +117,16 @@
                 <x-btn type="submit" variant="primary">Guardar cambios</x-btn>
             </div>
         </form>
+    </div>
+
+    {{-- Privacidad y eliminación de cuenta → Centro de Privacidad --}}
+    <div id="eliminar-cuenta" class="bg-white border border-line rounded-md shadow-card p-6 sm:p-8 mt-6 scroll-mt-24">
+        <h2 class="font-display font-bold text-display-s text-ink mb-2">Privacidad y datos</h2>
+        <p class="text-[13px] text-ink-soft mb-4">Gestiona tu privacidad, descarga tus datos, revisa tus consentimientos y elimina tu cuenta desde el Centro de Privacidad.</p>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ route('privacidad.centro') }}" class="btn btn-secondary">Centro de Privacidad</a>
+            <a href="{{ route('privacidad.eliminar') }}" class="btn btn-ghost text-alerta">Eliminar mi cuenta</a>
+        </div>
     </div>
 </div>
 @endsection

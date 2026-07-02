@@ -79,7 +79,7 @@
                     Ganaste {{ $levelSuggestion['wins'] }} amistosos contra equipos de nivel superior siendo
                     <strong>{{ $lvlSug[$levelSuggestion['current_level']] ?? $levelSuggestion['current_level'] }}</strong>.
                     Te sugerimos recategorizar a <strong>{{ $lvlSug[$levelSuggestion['suggested_level']] ?? $levelSuggestion['suggested_level'] }}</strong>.
-                    Es solo un aviso — vos decidís.
+                    Es solo un aviso — tú decides.
                 </p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
@@ -262,7 +262,7 @@
         <div class="mt-6 p-4 {{ ($reliabilityForOwner->score >= 80) ? 'bg-gol/10 border-gol/30' : 'bg-white border-line' }} border rounded-md shadow-card flex items-center gap-3">
             <span class="font-display font-bold text-2xl {{ ($reliabilityForOwner->score >= 80) ? 'text-gol-deep' : 'text-pitch' }}">{{ $reliabilityForOwner->score }}</span>
             <div>
-                <p class="font-display font-semibold text-pitch text-[14px]">Score de confiabilidad del equipo <span class="text-[11px] font-mono text-ink-mute">(visible solo para vos)</span></p>
+                <p class="font-display font-semibold text-pitch text-[14px]">Score de confiabilidad del equipo <span class="text-[11px] font-mono text-ink-mute">(visible solo para ti)</span></p>
                 @if ($reliabilityForOwner->is_paused)
                     <p class="text-alerta text-[12px]">Equipo pausado por no-shows acumulados.</p>
                 @else

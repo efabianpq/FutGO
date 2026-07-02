@@ -45,12 +45,26 @@ class PlayerPublicController extends Controller
             ])
             ->firstOrFail();
 
+        // Configuración de privacidad del jugador (sin persistir en lectura).
+        $privacy = $player->privacySetting;
+        $authUser = auth()->user();
+        $isOwnerOrAdmin = $authUser && ($authUser->id === $player->id || $authUser->isAdmin());
+
+        // Perfil no público: 404 salvo para el dueño o un admin.
+        abort_if($privacy && ! $privacy->public_profile && ! $isOwnerOrAdmin, 404);
+
+        // Toggles de visibilidad: si están apagados, no se pasa el dato a la vista.
+        if ($privacy && ! $privacy->show_city && ! $isOwnerOrAdmin) {
+            $player->city = null;
+        }
+
         // Perfil suspendido: aún visible para no dar info de si existe, pero con
         // señal discreta (sin datos sensibles adicionales).
         $isSuspended = $player->isSuspended();
 
-        // Career stats (acumulado histórico).
-        $career = PlayerCareerStat::where('user_id', $player->id)->first();
+        // Career stats (acumulado histórico) — respeta show_stats.
+        $showStats = $isOwnerOrAdmin || ! $privacy || $privacy->show_stats;
+        $career = $showStats ? PlayerCareerStat::where('user_id', $player->id)->first() : null;
 
         // Logros desbloqueados (ordenados por fecha de obtención).
         $achievements = $player->achievements()
@@ -58,7 +72,9 @@ class PlayerPublicController extends Controller
             ->get(['achievements.id', 'name', 'description', 'icon', 'user_achievements.awarded_at']);
 
         // Historial de temporadas (torneos en los que participó con stats).
-        $seasons = TeamPlayer::where('user_id', $player->id)
+        // Respeta show_history.
+        $showHistory = $isOwnerOrAdmin || ! $privacy || $privacy->show_history;
+        $seasons = $showHistory ? TeamPlayer::where('user_id', $player->id)
             ->with([
                 'team:id,tournament_id,club_id',
                 'team.tournament:id,name,slug,status',
@@ -68,7 +84,7 @@ class PlayerPublicController extends Controller
             ->get()
             ->filter(fn ($tp) => $tp->team?->tournament !== null)
             ->sortByDesc(fn ($tp) => $tp->team->tournament->created_at)
-            ->values();
+            ->values() : collect();
 
         // Oportunidades BUSCAR_EQUIPO abiertas: este jugador busca equipo.
         $openOpportunities = Opportunity::query()

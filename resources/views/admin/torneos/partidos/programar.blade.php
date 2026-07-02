@@ -42,7 +42,7 @@
             <input type="datetime-local" id="scheduled_at" name="scheduled_at"
                    value="{{ old('scheduled_at', $match->scheduled_at?->format('Y-m-d\TH:i')) }}"
                    class="w-full border border-line rounded-md px-3 py-2 text-[14px] font-mono focus:outline-none focus:border-pitch">
-            <p class="text-[11px] text-ink-mute mt-1">Dejá vacío si todavía no hay fecha definida.</p>
+            <p class="text-[11px] text-ink-mute mt-1">Deja vacío si todavía no hay fecha definida.</p>
         </div>
 
         {{-- Sede --}}
@@ -63,7 +63,7 @@
                     <option value="{{ $value }}" @selected(old('status', $match->status) === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <p class="text-[11px] text-ink-mute mt-1">Para finalizar el partido, cargá el resultado desde la ficha del partido.</p>
+            <p class="text-[11px] text-ink-mute mt-1">Para finalizar el partido, carga el resultado desde la ficha del partido.</p>
         </div>
 
         {{-- Observaciones --}}

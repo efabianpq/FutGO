@@ -151,7 +151,7 @@
         </div>
         @if ($playedWith->isEmpty())
             <div class="p-6 text-center text-ink-soft text-[14px]">
-                Todavía no compartiste cancha con otros jugadores registrados. Se completa solo cuando jugás partidos.
+                Todavía no compartiste cancha con otros jugadores registrados. Se completa solo cuando juegas partidos.
             </div>
         @else
             <ul class="divide-y divide-line-soft">
@@ -332,7 +332,7 @@
             <div class="sm:col-span-2">
                 @if ($activeSuspensions->isNotEmpty())
                     <div class="bg-alerta/10 border-b border-line px-4 py-3">
-                        <p class="font-display font-semibold text-alerta text-[13px]">Tenés {{ $activeSuspensions->count() }} suspensión(es) vigente(s) por tarjeta roja.</p>
+                        <p class="font-display font-semibold text-alerta text-[13px]">Tienes {{ $activeSuspensions->count() }} suspensión(es) vigente(s) por tarjeta roja.</p>
                     </div>
                 @endif
                 @if ($disciplinary->isEmpty())

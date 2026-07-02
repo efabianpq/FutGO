@@ -47,9 +47,9 @@
 
     @if ($myClubs->isEmpty())
         <div class="mb-4 bg-amber-50 border border-amber-300 text-amber-800 px-4 py-3 rounded-md text-[13px]">
-            Para publicar como equipo (buscar rival/jugador/refuerzo) primero necesitás
+            Para publicar como equipo (buscar rival/jugador/refuerzo) primero necesitas
             <a href="{{ route('torneos.mis-equipos') }}" class="underline font-semibold">crear un equipo y ser su capitán</a>.
-            Igual podés publicarte como <strong>jugador disponible</strong>.
+            Igual puedes publicarte como <strong>jugador disponible</strong>.
         </div>
     @endif
 
@@ -62,7 +62,7 @@
 
         {{-- Tipo --}}
         <div class="flex flex-col gap-1">
-            <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">¿Qué necesitás?</label>
+            <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">¿Qué necesitas?</label>
             <select name="type" x-model="type" class="h-[42px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px]">
                 @foreach ($types as $t)
                     <option value="{{ $t }}">{{ \App\Models\Social\Opportunity::TYPE_LABELS[$t] }}</option>
@@ -72,9 +72,9 @@
 
         {{-- Club (RIVAL/JUGADOR/REFUERZO) --}}
         <div class="flex flex-col gap-1" x-show="type !== 'BUSCAR_EQUIPO'" x-cloak>
-            <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Equipo (capitaneás)</label>
+            <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Equipo (capitaneas)</label>
             <select name="club_id" class="h-[42px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px]">
-                <option value="">Elegí tu equipo…</option>
+                <option value="">Elige tu equipo…</option>
                 @foreach ($myClubs as $club)
                     <option value="{{ $club->id }}" @selected(old('club_id') == $club->id)>{{ $club->name }}</option>
                 @endforeach
@@ -124,7 +124,7 @@
                 <div class="flex flex-col gap-1">
                     <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Cancha (texto libre, si no está en el catálogo)</label>
                     <input type="text" name="cancha_propuesta" value="{{ old('cancha_propuesta') }}" maxlength="255"
-                           placeholder="Alternativa si no encontrás la cancha arriba"
+                           placeholder="Alternativa si no encuentras la cancha arriba"
                            class="h-[42px] px-3 bg-white border-[1.5px] border-line rounded-md text-[14px]">
                 </div>
             </div>
@@ -188,7 +188,7 @@
         {{-- Descripción libre --}}
         <div class="flex flex-col gap-1">
             <label class="font-mono text-[10.5px] tracking-wide-label uppercase text-ink-mute">Descripción</label>
-            <textarea name="descripcion" rows="3" maxlength="1000" placeholder="Contá un poco más…"
+            <textarea name="descripcion" rows="3" maxlength="1000" placeholder="Cuenta un poco más…"
                       class="px-3 py-2 bg-white border-[1.5px] border-line rounded-md text-[14px]">{{ old('descripcion') }}</textarea>
         </div>
 

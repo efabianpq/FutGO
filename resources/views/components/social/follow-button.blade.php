@@ -21,9 +21,9 @@
                 class="btn btn-{{ $size }} {{ $following ? 'btn-secondary' : 'btn-primary' }}"
                 title="{{ $following ? 'Dejar de seguir' : 'Seguir para recibir novedades en tu Feed' }}">
             @if ($following)
-                ✓ Siguiendo
+                <x-icon name="check" class="w-4 h-4 inline -mt-0.5" /> Siguiendo
             @else
-                + Seguir
+                <x-icon name="plus" class="w-4 h-4 inline -mt-0.5" /> Seguir
             @endif
             @if ($count > 0)
                 <span class="opacity-70 font-mono text-[11px]">· {{ $count }}</span>

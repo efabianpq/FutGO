@@ -20,7 +20,7 @@ class TeamHubController extends Controller
         if (! $team) {
             return redirect()
                 ->route('torneos.equipo.inscribir', $tournament)
-                ->with('error', 'Todavía no tenés un equipo en este torneo.');
+                ->with('error', 'Todavía no tienes un equipo en este torneo.');
         }
 
         $team->load([

@@ -61,7 +61,7 @@
                     <div class="min-w-0 flex-1">
                         <p class="font-display font-semibold text-text text-[14px] truncate">{{ $item->title }}</p>
                         <p class="font-mono text-[11px] text-muted truncate">
-                            {{ $item->status === 'convocatoria_pendiente' ? 'Te convocaron — confirmá tu asistencia' : 'Ya se jugó — cargá el resultado' }}
+                            {{ $item->status === 'convocatoria_pendiente' ? 'Te convocaron — confirma tu asistencia' : 'Ya se jugó — carga el resultado' }}
                         </p>
                     </div>
                     @if ($item->status === 'convocatoria_pendiente')
@@ -95,7 +95,7 @@
             @if ($grouped->isEmpty())
                 <div class="bg-surface border border-border rounded-md p-8 text-center">
                     <p class="text-3xl mb-2">📭</p>
-                    <p class="font-display font-semibold text-text text-[15px]">No tenés nada programado próximamente.</p>
+                    <p class="font-display font-semibold text-text text-[15px]">No tienes nada programado próximamente.</p>
                     <p class="text-muted text-[13px] mt-1">Cuando te convoquen, confirmes un amistoso o publiques una oportunidad, aparece acá.</p>
                     <div class="mt-4 flex justify-center gap-2">
                         <a href="{{ route('social.oportunidades.index') }}" class="btn btn-primary btn-sm">Ver oportunidades</a>
@@ -153,7 +153,7 @@
             {{-- Sugeridas (oportunidades de tu ciudad) --}}
             <div>
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-display font-bold text-text text-[16px]">Sugeridas para vos</h2>
+                    <h2 class="font-display font-bold text-text text-[16px]">Sugeridas para ti</h2>
                     <a href="{{ route('social.oportunidades.index') }}" class="font-mono text-[12px] text-muted hover:text-text">Más →</a>
                 </div>
 
@@ -176,7 +176,7 @@
                             @if ($user->city)
                                 No hay oportunidades activas en {{ $user->city }} por ahora.
                             @else
-                                Agregá tu ciudad en el perfil para ver oportunidades cerca tuyo.
+                                Agrega tu ciudad en el perfil para ver oportunidades cerca de ti.
                             @endif
                         </p>
                         @unless ($user->city)
@@ -207,7 +207,7 @@
                     </div>
                 @else
                     <div class="bg-surface border border-border rounded-md p-4 text-center">
-                        <p class="text-muted text-[13px]">Seguí equipos, jugadores y torneos para llenar tu feed de novedades.</p>
+                        <p class="text-muted text-[13px]">Sigue equipos, jugadores y torneos para llenar tu feed de novedades.</p>
                     </div>
                 @endif
             </div>

@@ -5,13 +5,13 @@
 
 @php
 $eventLabels = [
-    'goal'             => ['⚽', 'Gol'],
-    'own_goal'         => ['🔴', 'Gol en contra'],
-    'assist'           => ['👟', 'Asistencia'],
-    'yellow_card'      => ['🟨', 'Amarilla'],
-    'red_card'         => ['🟥', 'Roja'],
-    'substitution_in'  => ['↗', 'Entró'],
-    'substitution_out' => ['↙', 'Salió'],
+    'goal'             => ['ball', 'text-pitch', 'Gol'],
+    'own_goal'         => ['ball', 'text-alerta', 'Gol en contra'],
+    'assist'           => ['assist', 'text-pitch', 'Asistencia'],
+    'yellow_card'      => ['card', 'text-warning', 'Amarilla'],
+    'red_card'         => ['card', 'text-alerta', 'Roja'],
+    'substitution_in'  => ['sub-in', 'text-pitch', 'Entró'],
+    'substitution_out' => ['sub-out', 'text-ink-mute', 'Salió'],
 ];
 @endphp
 
@@ -71,7 +71,7 @@ $eventLabels = [
                 <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->assists }}</p>
             </div>
             <div class="bg-white border border-line rounded-md shadow-card-2 p-4 text-center">
-                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">⭐ Figuras</p>
+                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute flex items-center justify-center gap-1"><x-icon name="star" class="w-3 h-3" /> Figuras</p>
                 <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->mvps }}</p>
             </div>
         </div>
@@ -84,11 +84,11 @@ $eventLabels = [
                 </p>
             </div>
             <div class="bg-white border border-line rounded-md shadow-card-2 p-4 text-center">
-                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">🟨 Amarillas</p>
+                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute flex items-center justify-center gap-1"><x-icon name="card" class="w-3 h-3 text-warning" /> Amarillas</p>
                 <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->yellow_cards }}</p>
             </div>
             <div class="bg-white border border-line rounded-md shadow-card-2 p-4 text-center">
-                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">🟥 Rojas</p>
+                <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute flex items-center justify-center gap-1"><x-icon name="card" class="w-3 h-3 text-alerta" /> Rojas</p>
                 <p class="font-display font-extrabold text-3xl text-pitch mt-1">{{ $stat->red_cards }}</p>
             </div>
             <div class="bg-white border border-line rounded-md shadow-card-2 p-4 text-center">
@@ -146,9 +146,9 @@ $eventLabels = [
                     @if ($events->isNotEmpty())
                         <div class="flex flex-wrap gap-2 mt-2">
                             @foreach ($events as $ev)
-                                @php [$icon, $label] = $eventLabels[$ev->type] ?? ['·', $ev->type]; @endphp
+                                @php [$icon, $iconColor, $label] = $eventLabels[$ev->type] ?? [null, 'text-ink-mute', $ev->type]; @endphp
                                 <span class="inline-flex items-center gap-1 font-mono text-[11px] bg-bone border border-line rounded px-2 py-0.5">
-                                    {{ $icon }} {{ $label }} {{ $ev->minute }}'
+                                    @if ($icon)<x-icon :name="$icon" class="w-3.5 h-3.5 {{ $iconColor }}" />@endif {{ $label }} {{ $ev->minute }}'
                                 </span>
                             @endforeach
                         </div>

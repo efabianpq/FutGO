@@ -23,7 +23,7 @@ class RegistrationConfirmationNotification extends Notification
             ->subject("¡Bienvenido a FutGO, {$firstName}!")
             ->greeting("¡Hola {$firstName}, bienvenido a FutGO!")
             ->line('Tu cuenta ya está lista para usarse.')
-            ->line('Ya podés crear o inscribirte en torneos, armar tu equipo y conectar con la comunidad de fútbol amateur.')
+            ->line('Ya puedes crear o inscribirte en torneos, armar tu equipo y conectar con la comunidad de fútbol amateur.')
             ->action('Ir a FutGO', url('/dashboard'))
             ->salutation('— El equipo de FutGO');
     }

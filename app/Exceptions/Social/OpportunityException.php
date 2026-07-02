@@ -35,7 +35,7 @@ class OpportunityException extends RuntimeException
     /** Excepción tipada para suspensión por moderación. */
     public static function suspended(): self
     {
-        return (new self('Tu cuenta está suspendida y no podés realizar esta acción.'))
+        return (new self('Tu cuenta está suspendida y no puedes realizar esta acción.'))
             ->withSuspended();
     }
 

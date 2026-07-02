@@ -17,7 +17,7 @@
         </h2>
 
         <p class="text-[18px] text-muted max-w-[48ch] mx-auto mb-8 leading-relaxed">
-            Creá tu primer torneo gratis. Sin tarjeta, sin instalar nada.
+            Crea tu primer torneo gratis. Sin tarjeta, sin instalar nada.
             Listo para tu próxima jornada.
         </p>
 

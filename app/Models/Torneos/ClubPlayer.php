@@ -2,6 +2,7 @@
 
 namespace App\Models\Torneos;
 
+use App\Models\Concerns\HasHashedDocument;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,12 +14,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ClubPlayer extends Model
 {
+    use HasHashedDocument;
+
     protected $fillable = [
         'club_id',
         'user_id',
         'is_captain',
         'full_name',
         'document',
+        'document_hash',
         'verification_status',
         'jersey_number',
         'position',
@@ -27,6 +31,7 @@ class ClubPlayer extends Model
 
     protected $casts = [
         'is_captain' => 'boolean',
+        'document'   => 'encrypted',
     ];
 
     public function club(): BelongsTo

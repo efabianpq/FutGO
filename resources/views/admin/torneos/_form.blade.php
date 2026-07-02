@@ -218,13 +218,13 @@
                     <input type="number" id="classifies_liga" min="0" max="64"
                            value="{{ old('classifies_per_group', $tournament->classifies_per_group ?? 4) }}" class="{{ $numCls('classifies_per_group') }}"
                            x-bind:name="format === 'liga' ? 'classifies_per_group' : ''">
-                    <p class="text-[12px] text-ink-mute mt-1">Potencia de 2 (2, 4, 8...). Usá 0 o 1 para liga sin eliminatoria.</p>
+                    <p class="text-[12px] text-ink-mute mt-1">Potencia de 2 (2, 4, 8...). Usa 0 o 1 para liga sin eliminatoria.</p>
                     @error('classifies_per_group')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
                 </div>
             </div>
             <p class="text-[12px] text-ink-mute mt-2">
-                En liga vos armás el calendario: agregás partidos a mano o auto-generás todos contra todos,
-                y luego generás la eliminatoria con los mejores de la tabla.
+                En liga tú armas el calendario: agregas partidos a mano o auto-generas todos contra todos,
+                y luego generas la eliminatoria con los mejores de la tabla.
             </p>
             @error('max_teams')<p class="text-[12px] text-alerta">{{ $message }}</p>@enderror
         </div>
@@ -419,7 +419,7 @@
     {{-- ══ SECCIÓN 6 — ESTADÍSTICAS A TRACKEAR ══════════════════════════════ --}}
     <section class="border-t border-line-soft pt-8">
         <p class="font-display font-bold text-pitch uppercase text-[16px] mb-1">6 · Estadísticas a trackear</p>
-        <p class="text-[12px] text-ink-mute mb-4">Elegí qué métricas individuales se registran. (Victorias, empates, derrotas y vallas invictas se calculan siempre.)</p>
+        <p class="text-[12px] text-ink-mute mb-4">Elige qué métricas individuales se registran. (Victorias, empates, derrotas y vallas invictas se calculan siempre.)</p>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             @foreach ($statLabels as $key => $label)

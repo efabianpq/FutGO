@@ -357,7 +357,7 @@ class PublicPortalTest extends TestCase
         $res->assertSee('Todos contra todos');       // formato traducido
         $res->assertSee('Trofeo + 1.000.000');       // premio
         $res->assertSee('Reglamento oficial FutGO.'); // reglamento
-        $res->assertSee('Ingresá para inscribir tu equipo'); // CTA inscripción (guest)
+        $res->assertSee('Ingresa para inscribir tu equipo'); // CTA inscripción (guest)
     }
 
     public function test_admin_de_plataforma_ve_torneos_privados_en_buscar(): void

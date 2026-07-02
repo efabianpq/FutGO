@@ -2,6 +2,7 @@
 
 namespace App\Models\Torneos;
 
+use App\Models\Concerns\HasHashedDocument;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,12 +12,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class TeamPlayer extends Model
 {
+    use HasHashedDocument;
+
     protected $fillable = [
         'team_id',
         'user_id',
         'is_captain',
         'full_name',
         'document',
+        'document_hash',
         'verification_status',
         'jersey_number',
         'position',
@@ -25,6 +29,7 @@ class TeamPlayer extends Model
 
     protected $casts = [
         'is_captain' => 'boolean',
+        'document'   => 'encrypted',
     ];
 
     public function team(): BelongsTo

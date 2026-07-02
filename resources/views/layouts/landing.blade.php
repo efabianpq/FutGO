@@ -96,6 +96,13 @@
                     <a href="{{ route('register') }}" class="text-[14px] font-semibold text-muted hover:text-text transition-all">Crear cuenta</a>
                 @endguest
             </div>
+            <div class="w-full flex flex-wrap gap-x-5 gap-y-2 pt-4 mt-2 border-t border-border">
+                <a href="{{ route('privacidad') }}" class="text-[13px] text-muted hover:text-text transition-all">Privacidad</a>
+                <a href="{{ route('terminos') }}"   class="text-[13px] text-muted hover:text-text transition-all">Términos y condiciones</a>
+                <a href="{{ route('cookies') }}"    class="text-[13px] text-muted hover:text-text transition-all">Cookies</a>
+                <a href="{{ route('contenido') }}"  class="text-[13px] text-muted hover:text-text transition-all">Política de contenido</a>
+                <a href="{{ route('menores') }}"    class="text-[13px] text-muted hover:text-text transition-all">Menores</a>
+            </div>
             <span class="font-mono text-[12px] text-subtle">© {{ date('Y') }} FutGO · Donde crece el fútbol amateur</span>
         </div>
     </footer>

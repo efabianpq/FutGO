@@ -22,7 +22,7 @@
         <div>
             <p class="eyebrow">FutGO Social</p>
             <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Tu Feed</h1>
-            <p class="text-ink-soft text-[14px] mt-1">Lo que pasa con los equipos, jugadores y torneos que seguís — y las oportunidades de tu ciudad.</p>
+            <p class="text-ink-soft text-[14px] mt-1">Lo que pasa con los equipos, jugadores y torneos que sigues — y las oportunidades de tu ciudad.</p>
         </div>
         <a href="{{ route('social.oportunidades.index') }}" class="btn btn-secondary btn-sm">Ver oportunidades</a>
     </div>
@@ -84,9 +84,9 @@
             <p class="font-display font-semibold text-ink">Tu Feed todavía está tranquilo</p>
             <p class="text-ink-soft text-[14px] mt-1">
                 @if ($hasCity)
-                    Seguí equipos, jugadores y torneos para llenarlo. Mientras tanto, mirá lo que se mueve en tu ciudad:
+                    Sigue equipos, jugadores y torneos para llenarlo. Mientras tanto, mira lo que se mueve en tu ciudad:
                 @else
-                    Agregá tu ciudad en el perfil y seguí equipos o torneos para recibir novedades.
+                    Agrega tu ciudad en el perfil y sigue equipos o torneos para recibir novedades.
                 @endif
             </p>
         </div>

@@ -72,7 +72,7 @@
 
     {{-- Aviso de privacidad --}}
     <div class="mb-4 bg-bone border border-line rounded-md px-4 py-3 text-[12px] text-ink-soft">
-        Compartí tu teléfono o WhatsApp solo si querés. FutGO nunca lo muestra por vos: queda como un mensaje más.
+        Comparte tu teléfono o WhatsApp solo si quieres. FutGO nunca lo muestra por ti: queda como un mensaje más.
     </div>
 
     {{-- Hilo de mensajes --}}
@@ -121,7 +121,7 @@
                 </div>
             @endif
         @empty
-            <p class="text-ink-mute text-[13px] text-center py-4">Todavía no hay mensajes. Escribí el primero.</p>
+            <p class="text-ink-mute text-[13px] text-center py-4">Todavía no hay mensajes. Escribe el primero.</p>
         @endforelse
         <span id="fin"></span>
     </div>
@@ -130,7 +130,7 @@
     <form method="POST" action="{{ route('social.conversaciones.store', $conversation) }}" class="flex flex-col gap-2">
         @csrf
         <textarea name="body" rows="3" maxlength="{{ $maxBody }}" required
-                  placeholder="Escribí un mensaje…"
+                  placeholder="Escribe un mensaje…"
                   class="input w-full resize-y">{{ old('body') }}</textarea>
         <div class="flex items-center justify-end gap-2">
             <button type="submit" form="share-contact-form" class="btn btn-ghost btn-sm">Compartir mi contacto</button>

@@ -33,8 +33,11 @@ class RegisterWithPhoneTest extends TestCase
         $base = [
             'nombre' => 'Juan', 'apellido' => 'Pérez',
             'email' => 'juan@test.com',
+            'birthdate' => '1990-01-01',
             'password' => 'SuperSecret123',
             'password_confirmation' => 'SuperSecret123',
+            'accept_terms' => '1',
+            'accept_privacy' => '1',
         ];
 
         // Solo 6 dígitos: error

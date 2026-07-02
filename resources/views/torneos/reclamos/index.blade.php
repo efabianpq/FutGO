@@ -17,14 +17,14 @@
         <p class="eyebrow">Mi perfil</p>
         <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Reclamar mi perfil</h1>
         <p class="text-ink-soft text-[14px] mt-1">
-            Si un capitán te anotó en un equipo sin que tuvieras cuenta, acá podés reclamar ese registro
+            Si un capitán te anotó en un equipo sin que tuvieras cuenta, acá puedes reclamar ese registro
             para heredar tu historial (partidos, goles, tarjetas) y obtener tu credencial digital.
         </p>
     </div>
 
     @if (empty(auth()->user()->document))
         <div class="bg-white border border-line rounded-md shadow-card p-6 text-center text-ink-soft text-[14px]">
-            Cargá tu documento en tu <a href="{{ route('profile.show') }}" class="text-pitch font-semibold hover:underline">perfil</a>
+            Carga tu documento en tu <a href="{{ route('profile.show') }}" class="text-pitch font-semibold hover:underline">perfil</a>
             para que podamos buscar registros a tu nombre.
         </div>
     @endif

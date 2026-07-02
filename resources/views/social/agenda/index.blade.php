@@ -23,7 +23,7 @@
         <div>
             <p class="eyebrow">FutGO</p>
             <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mi agenda</h1>
-            <p class="font-mono text-[12px] text-ink-mute mt-1">Todo lo que tenés programado o pendiente, en un solo lugar.</p>
+            <p class="font-mono text-[12px] text-ink-mute mt-1">Todo lo que tienes programado o pendiente, en un solo lugar.</p>
         </div>
         <a href="{{ route('torneos.mi-carrera') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Mi carrera</a>
     </div>
@@ -37,7 +37,7 @@
 
     @if ($total === 0)
         <div class="bg-white border border-line rounded-md shadow-card p-8 text-center">
-            <p class="font-display font-semibold text-pitch text-[16px]">No tenés nada agendado por ahora.</p>
+            <p class="font-display font-semibold text-pitch text-[16px]">No tienes nada agendado por ahora.</p>
             <p class="text-ink-soft text-[13px] mt-2">Cuando seas convocado a un partido, confirmes un amistoso o publiques una oportunidad, vas a verlo acá.</p>
             <div class="mt-4 flex justify-center gap-2">
                 <a href="{{ route('social.oportunidades.index') }}" class="btn btn-primary btn-sm">Ver oportunidades</a>
@@ -76,7 +76,7 @@
                                     @if ($item->kind === SportsAgendaService::KIND_TOURNAMENT_MATCH)
                                         <div class="mt-2 flex items-center gap-3 flex-wrap">
                                             @if ($item->status === 'convocatoria_pendiente')
-                                                <span class="font-mono text-[11px] text-gol-deep">¡Estás convocado! Respondé:</span>
+                                                <span class="font-mono text-[11px] text-gol-deep">¡Estás convocado! Responde:</span>
                                                 <form method="POST" action="{{ route('torneos.convocatoria.respond', [$item->tournament, $item->match]) }}" class="inline">
                                                     @csrf <input type="hidden" name="response" value="confirmado">
                                                     <button type="submit" class="font-display font-bold text-[12px] uppercase text-gol-deep hover:underline tracking-wide-cta">Confirmar</button>
@@ -98,7 +98,7 @@
                                     @elseif ($item->kind === SportsAgendaService::KIND_FRIENDLY)
                                         <div class="mt-2 flex items-center gap-3 flex-wrap">
                                             @if ($item->status === 'resultado_pendiente')
-                                                <span class="font-mono text-[11px] text-amber-700">Ya se jugó: cargá el resultado.</span>
+                                                <span class="font-mono text-[11px] text-amber-700">Ya se jugó: carga el resultado.</span>
                                                 <a href="{{ route('social.amistosos.index') }}" class="font-display font-bold text-[12px] uppercase text-pitch hover:underline tracking-wide-cta">Cargar resultado →</a>
                                             @else
                                                 <x-badge variant="win">Amistoso confirmado</x-badge>

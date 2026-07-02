@@ -128,7 +128,8 @@ class ClubMembershipService
             return $q->where('user_id', $member->user_id)->first();
         }
         if (! empty($member->document)) {
-            return $q->where('document', $member->document)->first();
+            // `document` está cifrado — se busca por el blind index (document_hash).
+            return $q->whereDocument($member->document)->first();
         }
         return $q->whereNull('user_id')->where('full_name', $member->full_name)->first();
     }

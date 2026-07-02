@@ -25,8 +25,11 @@ class AuthFlowTest extends TestCase
             'apellido' => 'Pachón',
             'email' => 'lionel.pachon@test.com',
             'telefono' => '3001234567',
+            'birthdate' => '1990-01-01',
             'password' => 'SuperSecret123',
             'password_confirmation' => 'SuperSecret123',
+            'accept_terms' => '1',
+            'accept_privacy' => '1',
         ]);
 
         // 2. Queda logueado y con acceso inmediato, sin código de activación.

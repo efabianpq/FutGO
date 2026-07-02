@@ -27,7 +27,7 @@ URL local: `http://futgo.test:8080`
 | Backups | `spatie/laravel-backup` — `backup:run --only-db` diario 03:00 + `backup:clean` 03:30, rotación 7 días, opcional a R2 |
 | Imágenes | GD (tarjetas PNG) con fallback a SVG si no está disponible |
 | Scheduler | 1 cron/minuto (Hostinger) → `scheduler.sh` → `php artisan schedule:run` |
-| Tests | PHPUnit, **510 tests passing** |
+| Tests | PHPUnit, **543 tests passing** |
 
 ### Comandos frecuentes
 ```
@@ -44,7 +44,7 @@ $env:Path = "C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64;C:\laragon\bin\compose
 ```
 
 ### Convenciones
-- Idioma: español, voseo (tanto en UI como en mensajes de commit).
+- Idioma: español neutro, tuteo (tú/puedes) — sin voseo ni regionalismos. Aplica a UI, notificaciones, seeders de contenido y mensajes de commit.
 - Commits: `tipo: descripción corta en español`.
 - `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>`.
 
@@ -63,6 +63,7 @@ $env:Path = "C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64;C:\laragon\bin\compose
 | **Deuda técnica TX-2** | ✅ resuelta — tarjetas PNG / WhatsApp / OG tags |
 | **Navegación v3 (UX-1)** | ✅ completa — nav agrupado + dashboard de Inicio + buscador global |
 | **Producción / seguridad (P-0, P-1)** | ✅ checklist resuelto |
+| **Centro de Privacidad (Ley 1581/2012)** | ✅ completo — ver §12 |
 
 Visión y roadmap original de Social en `PROPUESTA_FUTGO_SOCIAL_v3.md`. Historial sesión por sesión en `docs/HISTORIAL_SESIONES.md`.
 
@@ -376,6 +377,30 @@ Sin migraciones. Rediseño de navegación: de 11 enlaces planos a 4 dominios + h
 Con término ≥2 caracteres cruza Jugadores (nunca expone email/teléfono/documento) / Clubes / Torneos (`visibility=public`) / Canchas activas. Máx 8 por grupo.
 
 > ⚠️ Gotcha Blade: `@if` pegado a una palabra (`Cancha@if(...)`) no compila como directiva pero su `@endif` sí, dejando un `endif` huérfano. Usar ternario o separar con carácter no-palabra.
+
+---
+
+## 12. Centro de Privacidad — cumplimiento Ley 1581/2012 (Colombia)
+
+Módulo transversal de protección de datos. Namespaces `App\{Models,Services,Http\Controllers}\Privacy\*`. Plan completo en `docs/PLAN_CENTRO_PRIVACIDAD.md`; operación en `docs/OPERACIONES.md`; clasificación de datos en `docs/CLASIFICACION_DATOS.md`. Config en `config/privacy.php` (edad mínima 14, flag `PRIVACY_PARENTAL_CONSENT`, gracia 30d, contacto `privacidad@futgo.com.co`).
+
+**Modelo de datos** (migraciones `2026_07_02_0000NN`): `legal_documents` (versionado inmutable de los 5 docs), `user_consents` (prueba append-only: versión+IP+UA), `privacy_settings` (1:1, toggles de visibilidad), `audit_logs` (append-only), `data_requests` (export/delete). En `users`: `birthdate`, `document_hash`, `current_{privacy,terms}_version`, `guardian_email`, `pending_guardian_consent`.
+
+**Documentos legales**: 5 tipos (privacy/terms/cookies/content/minors) servidos desde BD por `LegalController` en `/privacidad /terminos /cookies /contenido /menores`. Admin en `/admin/legal` (`LegalDocumentService::publish` → una sola versión vigente por tipo, dispara re-consent). Seeder `LegalDocumentsSeeder`.
+
+**Consentimiento**: checkboxes obligatorios (términos+privacidad) + opcional (marketing) en registro; `ConsentService::recordRegistration`. Middleware `EnsureConsentUpToDate` fuerza re-aceptar al cambiar versión (whitelist logout + pantalla + legales).
+
+**Cifrado**: `document`+`phone_whatsapp` con cast `encrypted` (NO existe `AsEncryptedString` escalar en L11). Blind index `document_hash` (HMAC vía `DocumentHasher`) para dedupe/reclamo; trait `HasHashedDocument` en User/ClubPlayer/TeamPlayer. Columnas ensanchadas a TEXT. Comando `futgo:encrypt-sensitive` para datos preexistentes.
+
+**Centro de Privacidad** (`/privacidad/centro`, entrada en dropdown avatar): configuración (toggles), consentimientos (+marketing), sesiones/dispositivos (`SessionService`), actividad (`audit_logs`), exportar datos (`PrivacyExportService`, JSON sin terceros), habeas data.
+
+**Derecho al olvido** (`AccountDeletionService`): contraseña → código email → gracia 30d cancelable → `futgo:purge-deleted-accounts` **anonimiza** users+club_players+team_players (nombre→"Jugador eliminado", document→null), preserva ids/stats. Reemplazó el borrado inmediato de `ProfileController`.
+
+**Menores** (flag): registro de <18 pide `guardian_email`; `pending_guardian_consent` limita acciones ("operar plenamente": publicar oportunidad, crear equipo) vía middleware `guardian.consent`; confirmación por enlace firmado (`ParentalConsentService`). Banner global.
+
+**Auditoría** (`AuditLogger::record`, no-bloqueante): engancha login/logout/password/consent/privacy_settings/export/deletion/profile/tournament/team. Nunca persiste password/token/document; email enmascarado.
+
+**Privacidad en lectura**: `PlayerPublicController` respeta `public_profile` (404), `show_city/stats/history`; `GlobalSearchController` excluye no-`searchable`. Baja de marketing por enlace firmado (`comunicaciones.baja`). API Resources scaffold (`PlayerResource`/`UserResource`, documentados, no activos — no hay API pública aún).
 
 ---
 

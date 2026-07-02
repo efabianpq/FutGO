@@ -140,8 +140,11 @@ class ProfileClaimTest extends TestCase
             'email' => 'pedro@test.com',
             'telefono' => '3001234567',
             'documento' => '99887766',
+            'birthdate' => '1990-01-01',
             'password' => 'SuperSecret123',
             'password_confirmation' => 'SuperSecret123',
+            'accept_terms' => '1',
+            'accept_privacy' => '1',
         ])
             ->assertRedirect(route('torneos.mi-carrera'))
             ->assertSessionHas('claim_candidates', 1);

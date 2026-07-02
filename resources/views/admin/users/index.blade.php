@@ -20,7 +20,7 @@
                     <th class="px-3 py-2.5">#</th>
                     <th class="px-3 py-2.5">Nombre</th>
                     <th class="px-3 py-2.5">Email</th>
-                    <th class="px-3 py-2.5">📱 Teléfono</th>
+                    <th class="px-3 py-2.5"><x-icon name="phone" class="w-3.5 h-3.5 inline" /> Teléfono</th>
                     <th class="px-3 py-2.5">Rol</th>
                     <th class="px-3 py-2.5">Registrado</th>
                 </tr>

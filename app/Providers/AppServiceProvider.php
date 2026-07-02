@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Services\Privacy\AuditLogger;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
             'achievement'     => \App\Models\Torneos\Achievement::class,
             'feed_event'      => \App\Models\Social\FeedEvent::class,
             'venue'           => \App\Models\Social\Venue::class,
+            // Centro de Privacidad
+            'legal_document'  => \App\Models\Privacy\LegalDocument::class,
+            'user_consent'    => \App\Models\Privacy\UserConsent::class,
+            'audit_log'       => \App\Models\Privacy\AuditLog::class,
+            'data_request'    => \App\Models\Privacy\DataRequest::class,
         ]);
 
         // Contadores de no leídos compartidos con el navbar (componente nav):
@@ -68,5 +78,16 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('share-card-png', function (Request $request) {
             return Limit::perMinute(20)->by($request->ip());
         });
+
+        // 100 búsquedas/min por IP — buscador global, autocompletado de canchas
+        // y de jugadores por club. Endpoints de lectura pero costosos si se abusan.
+        RateLimiter::for('search', function (Request $request) {
+            return Limit::perMinute(100)->by($request->ip());
+        });
+
+        // Auditoría de eventos de autenticación (Centro de Privacidad).
+        Event::listen(Login::class, fn (Login $e) => AuditLogger::record('login', $e->user));
+        Event::listen(Logout::class, fn (Logout $e) => AuditLogger::record('logout', $e->user));
+        Event::listen(PasswordReset::class, fn (PasswordReset $e) => AuditLogger::record('password_changed', $e->user));
     }
 }

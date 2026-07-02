@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -25,11 +27,27 @@ class LoginController extends Controller
 
         $remember = $request->boolean('remember');
 
+        // Bloqueo progresivo por cuenta+IP — capa adicional sobre el throttle
+        // global de la ruta ('auth', 5/min por IP en AppServiceProvider): esto
+        // cubre credential stuffing distribuido (misma cuenta, muchas IPs).
+        $lockKey = 'login:'.Str::lower($credentials['email']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($lockKey, 5)) {
+            $seconds = RateLimiter::availableIn($lockKey);
+            throw ValidationException::withMessages([
+                'email' => "Demasiados intentos. Intentá de nuevo en {$seconds} segundos.",
+            ]);
+        }
+
         if (! Auth::attempt($credentials, $remember)) {
+            RateLimiter::hit($lockKey, 300);
+
             throw ValidationException::withMessages([
                 'email' => 'Las credenciales son incorrectas.',
             ]);
         }
+
+        RateLimiter::clear($lockKey);
 
         $request->session()->regenerate();
 

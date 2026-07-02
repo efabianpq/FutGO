@@ -119,12 +119,12 @@ class ProfileClaimService
             throw ProfileClaimException::make('Ese registro ya tiene un reclamo en curso.');
         }
 
-        // No reclamar en un club donde ya sos miembro con tu cuenta.
+        // No reclamar en un club donde ya eres miembro con tu cuenta.
         $alreadyMember = ClubPlayer::where('club_id', $clubPlayer->club_id)
             ->where('user_id', $user->id)
             ->exists();
         if ($alreadyMember) {
-            throw ProfileClaimException::make('Ya sos miembro de ese equipo con tu cuenta.');
+            throw ProfileClaimException::make('Ya eres miembro de ese equipo con tu cuenta.');
         }
 
         $club = $clubPlayer->club ?? Club::find($clubPlayer->club_id);
@@ -371,7 +371,7 @@ class ProfileClaimService
             return;
         }
 
-        throw ProfileClaimException::make('No tenés permiso para resolver este reclamo.');
+        throw ProfileClaimException::make('No tienes permiso para resolver este reclamo.');
     }
 
     /** Notifica a quien debe aprobar (capitán o, si escalado, los admins). */

@@ -58,7 +58,7 @@
             <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
                 <div>
                     <p class="font-display font-bold text-pitch uppercase text-[15px]">Liga · Fixture</p>
-                    <p class="text-[12px] text-ink-mute mt-0.5">Armá el calendario: agregá partidos o auto-generá todos contra todos.</p>
+                    <p class="text-[12px] text-ink-mute mt-0.5">Arma el calendario: agrega partidos o auto-genera todos contra todos.</p>
                 </div>
                 @if ($league['activated'])
                     <span class="font-mono text-[12px] text-ink-mute">
@@ -108,7 +108,7 @@
                             <div class="flex flex-col gap-1.5">
                                 <label for="home_team_id" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Equipo local *</label>
                                 <select name="home_team_id" id="home_team_id" required class="h-[44px] px-3 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0">
-                                    <option value="">— Elegí —</option>
+                                    <option value="">— Elige —</option>
                                     @foreach ($league['approvedTeams'] as $t)
                                         <option value="{{ $t->id }}">{{ $t->name }}</option>
                                     @endforeach
@@ -117,7 +117,7 @@
                             <div class="flex flex-col gap-1.5">
                                 <label for="away_team_id" class="font-mono text-[11px] tracking-wide-label uppercase text-ink-soft">Equipo visitante *</label>
                                 <select name="away_team_id" id="away_team_id" required class="h-[44px] px-3 bg-white border-[1.5px] border-line rounded-md text-[15px] focus:border-pitch focus:ring-0">
-                                    <option value="">— Elegí —</option>
+                                    <option value="">— Elige —</option>
                                     @foreach ($league['approvedTeams'] as $t)
                                         <option value="{{ $t->id }}">{{ $t->name }}</option>
                                     @endforeach
@@ -404,7 +404,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p class="font-display font-bold text-pitch uppercase text-[14px]">Validar credencial</p>
-                        <p class="text-[12px] text-ink-mute mt-0.5">Verificá si un jugador está habilitado para este torneo.</p>
+                        <p class="text-[12px] text-ink-mute mt-0.5">Verifica si un jugador está habilitado para este torneo.</p>
                     </div>
                     <a href="{{ route('torneos.validar', ['tournament_id' => $tournament->id]) }}"
                        class="btn btn-secondary btn-sm">Validar jugador</a>
@@ -416,7 +416,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p class="font-display font-bold text-pitch uppercase text-[14px]">Exportar y compartir</p>
-                        <p class="text-[12px] text-ink-mute mt-0.5">Descargá los datos del torneo o abrí el portal público.</p>
+                        <p class="text-[12px] text-ink-mute mt-0.5">Descarga los datos del torneo o abre el portal público.</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <a href="{{ route('admin.torneos.sponsors.index', $tournament) }}"
@@ -462,7 +462,7 @@
                         </template>
                         <template x-if="confirming">
                             <div class="space-y-3">
-                                <p class="text-[13px] text-ink">¿Confirmás el cambio a <strong>{{ $statusLabels[$nextStatus] ?? $nextStatus }}</strong>? Esta acción no se puede revertir.</p>
+                                <p class="text-[13px] text-ink">¿Confirmas el cambio a <strong>{{ $statusLabels[$nextStatus] ?? $nextStatus }}</strong>? Esta acción no se puede revertir.</p>
                                 <form method="POST" action="{{ route('admin.torneos.status', $tournament) }}" class="flex gap-2">
                                     @csrf
                                     @method('PATCH')

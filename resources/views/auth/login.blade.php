@@ -7,7 +7,7 @@
     <div class="text-center mb-8">
         <p class="eyebrow justify-center">Login</p>
         <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase mt-3">Iniciar sesión</h1>
-        <p class="text-body-s text-ink-soft mt-2">Ingresá tus credenciales para continuar.</p>
+        <p class="text-body-s text-ink-soft mt-2">Ingresa tus credenciales para continuar.</p>
     </div>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">
@@ -40,7 +40,7 @@
         </form>
 
         <p class="text-body-s text-ink-soft text-center mt-6">
-            ¿No tenés cuenta?
+            ¿No tienes cuenta?
             <a href="{{ route('register') }}" class="text-pitch font-display font-bold uppercase tracking-wide-cta text-[13px] hover:underline">Crear cuenta</a>
         </p>
     </div>

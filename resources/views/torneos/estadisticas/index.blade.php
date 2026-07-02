@@ -73,10 +73,10 @@ $statusMeta = [
                         <th class="px-4 py-3 w-8">#</th>
                         <th class="px-4 py-3">Jugador</th>
                         <th class="px-4 py-3">Equipo</th>
-                        <th class="px-3 py-3 text-center" title="Goles">⚽</th>
-                        <th class="px-3 py-3 text-center" title="Asistencias">👟</th>
-                        <th class="px-3 py-3 text-center" title="Tarjetas amarillas">🟨</th>
-                        <th class="px-3 py-3 text-center" title="Tarjetas rojas">🟥</th>
+                        <th class="px-3 py-3 text-center" title="Goles"><x-icon name="ball" class="w-4 h-4 inline text-pitch" /></th>
+                        <th class="px-3 py-3 text-center" title="Asistencias"><x-icon name="assist" class="w-4 h-4 inline text-pitch" /></th>
+                        <th class="px-3 py-3 text-center" title="Tarjetas amarillas"><x-icon name="card" class="w-3.5 h-3.5 inline text-warning" /></th>
+                        <th class="px-3 py-3 text-center" title="Tarjetas rojas"><x-icon name="card" class="w-3.5 h-3.5 inline text-alerta" /></th>
                         <th class="px-3 py-3 text-center" title="Partidos jugados">PJ</th>
                         <th class="px-4 py-3"></th>
                     </tr>

@@ -37,8 +37,8 @@
 
     @if ($cards->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card-2 p-10 text-center">
-            <p class="text-ink-soft text-lg">Todavía no participás en ningún torneo.</p>
-            <p class="text-[13px] text-ink-mute mt-2">Creá tu primer torneo para empezar a gestionarlo.</p>
+            <p class="text-ink-soft text-lg">Todavía no participas en ningún torneo.</p>
+            <p class="text-[13px] text-ink-mute mt-2">Crea tu primer torneo para empezar a gestionarlo.</p>
             <div class="mt-4">
                 <x-btn :href="route('admin.torneos.create')" variant="accent">Crear mi primer torneo</x-btn>
             </div>

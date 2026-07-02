@@ -59,6 +59,10 @@ class TournamentController extends Controller
         // H4: subir logo/banner (requiere el ID ya creado para la ruta).
         $this->handleImageUploads($tournament, $request);
 
+        \App\Services\Privacy\AuditLogger::record('tournament_created', $request->user(), $tournament, [
+            'name' => $tournament->name,
+        ]);
+
         return redirect()
             ->route('admin.torneos.show', $tournament)
             ->with('status', 'Torneo creado correctamente.');

@@ -165,13 +165,13 @@
                     <div class="flex flex-col gap-1">
                         <label class="font-mono text-[10.5px] uppercase text-ink-mute">Tu equipo</label>
                         <select name="club_id" required class="h-[40px] px-2 bg-white border-[1.5px] border-line rounded-md text-[14px]">
-                            <option value="">Elegí tu equipo…</option>
+                            <option value="">Elige tu equipo…</option>
                             @foreach ($myClubs as $club)
                                 <option value="{{ $club->id }}">{{ $club->name }}</option>
                             @endforeach
                         </select>
                         @if ($myClubs->isEmpty())
-                            <p class="font-mono text-[11px] text-alerta">Necesitás capitanear un equipo para responder.</p>
+                            <p class="font-mono text-[11px] text-alerta">Necesitas capitanear un equipo para responder.</p>
                         @endif
                     </div>
                 @endif
@@ -182,7 +182,7 @@
         </div>
     @elseif (! auth()->check())
         <div class="bg-white border border-line rounded-md shadow-card p-5 mt-6 text-center">
-            <p class="text-ink-soft text-[14px]">Para responder necesitás <a href="{{ route('login') }}" class="text-pitch underline font-semibold">iniciar sesión</a>.</p>
+            <p class="text-ink-soft text-[14px]">Para responder necesitas <a href="{{ route('login') }}" class="text-pitch underline font-semibold">iniciar sesión</a>.</p>
         </div>
     @endif
 

@@ -13,7 +13,7 @@
         @auth
             <a href="{{ route('social.canchas.create') }}" class="btn btn-primary btn-sm">+ Registrar cancha</a>
         @else
-            <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Ingresá para registrar</a>
+            <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Ingresa para registrar</a>
         @endauth
     </div>
 

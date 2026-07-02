@@ -13,6 +13,10 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             // Catálogo de logros del módulo Torneos (requerido por el mundo demo).
             AchievementSeeder::class,
+            // Documentos legales v1.0 (Centro de Privacidad).
+            LegalDocumentsSeeder::class,
+            // Artículos iniciales del Centro de Soporte (base de conocimiento).
+            SupportArticlesSeeder::class,
         ]);
 
         // Mundo DEMO completo (Torneos + FutGO Social) — solo en local o si se

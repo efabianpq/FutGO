@@ -144,7 +144,8 @@ class UnifiedCaptainPlayerTest extends TestCase
         $this->actingAs($user)->post(route('torneos.clubes.players.addGuest', $club), ['full_name' => 'Uno', 'document' => 'CC-1'])->assertRedirect();
         $this->actingAs($user)->post(route('torneos.clubes.players.addGuest', $club), ['full_name' => 'Dos', 'document' => 'CC-1'])->assertSessionHasErrors('document');
 
-        $this->assertEquals(1, ClubPlayer::where('club_id', $club->id)->where('document', 'CC-1')->count());
+        // `document` cifrado — se cuenta por el blind index (document_hash).
+        $this->assertEquals(1, ClubPlayer::where('club_id', $club->id)->whereDocument('CC-1')->count());
     }
 
     // ─── Capitanía ────────────────────────────────────────────────────────────

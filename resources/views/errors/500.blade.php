@@ -24,11 +24,11 @@
     <ul class="text-left space-y-2.5 text-[14px] text-muted max-w-xs mx-auto mb-8">
         <li class="flex items-start gap-2.5">
             <span class="text-error font-bold shrink-0 mt-0.5">·</span>
-            <span>Intentá recargar la página en unos segundos</span>
+            <span>Intenta recargar la página en unos segundos</span>
         </li>
         <li class="flex items-start gap-2.5">
             <span class="text-error font-bold shrink-0 mt-0.5">·</span>
-            <span>Si el problema persiste, volvé más tarde</span>
+            <span>Si el problema persiste, vuelve más tarde</span>
         </li>
     </ul>
 

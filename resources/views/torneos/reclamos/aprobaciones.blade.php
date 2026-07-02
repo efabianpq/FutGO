@@ -8,14 +8,14 @@
         <p class="eyebrow">Capitán</p>
         <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Reclamos por aprobar</h1>
         <p class="text-ink-soft text-[14px] mt-1">
-            Jugadores que quieren vincular su cuenta a un registro de tu plantilla. Si aprobás, el jugador
-            hereda el historial de ese registro. Si no lo reconocés, rechazalo: el registro queda sin cambios.
+            Jugadores que quieren vincular su cuenta a un registro de tu plantilla. Si apruebas, el jugador
+            hereda el historial de ese registro. Si no lo reconoces, recházalo: el registro queda sin cambios.
         </p>
     </div>
 
     @if ($pending->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card p-8 text-center text-ink-soft">
-            No tenés reclamos pendientes.
+            No tienes reclamos pendientes.
         </div>
     @else
         <div class="flex flex-col gap-4">

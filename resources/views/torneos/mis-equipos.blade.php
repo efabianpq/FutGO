@@ -12,7 +12,7 @@
             @if ($isPlatformAdmin)
                 <p class="text-ink-soft text-[14px] mt-1">Como administrador de la plataforma ves todos los equipos registrados.</p>
             @else
-                <p class="text-ink-soft text-[14px] mt-1">Tus equipos permanentes: los que dirigís como capitán y aquellos donde jugás. Un equipo es transversal a los torneos.</p>
+                <p class="text-ink-soft text-[14px] mt-1">Tus equipos permanentes: los que diriges como capitán y aquellos donde juegas. Un equipo es transversal a los torneos.</p>
             @endif
         </div>
         <x-btn type="button" variant="primary" x-on:click="showCreate = !showCreate">+ Crear equipo</x-btn>
@@ -43,7 +43,7 @@
             </div>
             <x-btn type="submit" variant="accent">Crear y ser capitán</x-btn>
         </form>
-        <p class="font-mono text-[11px] text-ink-mute mt-2">Al crear el equipo quedás como su capitán. Después lo podés inscribir en los torneos que quieras.</p>
+        <p class="font-mono text-[11px] text-ink-mute mt-2">Al crear el equipo quedas como su capitán. Después lo puedes inscribir en los torneos que quieras.</p>
     </div>
 
     @if ($captainClubs->isNotEmpty() || $memberClubs->isNotEmpty())
@@ -56,7 +56,7 @@
     </p>
     @if ($captainClubs->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card p-8 text-center mb-8">
-            <p class="text-ink-soft">{{ $isPlatformAdmin ? 'Todavía no hay equipos en la plataforma.' : 'Todavía no dirigís ningún equipo. Creá uno para empezar.' }}</p>
+            <p class="text-ink-soft">{{ $isPlatformAdmin ? 'Todavía no hay equipos en la plataforma.' : 'Todavía no diriges ningún equipo. Crea uno para empezar.' }}</p>
         </div>
     @else
         <div class="grid grid-cols-1 gap-6 mb-8">

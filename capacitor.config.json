@@ -20,6 +20,6 @@
   },
   "android": {
     "appendUserAgent": "FutGO-Android",
-    "webContentsDebuggingEnabled": true
+    "webContentsDebuggingEnabled": false
   }
 }

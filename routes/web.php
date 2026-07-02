@@ -33,6 +33,8 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SupportController;
+use App\Http\Controllers\Admin\AdminSupportController;
 use App\Http\Controllers\Social\OpportunityController;
 use App\Http\Controllers\Social\FriendlyMatchController;
 use App\Http\Controllers\Social\FeedController;
@@ -48,6 +50,27 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// ─── Consentimiento parental (menores) — confirmación pública firmada ───────
+Route::get('/consentimiento-parental/{user}/confirmar', [\App\Http\Controllers\Privacy\GuardianConsentController::class, 'confirm'])
+    ->middleware('signed')->name('parental.confirm');
+
+// ─── Baja de comunicaciones comerciales — enlace firmado del pie de email ───
+Route::get('/comunicaciones/baja/{user}', \App\Http\Controllers\Privacy\MarketingUnsubscribeController::class)
+    ->middleware('signed')->name('comunicaciones.baja');
+
+// ─── Documentos legales (Centro de Privacidad) — públicos, sin auth ─────────
+// Requisito Play Store / App Store + Ley 1581/2012. Servidos desde BD
+// (versionados), no vistas fijas. Ver App\Http\Controllers\Privacy\LegalController.
+Route::controller(\App\Http\Controllers\Privacy\LegalController::class)->group(function () {
+    Route::get('/privacidad', 'show')->defaults('type', 'privacy')->name('privacidad');
+    Route::get('/terminos',   'show')->defaults('type', 'terms')->name('terminos');
+    Route::get('/cookies',    'show')->defaults('type', 'cookies')->name('cookies');
+    Route::get('/contenido',  'show')->defaults('type', 'content')->name('contenido');
+    Route::get('/menores',    'show')->defaults('type', 'minors')->name('menores');
+    // Ruta genérica para el navegador entre documentos (route('legal.show', $type)).
+    Route::get('/legal/{type}', 'show')->name('legal.show');
+});
 
 // ─── Portal PÚBLICO del torneo (sin auth) — Sesión E ──────────────────────
 // Solo torneos visibility='public' (el controlador hace abort 404 si no lo son).
@@ -95,7 +118,7 @@ Route::get('/j/{futgo_id}', [PlayerPublicController::class, 'show'])
 // ─── FutGO Social · Canchas — listado y perfil PÚBLICO (sin auth) ──────────
 Route::prefix('canchas')->name('social.canchas.')->group(function () {
     Route::get('/', [VenueController::class, 'index'])->name('index');
-    Route::get('/buscar', [VenueController::class, 'search'])->name('search'); // JSON autocompletado
+    Route::get('/buscar', [VenueController::class, 'search'])->middleware('throttle:search')->name('search'); // JSON autocompletado
     Route::get('/{venue:slug}', [VenueController::class, 'show'])->name('show');
 });
 
@@ -126,6 +149,50 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+    // ─── Re-aceptación de políticas (Centro de Privacidad) ─────────────────
+    // Interceptada por EnsureConsentUpToDate cuando cambia la versión vigente.
+    // Consentimiento parental — estado pendiente y reenvío (menor autenticado).
+    Route::get('/consentimiento-parental/pendiente', [\App\Http\Controllers\Privacy\GuardianConsentController::class, 'pending'])
+        ->name('parental.pending');
+    Route::post('/consentimiento-parental/reenviar', [\App\Http\Controllers\Privacy\GuardianConsentController::class, 'resend'])
+        ->middleware('throttle:3,10')->name('parental.resend');
+
+    Route::get('/privacidad/aceptar', [\App\Http\Controllers\Privacy\ReconsentController::class, 'show'])
+        ->name('privacidad.aceptar');
+    Route::post('/privacidad/aceptar', [\App\Http\Controllers\Privacy\ReconsentController::class, 'store'])
+        ->name('privacidad.aceptar.store');
+
+    // ─── Centro de Privacidad (habeas data · Ley 1581/2012) ────────────────
+    Route::prefix('privacidad/centro')->name('privacidad.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Privacy\CenterController::class, 'index'])->name('centro');
+
+        Route::get('/configuracion', [\App\Http\Controllers\Privacy\SettingsController::class, 'edit'])->name('configuracion');
+        Route::patch('/configuracion', [\App\Http\Controllers\Privacy\SettingsController::class, 'update'])->name('configuracion.update');
+
+        Route::get('/consentimientos', [\App\Http\Controllers\Privacy\ConsentController::class, 'index'])->name('consentimientos');
+        Route::patch('/consentimientos/marketing', [\App\Http\Controllers\Privacy\ConsentController::class, 'updateMarketing'])->name('consentimientos.marketing');
+
+        Route::get('/sesiones', [\App\Http\Controllers\Privacy\SessionController::class, 'index'])->name('sesiones');
+        Route::delete('/sesiones/otras', [\App\Http\Controllers\Privacy\SessionController::class, 'destroyOthers'])->name('sesiones.otras');
+        Route::delete('/sesiones/{session}', [\App\Http\Controllers\Privacy\SessionController::class, 'destroy'])->name('sesiones.destroy');
+
+        Route::get('/actividad', [\App\Http\Controllers\Privacy\ActivityController::class, 'index'])->name('actividad');
+
+        // Portabilidad de datos + habeas data
+        Route::get('/exportar', [\App\Http\Controllers\Privacy\ExportController::class, 'show'])->name('exportar');
+        Route::get('/exportar/descargar', [\App\Http\Controllers\Privacy\ExportController::class, 'download'])
+            ->middleware('throttle:6,60')->name('exportar.descargar');
+        Route::get('/habeas-data', [\App\Http\Controllers\Privacy\ExportController::class, 'habeasData'])->name('habeas');
+
+        // Derecho al olvido (flujo en pasos con periodo de gracia)
+        Route::get('/eliminar', [\App\Http\Controllers\Privacy\AccountDeletionController::class, 'show'])->name('eliminar');
+        Route::post('/eliminar/solicitar', [\App\Http\Controllers\Privacy\AccountDeletionController::class, 'request'])
+            ->middleware('throttle:3,60')->name('eliminar.solicitar');
+        Route::post('/eliminar/verificar', [\App\Http\Controllers\Privacy\AccountDeletionController::class, 'verify'])
+            ->middleware('throttle:6,60')->name('eliminar.verificar');
+        Route::delete('/eliminar/cancelar', [\App\Http\Controllers\Privacy\AccountDeletionController::class, 'cancel'])->name('eliminar.cancelar');
+    });
+
     Route::group([], function () {
         Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/perfil', [ProfileController::class, 'update'])->name('profile.update');
@@ -153,7 +220,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/crear', [OpportunityController::class, 'create'])->name('create');
             // S3-A · Modo rápido: formulario simplificado para rival de último momento.
             Route::get('/rapida', [OpportunityController::class, 'createExpress'])->name('express');
-            Route::post('/', [OpportunityController::class, 'store'])->name('store');
+            Route::post('/', [OpportunityController::class, 'store'])->middleware('guardian.consent')->name('store');
             Route::get('/mias', [OpportunityController::class, 'mine'])->name('mine');
             Route::get('/reactivar', [OpportunityController::class, 'reactivar'])->name('reactivar');
             Route::post('/reactivar', [OpportunityController::class, 'confirmarReactivacion'])->name('reactivar.confirmar');
@@ -182,6 +249,7 @@ Route::middleware('auth')->group(function () {
 
         // ─── Buscador global del header (🔍) — jugadores/clubes/torneos/canchas
         Route::get('/buscar', [\App\Http\Controllers\Social\GlobalSearchController::class, 'index'])
+            ->middleware('throttle:search')
             ->name('social.search');
 
         // Seguir / dejar de seguir (toggle) — {type} = club|user|tournament.
@@ -265,9 +333,9 @@ Route::middleware('auth')->group(function () {
                 });
 
                 // ── Equipos PERMANENTES (clubs) — identidad transversal a torneos ──
-                Route::post('/equipos', [ClubController::class, 'store'])->name('equipos.store');
+                Route::post('/equipos', [ClubController::class, 'store'])->middleware('guardian.consent')->name('equipos.store');
                 // E6/H9: búsqueda de jugadores por nombre (autocompletado).
-                Route::get('/jugadores/buscar', [ClubController::class, 'searchPlayers'])->name('jugadores.buscar');
+                Route::get('/jugadores/buscar', [ClubController::class, 'searchPlayers'])->middleware('throttle:search')->name('jugadores.buscar');
                 Route::prefix('clubes/{club:slug}')->name('clubes.')->group(function () {
                     Route::get('/', [ClubController::class, 'show'])->name('show');
                     Route::get('/gestionar', [ClubController::class, 'manage'])->name('manage');
@@ -454,6 +522,54 @@ Route::middleware('auth')->group(function () {
             // Ranking FUTGO — recálculo manual (deuda #10, de plataforma, no por torneo)
             Route::post('/ranking/recalcular', [\App\Http\Controllers\Admin\RankingController::class, 'recalculate'])
                 ->name('ranking.recalculate');
+
+            // Centro de Privacidad — versionado de documentos legales
+            Route::get('/legal', [\App\Http\Controllers\Admin\Privacy\LegalDocumentController::class, 'index'])->name('legal.index');
+            Route::get('/legal/nueva', [\App\Http\Controllers\Admin\Privacy\LegalDocumentController::class, 'create'])->name('legal.create');
+            Route::post('/legal', [\App\Http\Controllers\Admin\Privacy\LegalDocumentController::class, 'store'])->name('legal.store');
         });
     });
 });
+
+// ═══════════════════════ CENTRO DE SOPORTE ═══════════════════════
+
+// Estado del servicio — SIN auth (para usuarios que no pueden loguearse)
+Route::get('/soporte/estado', [SupportController::class, 'status'])->name('soporte.status');
+
+// Satisfacción post-ticket — llega desde un email
+Route::get('/soporte/satisfaccion/{ticket}', [SupportController::class, 'satisfaction'])->name('soporte.satisfaction');
+
+// Centro de Soporte — Usuario
+Route::middleware('auth')->prefix('soporte')->name('soporte.')->group(function () {
+    Route::get('/',                            [SupportController::class, 'index'])->name('index');
+    Route::get('/chat',                        [SupportController::class, 'chat'])->name('chat');
+    Route::post('/chat',                       [SupportController::class, 'sendMessage'])->middleware('throttle:30,1')->name('chat.send');
+    Route::post('/chat/escalar',               [SupportController::class, 'escalate'])->name('chat.escalate');
+    Route::get('/ayuda',                       [SupportController::class, 'knowledge'])->name('knowledge');
+    Route::get('/ayuda/{article:slug}',        [SupportController::class, 'article'])->name('knowledge.article');
+    Route::post('/ayuda/{article}/util',       [SupportController::class, 'markHelpful'])->name('knowledge.helpful');
+    Route::get('/mis-casos',                   [SupportController::class, 'myTickets'])->name('my-tickets');
+    Route::get('/mis-casos/{ticket}',          [SupportController::class, 'showTicket'])->name('my-tickets.show');
+    Route::get('/funcionalidades',             [SupportController::class, 'featureRequests'])->name('features');
+    Route::post('/funcionalidades/{fr}/votar', [SupportController::class, 'vote'])->middleware('throttle:5,1')->name('features.vote');
+});
+
+// Centro de Soporte — Admin (solo admin global vía middleware `admin` → EnsureAdmin)
+Route::middleware(['auth', 'admin'])->prefix('admin/soporte')->name('admin.soporte.')->group(function () {
+    Route::get('/',                                   [AdminSupportController::class, 'dashboard'])->name('dashboard');
+    Route::get('/tickets',                            [AdminSupportController::class, 'tickets'])->name('tickets');
+    Route::get('/tickets/{ticket}',                   [AdminSupportController::class, 'show'])->name('tickets.show');
+    Route::patch('/tickets/{ticket}/estado',          [AdminSupportController::class, 'updateStatus'])->name('tickets.status');
+    Route::patch('/tickets/{ticket}/asignar',         [AdminSupportController::class, 'assign'])->name('tickets.assign');
+    Route::post('/tickets/{ticket}/resolver',         [AdminSupportController::class, 'resolve'])->name('tickets.resolve');
+    Route::post('/tickets/{ticket}/generar-articulo', [AdminSupportController::class, 'generateArticle'])->name('tickets.generate-article');
+    Route::get('/conocimiento',                       [AdminSupportController::class, 'knowledge'])->name('knowledge');
+    Route::post('/conocimiento',                      [AdminSupportController::class, 'storeArticle'])->name('knowledge.store');
+    Route::patch('/conocimiento/{article}/publicar',  [AdminSupportController::class, 'publishArticle'])->name('knowledge.publish');
+    Route::delete('/conocimiento/{article}',          [AdminSupportController::class, 'deleteArticle'])->name('knowledge.delete');
+    Route::get('/estado',                             [AdminSupportController::class, 'statusPanel'])->name('status');
+    Route::patch('/estado/{component}',               [AdminSupportController::class, 'updateComponent'])->name('status.update');
+    Route::get('/funcionalidades',                    [AdminSupportController::class, 'featureRequests'])->name('features');
+    Route::patch('/funcionalidades/{fr}/estado',      [AdminSupportController::class, 'updateFeatureStatus'])->name('features.status');
+});
+

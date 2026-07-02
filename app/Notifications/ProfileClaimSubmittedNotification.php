@@ -41,8 +41,8 @@ class ProfileClaimSubmittedNotification extends Notification
             ->line("{$playerName} quiere vincular su cuenta de FutGO al registro **{$registro}** de **{$clubName}**.")
             ->line($escalated
                 ? 'El equipo no tiene un capitán activo, así que el reclamo llegó a la plataforma para que lo resuelvas.'
-                : 'Si lo aprobás, el jugador heredará el historial de ese registro (partidos, goles, tarjetas).')
+                : 'Si lo apruebas, el jugador heredará el historial de ese registro (partidos, goles, tarjetas).')
             ->action('Revisar el reclamo', $url)
-            ->line('Si no reconocés a esta persona, podés rechazar el reclamo: el registro queda sin cambios.');
+            ->line('Si no reconoces a esta persona, puedes rechazar el reclamo: el registro queda sin cambios.');
     }
 }

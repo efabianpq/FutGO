@@ -361,7 +361,7 @@ class PlayedWithAndAgendaTest extends TestCase
 
         $this->actingAs($user)->get(route('social.agenda.index'))
             ->assertOk()
-            ->assertSee('cargá el resultado')
+            ->assertSee('carga el resultado')
             ->assertSee('Vence');
     }
 }

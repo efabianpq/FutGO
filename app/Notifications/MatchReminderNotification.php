@@ -30,7 +30,7 @@ class MatchReminderNotification extends Notification
             : 'fecha por confirmar';
 
         $mail = (new MailMessage)
-            ->subject('⚽ FutGO — Tenés un partido próximo')
+            ->subject('⚽ FutGO — Tienes un partido próximo')
             ->greeting("¡Hola {$firstName}! ⚽")
             ->line('Fuiste convocado para un partido próximo:')
             ->line("🏟️ **{$home}** vs **{$away}**")
@@ -46,7 +46,7 @@ class MatchReminderNotification extends Notification
         }
 
         return $mail
-            ->line('Confirmá tu asistencia con tu capitán y no olvides tu credencial FUTGO.')
+            ->line('Confirma tu asistencia con tu capitán y no olvides tu credencial FUTGO.')
             ->salutation('— Equipo FutGO');
     }
 }

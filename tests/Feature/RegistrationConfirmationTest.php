@@ -17,8 +17,11 @@ class RegistrationConfirmationTest extends TestCase
         'apellido'              => 'Prueba',
         'email'                 => 'carlos.prueba@test.com',
         'telefono'              => '3009876543',
+        'birthdate'             => '1990-01-01',
         'password'              => 'Password123',
         'password_confirmation' => 'Password123',
+        'accept_terms'          => '1',
+        'accept_privacy'        => '1',
     ];
 
     public function test_se_envia_confirmacion_al_registrarse_exitosamente(): void

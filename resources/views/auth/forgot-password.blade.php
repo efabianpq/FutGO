@@ -7,7 +7,7 @@
     <div class="text-center mb-8">
         <p class="eyebrow justify-center">Recuperación</p>
         <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase mt-3">¿Olvidaste tu clave?</h1>
-        <p class="text-body-s text-ink-soft mt-3">Ingresá tu correo y te enviaremos un enlace para reiniciarla.</p>
+        <p class="text-body-s text-ink-soft mt-3">Ingresa tu correo y te enviaremos un enlace para reiniciarla.</p>
     </div>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">

@@ -13,7 +13,7 @@ $features = [
     ],
     [
         'title' => 'Reserva de canchas',
-        'desc'  => 'Conecta instalaciones, asigna horarios y evitá choques de agenda con disponibilidad en tiempo real.',
+        'desc'  => 'Conecta instalaciones, asigna horarios y evita choques de agenda con disponibilidad en tiempo real.',
         'icon'  => '<path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10Z"/><circle cx="12" cy="11" r="2.5"/>',
     ],
     [
@@ -23,7 +23,7 @@ $features = [
     ],
     [
         'title' => 'Calendario inteligente',
-        'desc'  => 'Reprogramá con un clic, notificá a los equipos y mantenelos sincronizados automáticamente.',
+        'desc'  => 'Reprograma con un clic, notifica a los equipos y mantenlos sincronizados automáticamente.',
         'icon'  => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
     ],
     [
@@ -45,7 +45,7 @@ $features = [
                 Todo el torneo, bajo control
             </h2>
             <p class="text-[17px] text-muted">
-                Dejá las hojas de cálculo y los grupos de chat. FutGO automatiza el
+                Deja las hojas de cálculo y los grupos de chat. FutGO automatiza el
                 trabajo aburrido para que te dediques al juego.
             </p>
         </div>

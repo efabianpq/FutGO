@@ -29,7 +29,7 @@ class ProfileClaimResolvedNotification extends Notification
                 ->subject("¡Tu perfil de {$clubName} quedó vinculado!")
                 ->greeting('¡Buenas noticias!')
                 ->line("Tu reclamo fue aprobado: ahora tu cuenta está vinculada a tu registro en **{$clubName}**.")
-                ->line('Heredaste tu historial deportivo (partidos, goles, tarjetas) y ya tenés tu credencial digital con QR.')
+                ->line('Heredaste tu historial deportivo (partidos, goles, tarjetas) y ya tienes tu credencial digital con QR.')
                 ->action('Ver mi carrera', url('/torneos/mi-carrera'));
         }
 
@@ -40,7 +40,7 @@ class ProfileClaimResolvedNotification extends Notification
             ->greeting('Hola')
             ->line("Tu reclamo para vincularte al registro de **{$clubName}** fue rechazado.")
             ->lineIf((bool) $note, "Motivo: {$note}")
-            ->line('Si creés que es un error, contactá al capitán del equipo.')
+            ->line('Si crees que es un error, contacta al capitán del equipo.')
             ->action('Ver mis reclamos', url('/torneos/reclamos'));
     }
 }

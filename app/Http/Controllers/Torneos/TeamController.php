@@ -53,7 +53,7 @@ class TeamController extends Controller
         $data = $request->validate([
             'club_id' => ['required', 'integer', 'exists:clubs,id'],
         ], [
-            'club_id.required' => 'Elegí un equipo para inscribir.',
+            'club_id.required' => 'Elige un equipo para inscribir.',
         ]);
 
         $club = Club::findOrFail($data['club_id']);
@@ -70,13 +70,13 @@ class TeamController extends Controller
 
         // El capitán no puede tener dos equipos en el mismo torneo.
         if ($this->userTeamIn($tournament)) {
-            return back()->with('error', 'Ya tenés un equipo inscrito en este torneo.');
+            return back()->with('error', 'Ya tienes un equipo inscrito en este torneo.');
         }
 
         $this->membership->enroll($club, $tournament);
 
         return redirect()->route('torneos.equipo.show', $tournament)
-            ->with('status', 'Equipo inscripto. Esperá la aprobación del organizador.');
+            ->with('status', 'Equipo inscripto. Espera la aprobación del organizador.');
     }
 
     // ─────────────────────────────────────────────────────────────────

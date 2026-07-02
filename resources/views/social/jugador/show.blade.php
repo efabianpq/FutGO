@@ -58,11 +58,11 @@
                     @if ($canDirectMessage)
                         @if ($existingDmConversation)
                             <a href="{{ route('social.conversaciones.show', $existingDmConversation) }}"
-                               class="btn btn-secondary btn-sm">💬 Ver conversación</a>
+                               class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="chat" class="w-4 h-4" /> Ver conversación</a>
                         @else
                             <form method="POST" action="{{ route('social.conversaciones.direct', $player) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-secondary btn-sm">💬 Enviar mensaje</button>
+                                <button type="submit" class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="chat" class="w-4 h-4" /> Enviar mensaje</button>
                             </form>
                         @endif
                     @endif
@@ -76,7 +76,7 @@
         @if (auth()->id() !== $player->id)
             <div class="bg-white border border-line rounded-md shadow-card p-4 mb-5">
                 <div class="flex items-center gap-2 mb-3">
-                    <span class="text-lg">⚽</span>
+                    <x-icon name="ball" class="w-5 h-5 text-pitch" />
                     @if ($sharedCount > 0)
                         <p class="font-display font-semibold text-pitch text-[14px]">
                             Jugaste <span class="text-gol-deep font-bold">{{ $sharedCount }}</span> {{ Str::plural('vez', $sharedCount) }} con {{ $player->name }}

@@ -56,6 +56,15 @@
 
     <x-nav :user="auth()->user()" />
 
+    @auth
+        @if (auth()->user()->pending_guardian_consent && ! request()->routeIs('parental.pending'))
+            <div class="bg-amber-500/10 border-b border-amber-500/30 text-amber-700 text-[13px] px-4 py-2.5 text-center">
+                Tu cuenta espera la autorización de tu representante legal.
+                <a href="{{ route('parental.pending') }}" class="font-semibold underline">Ver estado</a>
+            </div>
+        @endif
+    @endauth
+
     <main class="flex-1 pb-20 md:pb-0">
         @if (session('status'))
             <div class="max-w-3xl mx-auto mt-4 px-4">
@@ -78,7 +87,7 @@
             <div class="max-w-3xl mx-auto mt-4 px-4">
                 <div class="border border-green/40 bg-green-tint text-green px-4 py-3 rounded-md flex items-center justify-between gap-4">
                     <span class="font-semibold">
-                        Encontramos {{ session('claim_candidates') }} {{ session('claim_candidates') == 1 ? 'registro' : 'registros' }} a tu nombre que podés reclamar para heredar tu historial.
+                        Encontramos {{ session('claim_candidates') }} {{ session('claim_candidates') == 1 ? 'registro' : 'registros' }} a tu nombre que puedes reclamar para heredar tu historial.
                     </span>
                     <a href="{{ route('torneos.reclamos.index') }}" class="btn btn-primary btn-sm shrink-0">Ver y reclamar</a>
                 </div>
@@ -103,7 +112,7 @@
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <p class="font-display font-bold text-text text-[17px]">Instalar FutGO</p>
-                        <p class="font-mono text-[11px] text-muted mt-0.5">Seguí estos pasos en Safari</p>
+                        <p class="font-mono text-[11px] text-muted mt-0.5">Sigue estos pasos en Safari</p>
                     </div>
                     <button type="button"
                             @click="$store.pwa.closeIosModal()"
@@ -115,7 +124,7 @@
                     <li class="flex items-start gap-3">
                         <span class="w-7 h-7 rounded-full bg-green-tint text-green font-display font-bold text-[13px] flex items-center justify-center shrink-0">1</span>
                         <p class="text-[14px] text-text leading-snug">
-                            Pulsá el botón
+                            Pulsa el botón
                             <span class="inline-flex items-center gap-1 font-semibold">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
@@ -128,13 +137,13 @@
                     <li class="flex items-start gap-3">
                         <span class="w-7 h-7 rounded-full bg-green-tint text-green font-display font-bold text-[13px] flex items-center justify-center shrink-0">2</span>
                         <p class="text-[14px] text-text leading-snug">
-                            Elegí <span class="font-semibold">«Añadir a pantalla de inicio»</span>
+                            Elige <span class="font-semibold">«Añadir a pantalla de inicio»</span>
                         </p>
                     </li>
                     <li class="flex items-start gap-3">
                         <span class="w-7 h-7 rounded-full bg-green-tint text-green font-display font-bold text-[13px] flex items-center justify-center shrink-0">3</span>
                         <p class="text-[14px] text-text leading-snug">
-                            Tocá <span class="font-semibold">«Agregar»</span>
+                            Toca <span class="font-semibold">«Agregar»</span>
                         </p>
                     </li>
                 </ol>

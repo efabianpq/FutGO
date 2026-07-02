@@ -96,7 +96,7 @@ class ConversationController extends Controller
         $data = $request->validate([
             'body' => ['required', 'string', 'max:' . ConversationService::MAX_BODY, new CleanText],
         ], [
-            'body.required' => 'Escribí un mensaje.',
+            'body.required' => 'Escribe un mensaje.',
             'body.max'      => 'El mensaje es demasiado largo.',
         ]);
 
@@ -119,7 +119,7 @@ class ConversationController extends Controller
 
         $contact = trim((string) $user->phone_whatsapp);
         if ($contact === '') {
-            return back()->with('error', 'No tenés un teléfono/WhatsApp cargado en tu perfil para compartir.');
+            return back()->with('error', 'No tienes un teléfono/WhatsApp cargado en tu perfil para compartir.');
         }
 
         $this->service->postMessage(
@@ -147,13 +147,13 @@ class ConversationController extends Controller
         $this->authorizeParticipant($conversation, $user);
 
         // No tiene sentido reportar el propio mensaje.
-        abort_if($message->sender_user_id === $user->id, 403, 'No podés reportar tu propio mensaje.');
+        abort_if($message->sender_user_id === $user->id, 403, 'No puedes reportar tu propio mensaje.');
 
         $data = $request->validate([
             'reason'  => ['required', Rule::in(self::REPORT_REASONS)],
             'details' => ['nullable', 'string', 'max:500', new CleanText],
         ], [
-            'reason.required' => 'Elegí un motivo.',
+            'reason.required' => 'Elige un motivo.',
         ]);
 
         // Evita reportes duplicados pendientes del mismo usuario sobre el mensaje.
@@ -188,9 +188,9 @@ class ConversationController extends Controller
     {
         $from = $request->user();
 
-        abort_if($from->id === $user->id, 403, 'No podés enviarte un mensaje a vos mismo.');
+        abort_if($from->id === $user->id, 403, 'No puedes enviarte un mensaje a ti mismo.');
         abort_unless($user->accepts_direct_messages, 403, 'Este usuario no acepta mensajes directos.');
-        abort_if($user->hasBlocked($from), 403, 'No podés contactar a este usuario.');
+        abort_if($user->hasBlocked($from), 403, 'No puedes contactar a este usuario.');
 
         $conversation = $this->service->initiateOrFindDirect($from, $user);
 

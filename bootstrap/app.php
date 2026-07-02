@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'ensure.tournament_participant' => \App\Http\Middleware\EnsureTournamentParticipant::class,
+            'guardian.consent' => \App\Http\Middleware\EnsureGuardianConsent::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
@@ -23,6 +24,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // los orígenes permitidos (allowed_origins/supports_credentials).
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
+        // Headers de seguridad HTTP (HSTS, X-Frame-Options, etc.) en toda
+        // respuesta web — ver app/Http/Middleware/SecurityHeaders.php.
+        // EnsureConsentUpToDate fuerza re-aceptar políticas si cambió su versión.
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\EnsureConsentUpToDate::class,
         ]);
 
         $middleware->validateCsrfTokens(except: []);

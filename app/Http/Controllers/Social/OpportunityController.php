@@ -205,7 +205,7 @@ class OpportunityController extends Controller
         if ($myClubs->isEmpty()) {
             return redirect()
                 ->route('social.oportunidades.create')
-                ->with('error', 'Para usar el modo rápido necesitás capitanear un equipo.');
+                ->with('error', 'Para usar el modo rápido necesitas capitanear un equipo.');
         }
 
         // Disponibilidad más cercana sugerida: mañana a las 20:00.
@@ -231,8 +231,8 @@ class OpportunityController extends Controller
             'required_level' => ['required', Rule::in(User::PLAY_LEVELS)],
             'descripcion'    => ['nullable', 'string', 'max:1000', new CleanText],
         ], [
-            'required_level.required' => 'Declará el nivel: es el filtro que usa el matching.',
-            'city.required'           => 'Indicá la ciudad.',
+            'required_level.required' => 'Declara el nivel: es el filtro que usa el matching.',
+            'city.required'           => 'Indica la ciudad.',
         ]);
 
         try {
@@ -248,7 +248,7 @@ class OpportunityController extends Controller
 
         return redirect()
             ->route('social.oportunidades.show', $opportunity)
-            ->with('status', 'Oportunidad publicada. Ya podés recibir respuestas.');
+            ->with('status', 'Oportunidad publicada. Ya puedes recibir respuestas.');
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -310,8 +310,8 @@ class OpportunityController extends Controller
         $request->validate([
             'acknowledged' => ['required', 'accepted'],
         ], [
-            'acknowledged.required' => 'Tenés que reconocer el problema para poder reactivarte.',
-            'acknowledged.accepted'  => 'Tenés que marcar la casilla de confirmación.',
+            'acknowledged.required' => 'Tienes que reconocer el problema para poder reactivarte.',
+            'acknowledged.accepted'  => 'Tienes que marcar la casilla de confirmación.',
         ]);
 
         $user = $request->user();
@@ -326,7 +326,7 @@ class OpportunityController extends Controller
 
         return redirect()
             ->route('social.oportunidades.create')
-            ->with('status', 'Tu disponibilidad fue reactivada. Ahora podés publicar oportunidades.');
+            ->with('status', 'Tu disponibilidad fue reactivada. Ahora puedes publicar oportunidades.');
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -402,7 +402,7 @@ class OpportunityController extends Controller
         $data = $request->validate([
             'reason' => ['required', 'string', 'max:255', new CleanText],
         ], [
-            'reason.required' => 'Indicá el motivo de la cancelación.',
+            'reason.required' => 'Indica el motivo de la cancelación.',
         ]);
 
         try {
@@ -426,7 +426,7 @@ class OpportunityController extends Controller
             'reason'  => ['required', Rule::in(self::REPORT_REASONS)],
             'details' => ['nullable', 'string', 'max:500', new CleanText],
         ], [
-            'reason.required' => 'Elegí un motivo.',
+            'reason.required' => 'Elige un motivo.',
         ]);
 
         // Evita reportes duplicados del mismo usuario sobre la misma oportunidad.
@@ -495,12 +495,12 @@ class OpportunityController extends Controller
 
         if ($needsClub && $this->captainedClubs($request->user()->id)->isEmpty()) {
             throw \App\Exceptions\Social\OpportunityException::make(
-                'Necesitás capitanear un equipo para publicar este tipo de oportunidad.'
+                'Necesitas capitanear un equipo para publicar este tipo de oportunidad.'
             );
         }
 
         $clubMessages = [
-            'club_id.required' => 'Elegí el equipo con el que publicás la oportunidad.',
+            'club_id.required' => 'Elige el equipo con el que publicas la oportunidad.',
             'club_id.exists'   => 'El equipo seleccionado no existe.',
         ];
 
@@ -511,7 +511,7 @@ class OpportunityController extends Controller
                     'window_start'     => ['required', 'date'],
                     'venue_id'         => ['nullable', 'integer', 'exists:venues,id'],
                     'cancha_propuesta' => ['nullable', 'string', 'max:255'],
-                ], $clubMessages + ['window_start.required' => 'Indicá la fecha y hora del partido.']);
+                ], $clubMessages + ['window_start.required' => 'Indica la fecha y hora del partido.']);
                 $data['club_id']      = $extra['club_id'];
                 $data['window_start'] = $extra['window_start'];
                 $data['venue_id']     = $extra['venue_id'] ?? null;
@@ -525,7 +525,7 @@ class OpportunityController extends Controller
                     'club_id'    => ['required', 'integer', 'exists:clubs,id'],
                     'posiciones' => ['nullable', 'string', 'max:120'],
                     'cupos'      => ['required', 'integer', 'min:1', 'max:30'],
-                ], $clubMessages + ['cupos.required' => 'Indicá cuántos cupos tenés.']);
+                ], $clubMessages + ['cupos.required' => 'Indica cuántos cupos tienes.']);
                 $data['club_id']        = $extra['club_id'];
                 $payload['posiciones']  = $extra['posiciones'] ?? null;
                 $payload['cupos']       = (int) $extra['cupos'];
@@ -537,7 +537,7 @@ class OpportunityController extends Controller
                     'partido'      => ['required', 'string', 'max:255'],
                     'posicion'     => ['nullable', 'string', 'max:60'],
                     'window_start' => ['nullable', 'date'],
-                ], $clubMessages + ['partido.required' => 'Describí el partido para el que necesitás refuerzo.']);
+                ], $clubMessages + ['partido.required' => 'Describe el partido para el que necesitas refuerzo.']);
                 $data['club_id']      = $extra['club_id'];
                 $data['window_start'] = $extra['window_start'] ?? null;
                 $payload['partido']   = $extra['partido'];
@@ -548,7 +548,7 @@ class OpportunityController extends Controller
                 $extra = $request->validate([
                     'posicion'       => ['required', 'string', 'max:60'],
                     'disponibilidad' => ['nullable', 'string', 'max:255'],
-                ], ['posicion.required' => 'Indicá tu posición o perfil de juego.']);
+                ], ['posicion.required' => 'Indica tu posición o perfil de juego.']);
                 $payload['posicion']       = $extra['posicion'];
                 $payload['disponibilidad'] = $extra['disponibilidad'] ?? null;
                 break;

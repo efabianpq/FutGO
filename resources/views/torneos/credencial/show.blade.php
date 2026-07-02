@@ -40,7 +40,7 @@
                 <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Identificador FUTGO</p>
                 <p class="font-mono font-bold text-2xl text-pitch mt-1 tracking-wider">{{ $user->futgo_id }}</p>
                 <p class="text-[13px] text-ink-soft mt-3 leading-relaxed">
-                    Presentá este código al árbitro. Si no puede escanearlo, dictá el
+                    Presenta este código al árbitro. Si no puede escanearlo, dicta el
                     identificador para validarlo a mano.
                 </p>
             </div>

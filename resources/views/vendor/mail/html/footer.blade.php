@@ -7,8 +7,8 @@
 &copy; {{ date('Y') }} FutGO
 </p>
 <p style="color: #8a8884; font-size: 11px; margin-top: 4px;">
-Recib&iacute;s este correo porque ten&eacute;s una cuenta en FutGO. Para dejar de recibir
-notificaciones, ingres&aacute; a tu perfil y desactiv&aacute;las.
+Recibes este correo porque tienes una cuenta en FutGO. Para dejar de recibir
+notificaciones, ingresa a tu perfil y desact&iacute;valas.
 </p>
 </td>
 </tr>

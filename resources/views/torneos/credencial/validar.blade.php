@@ -14,8 +14,8 @@
     <p class="eyebrow">🛡️ Control de identidad</p>
     <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Validar credencial</h1>
     <p class="text-[14px] text-ink-soft mb-6">
-        Escaneá el QR de la credencial o ingresá el identificador FUTGO a mano.
-        Elegí el torneo para verificar si el jugador está habilitado.
+        Escanea el QR de la credencial o ingresa el identificador FUTGO a mano.
+        Elige el torneo para verificar si el jugador está habilitado.
     </p>
 
     {{-- Formulario de validación manual --}}
@@ -74,7 +74,7 @@
                     @if ($result['signatureValid'])
                         <p class="text-[12px] text-pitch font-semibold mb-3">🔒 Firma del QR verificada (emitido por FUTGO).</p>
                     @else
-                        <p class="text-[12px] text-alerta font-semibold mb-3">⚠ Firma del QR inválida o ausente — verificá manualmente la identidad.</p>
+                        <p class="text-[12px] text-alerta font-semibold mb-3">⚠ Firma del QR inválida o ausente — verifica manualmente la identidad.</p>
                     @endif
                 @endif
 

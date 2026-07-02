@@ -70,7 +70,7 @@ class TeamAdminController extends Controller
             'color'         => ['nullable', 'string', 'max:20'],
             'captain_email' => ['nullable', 'email', 'max:120'],
         ], [
-            'name.required' => 'Ingresá el nombre del equipo.',
+            'name.required' => 'Ingresa el nombre del equipo.',
         ]);
 
         // ¿El nombre ya está inscrito en este torneo?
@@ -83,7 +83,7 @@ class TeamAdminController extends Controller
         if (! empty($data['captain_email'])) {
             $captain = User::where('email', $data['captain_email'])->first();
             if (! $captain) {
-                return back()->withInput()->with('error', 'No existe un usuario con ese email. Podés crear el equipo sin capitán y asignarlo luego.');
+                return back()->withInput()->with('error', 'No existe un usuario con ese email. Puedes crear el equipo sin capitán y asignarlo luego.');
             }
         }
 
@@ -140,7 +140,7 @@ class TeamAdminController extends Controller
         $data = $request->validate([
             'captain_email' => ['required', 'email', 'max:120'],
         ], [
-            'captain_email.required' => 'Ingresá el email del capitán.',
+            'captain_email.required' => 'Ingresa el email del capitán.',
         ]);
 
         $captain = User::where('email', $data['captain_email'])->first();

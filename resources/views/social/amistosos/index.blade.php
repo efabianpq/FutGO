@@ -13,7 +13,7 @@
         <div>
             <p class="eyebrow">FutGO Social</p>
             <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis amistosos</h1>
-            <p class="text-ink-soft text-[14px] mt-1">Cargá el resultado de tus amistosos. El rival también carga el suyo: si coinciden, queda confirmado.</p>
+            <p class="text-ink-soft text-[14px] mt-1">Carga el resultado de tus amistosos. El rival también carga el suyo: si coinciden, queda confirmado.</p>
         </div>
         <a href="{{ route('social.oportunidades.index', ['tipo' => 'BUSCAR_RIVAL']) }}" class="btn btn-secondary btn-sm">Buscar rival</a>
     </div>
@@ -27,7 +27,7 @@
 
     @if (empty($myClubIds))
         <div class="bg-white border border-line rounded-md shadow-card p-8 text-center text-ink-soft">
-            Necesitás capitanear un equipo para tener amistosos.
+            Necesitas capitanear un equipo para tener amistosos.
         </div>
     @endif
 
@@ -47,7 +47,7 @@
                             Los marcadores cargados no coinciden:
                             <strong>local dice {{ $m->home_reported_home_score }}–{{ $m->home_reported_away_score }}</strong>,
                             <strong>visitante dice {{ $m->away_reported_home_score }}–{{ $m->away_reported_away_score }}</strong>.
-                            Rectificá tu marcador para que coincida, o escalá a un admin.
+                            Rectifica tu marcador para que coincida, o escala a un admin.
                         </p>
                         @if ($m->isEscalada())
                             <p class="font-mono text-[11px] text-ink-mute mb-2">Ya escalado a un admin de la plataforma.</p>
@@ -101,7 +101,7 @@
                             <p class="text-[12px] text-ink-mute mb-2">📍 {{ $m->location }}</p>
                         @endif
                         @if ($rivalReported && ! $iReported)
-                            <p class="font-mono text-[11px] text-gol-deep mb-2">El rival ya cargó su marcador. Cargá el tuyo para confirmar.</p>
+                            <p class="font-mono text-[11px] text-gol-deep mb-2">El rival ya cargó su marcador. Carga el tuyo para confirmar.</p>
                         @elseif ($iReported && ! $rivalReported)
                             <p class="font-mono text-[11px] text-ink-mute mb-2">Cargaste tu marcador. Esperando que el rival cargue el suyo.</p>
                         @endif

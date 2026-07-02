@@ -19,19 +19,19 @@
     if ($torneosAccess) {
         $jugarItems = [
             ['route' => 'torneos.mis-equipos',        'label' => 'Mis Equipos',   'starts' => 'torneos.mis-equipos',  'desc' => 'Tus equipos en torneos activos'],
-            ['route' => 'social.oportunidades.index', 'label' => 'Oportunidades', 'starts' => 'social.oportunidades', 'desc' => 'Buscá o publicá rival, jugadores o refuerzos'],
-            ['route' => 'social.amistosos.index',     'label' => 'Amistosos',     'starts' => 'social.amistosos',     'desc' => 'Reportá resultados y resolvé disputas'],
-            ['route' => 'social.oportunidades.express','label' => 'Modo rápido ⚡','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitás rival para mañana?'],
+            ['route' => 'social.oportunidades.index', 'label' => 'Oportunidades', 'starts' => 'social.oportunidades', 'desc' => 'Busca o publica rival, jugadores o refuerzos'],
+            ['route' => 'social.amistosos.index',     'label' => 'Amistosos',     'starts' => 'social.amistosos',     'desc' => 'Reporta resultados y resuelve disputas'],
+            ['route' => 'social.oportunidades.express','label' => 'Modo rápido ⚡','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitas rival para mañana?'],
             ['route' => 'social.agenda.index',        'label' => 'Agenda',        'starts' => 'social.agenda',        'desc' => 'Todo lo programado, en un solo lugar'],
         ];
         $competirItems = [
             ['route' => 'torneos.index',       'label' => 'Mis Torneos',   'starts' => 'torneos.index',  'desc' => 'Tus torneos en curso e históricos'],
-            ['route' => 'torneos.public.index','label' => 'Buscar Torneo', 'starts' => 'torneos.public', 'desc' => 'Explorá torneos abiertos a inscripción'],
+            ['route' => 'torneos.public.index','label' => 'Buscar Torneo', 'starts' => 'torneos.public', 'desc' => 'Explora torneos abiertos a inscripción'],
             ['route' => 'torneos.ranking',     'label' => 'Ranking de la plataforma', 'starts' => 'torneos.ranking','desc' => 'Mejores jugadores de la plataforma'],
         ];
         $comunidadItems = [
             ['route' => 'social.canchas.index','label' => 'Canchas',                'starts' => 'social.canchas', 'desc' => 'Catálogo de canchas de la comunidad'],
-            ['route' => 'social.search',       'label' => 'Buscar jugadores y clubes','starts' => 'social.search','desc' => 'Encontrá personas, equipos y torneos'],
+            ['route' => 'social.search',       'label' => 'Buscar jugadores y clubes','starts' => 'social.search','desc' => 'Encuentra personas, equipos y torneos'],
         ];
     }
 
@@ -187,6 +187,16 @@
                                 Configurar perfil
                             </a>
 
+                            <a href="{{ route('privacidad.centro') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                Centro de Privacidad
+                            </a>
+
+                            <a href="{{ route('soporte.index') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                Centro de Soporte
+                            </a>
+
                             <a href="{{ route('torneos.reclamos.index') }}"
                                class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
                                 Reclamar mi perfil
@@ -212,7 +222,12 @@
                                 Instalar app
                             </button>
 
-                            <form method="POST" action="{{ route('logout') }}" class="border-t border-border mt-1">
+                            <a href="{{ route('privacidad.eliminar') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2 border-t border-border mt-1">
+                                Eliminar mi cuenta
+                            </a>
+
+                            <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full text-left px-4 py-2 text-[14px] font-semibold text-alerta hover:bg-surface-2">Salir</button>
                             </form>
@@ -349,6 +364,16 @@
                         <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
                         Configurar perfil
                     </a>
+                    <a href="{{ route('privacidad.centro') }}" @click="sheet = null"
+                       class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
+                        <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Centro de Privacidad
+                    </a>
+                    <a href="{{ route('soporte.index') }}" @click="sheet = null"
+                       class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
+                        <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M5.6 5.6l3.1 3.1m6.6 6.6l3.1 3.1m0-12.8l-3.1 3.1m-6.6 6.6l-3.1 3.1"/></svg>
+                        Centro de Soporte
+                    </a>
                     @if ($torneosAccess)
                         <a href="{{ route('torneos.reclamos.index') }}" @click="sheet = null"
                            class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
@@ -379,6 +404,12 @@
                                 Panel Admin
                             </a>
                         @endif
+
+                        <a href="{{ route('privacidad.eliminar') }}" @click="sheet = null"
+                           class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
+                            <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Eliminar mi cuenta
+                        </a>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

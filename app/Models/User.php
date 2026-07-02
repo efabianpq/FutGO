@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasHashedDocument;
 use App\Models\Concerns\HasPlayLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasPlayLevel, Notifiable;
+    use HasFactory, HasHashedDocument, HasPlayLevel, Notifiable;
 
     protected $fillable = [
         'name',
@@ -21,6 +22,8 @@ class User extends Authenticatable
         'google_id',
         'futgo_id',
         'document',
+        'document_hash',
+        'birthdate',
         'phone_whatsapp',
         'avatar_url',
         'play_level',
@@ -33,6 +36,11 @@ class User extends Authenticatable
         'notifications_enabled',
         'accepts_direct_messages',
         'email_verified_at',
+        'delete_requested_at',
+        'current_privacy_version',
+        'current_terms_version',
+        'guardian_email',
+        'pending_guardian_consent',
     ];
 
     /**
@@ -63,7 +71,26 @@ class User extends Authenticatable
             'notifications_enabled'      => 'boolean',
             'accepts_direct_messages'    => 'boolean',
             'feed_last_read_at'          => 'datetime',
+            'delete_requested_at'        => 'datetime',
+            'birthdate'                  => 'date',
+            'pending_guardian_consent'   => 'boolean',
+            'document'                   => 'encrypted',
+            'phone_whatsapp'             => 'encrypted',
         ];
+    }
+
+    /** Edad en años cumplidos (o null si no cargó fecha de nacimiento). */
+    public function age(): ?int
+    {
+        return $this->birthdate?->age;
+    }
+
+    /** ¿Es menor de edad (< 18)? Requiere birthdate cargada. */
+    public function isMinor(): bool
+    {
+        $birthdate = $this->birthdate;
+
+        return $birthdate !== null && $birthdate->age < 18;
     }
 
     /**
@@ -150,6 +177,12 @@ class User extends Authenticatable
         return \App\Models\Torneos\TeamPlayer::where('user_id', $this->id)->exists();
     }
 
+    /** Inscripciones por torneo (snapshot de plantilla) donde figura este usuario. */
+    public function teamPlayers(): HasMany
+    {
+        return $this->hasMany(\App\Models\Torneos\TeamPlayer::class);
+    }
+
     // --- FutGO Social (Fase 1) ---
 
     /** Oportunidades publicadas por este usuario (BUSCAR_EQUIPO, etc.). */
@@ -212,5 +245,43 @@ class User extends Authenticatable
     public function isBlockedBy(User $blocker): bool
     {
         return $blocker->hasBlocked($this);
+    }
+
+    // --- Centro de Privacidad ---
+
+    /** Configuración de privacidad del perfil (1:1). */
+    public function privacySetting(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Privacy\PrivacySetting::class);
+    }
+
+    /** Historial de consentimientos (aceptaciones/revocaciones). */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(\App\Models\Privacy\UserConsent::class);
+    }
+
+    /** Solicitudes de datos (export / delete). */
+    public function dataRequests(): HasMany
+    {
+        return $this->hasMany(\App\Models\Privacy\DataRequest::class);
+    }
+
+    /** Registros de auditoría del usuario. */
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\Privacy\AuditLog::class);
+    }
+
+    /**
+     * Config de privacidad garantizada: crea la fila con defaults si aún no existe
+     * (usuarios previos al Centro de Privacidad o creados fuera del flujo de registro).
+     */
+    public function privacy(): \App\Models\Privacy\PrivacySetting
+    {
+        return $this->privacySetting()->firstOrCreate(
+            ['user_id' => $this->id],
+            \App\Models\Privacy\PrivacySetting::defaults()
+        );
     }
 }

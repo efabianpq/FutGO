@@ -151,7 +151,7 @@ class OpportunityService
         }
 
         if ($this->isOwner($opportunity, $responder)) {
-            throw OpportunityException::make('No podés responder tu propia oportunidad.');
+            throw OpportunityException::make('No puedes responder tu propia oportunidad.');
         }
 
         $clubId = null;
@@ -553,10 +553,10 @@ class OpportunityService
 
         $clubs = Club::where('captain_user_id', $user->id)->get();
         if ($clubs->isEmpty()) {
-            throw OpportunityException::make('Necesitás ser capitán de un equipo para esta acción.');
+            throw OpportunityException::make('Necesitas ser capitán de un equipo para esta acción.');
         }
         if ($clubs->count() > 1) {
-            throw OpportunityException::make('Elegí con qué equipo querés participar.');
+            throw OpportunityException::make('Elige con qué equipo quieres participar.');
         }
 
         return $clubs->first();

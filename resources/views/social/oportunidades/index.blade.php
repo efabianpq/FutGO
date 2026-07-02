@@ -23,7 +23,7 @@
         <div>
             <p class="eyebrow">FutGO Social</p>
             <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Oportunidades</h1>
-            <p class="text-ink-soft text-[14px] mt-1">Conseguí rival, jugador o refuerzo — o mostrate disponible para que te convoquen.</p>
+            <p class="text-ink-soft text-[14px] mt-1">Consigue rival, jugador o refuerzo — o muéstrate disponible para que te convoquen.</p>
         </div>
         @auth
             <div class="flex gap-2">
@@ -32,13 +32,13 @@
                 <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm">+ Publicar</a>
             </div>
         @else
-            <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Ingresá para publicar</a>
+            <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Ingresa para publicar</a>
         @endauth
     </div>
 
     @guest
         <div class="bg-surface border border-border rounded-md px-4 py-3 mb-6 text-muted text-[13.5px]">
-            Sumate al fútbol amateur de tu ciudad — <a href="{{ route('register') }}" class="text-pitch font-semibold hover:underline">Creá tu cuenta gratis</a> para responder oportunidades y publicar las tuyas.
+            Súmate al fútbol amateur de tu ciudad — <a href="{{ route('register') }}" class="text-pitch font-semibold hover:underline">Crea tu cuenta gratis</a> para responder oportunidades y publicar las tuyas.
         </div>
     @endguest
 
@@ -103,7 +103,7 @@
         <div class="bg-white border border-line rounded-md shadow-card p-10 text-center">
             <p class="text-ink-soft">No hay oportunidades que coincidan con tu búsqueda.</p>
             @auth
-                <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm mt-4">Publicá la primera</a>
+                <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm mt-4">Publica la primera</a>
             @endauth
         </div>
     @else

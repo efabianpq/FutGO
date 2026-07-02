@@ -82,6 +82,10 @@ class ProfileController extends Controller
         $user->play_level = $data['play_level'] ?? null;
         $user->save();
 
+        \App\Services\Privacy\AuditLogger::record('profile_updated', $user, null, [
+            'document_changed' => $documentChanged,
+        ]);
+
         // Al cargar/cambiar el documento, detectar perfiles 'por_verificar'
         // reclamables (Limitación #2).
         if ($documentChanged && ! empty($user->document)) {

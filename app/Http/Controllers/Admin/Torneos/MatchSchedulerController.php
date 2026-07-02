@@ -31,7 +31,7 @@ class MatchSchedulerController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', 'Liga activada. Ya podés cargar los partidos.');
+        return back()->with('status', 'Liga activada. Ya puedes cargar los partidos.');
     }
 
     /** Agrega un partido individual a la liga. */

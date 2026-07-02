@@ -270,8 +270,8 @@ $matchStatusMeta = [
                                 <tr class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute border-b border-line">
                                     <th class="py-2 w-5">#</th>
                                     <th class="py-2">Jugador</th>
-                                    <th class="py-2 text-center w-8" title="Goles">⚽</th>
-                                    <th class="py-2 text-center w-8" title="Asistencias">👟</th>
+                                    <th class="py-2 text-center w-8" title="Goles"><x-icon name="ball" class="w-3.5 h-3.5 inline text-pitch" /></th>
+                                    <th class="py-2 text-center w-8" title="Asistencias"><x-icon name="assist" class="w-3.5 h-3.5 inline text-pitch" /></th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-line-soft">
@@ -323,8 +323,8 @@ $matchStatusMeta = [
                                             Cap.: {{ $team->captain?->name ?? '—' }}
                                         </p>
                                     </div>
-                                    <span class="shrink-0 font-mono text-[11px] text-ink-mute">
-                                        {{ $team->players_count }} 👤
+                                    <span class="shrink-0 font-mono text-[11px] text-ink-mute inline-flex items-center gap-1">
+                                        {{ $team->players_count }} <x-icon name="user" class="w-3.5 h-3.5" />
                                     </span>
                                 </a>
                             </li>

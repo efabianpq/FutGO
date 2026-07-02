@@ -21,11 +21,11 @@
     </div>
 
     @if ($term !== '' && mb_strlen($term) < 2)
-        <p class="text-muted text-[14px]">Escribí al menos 2 caracteres.</p>
+        <p class="text-muted text-[14px]">Escribe al menos 2 caracteres.</p>
     @elseif ($term !== '' && $total === 0)
         <div class="bg-surface border border-border rounded-md p-8 text-center">
             <p class="font-display font-semibold text-text text-[16px]">Sin resultados para «{{ $term }}».</p>
-            <p class="text-muted text-[13px] mt-2">Probá con otro nombre, ciudad o identificador FUTGO.</p>
+            <p class="text-muted text-[13px] mt-2">Prueba con otro nombre, ciudad o identificador FUTGO.</p>
         </div>
     @elseif ($term !== '')
         <div class="flex flex-col gap-6">
@@ -114,7 +114,7 @@
 
         </div>
     @else
-        <p class="text-muted text-[14px]">Encontrá jugadores por su nombre o identificador FUTGO, clubes, torneos públicos y canchas.</p>
+        <p class="text-muted text-[14px]">Encuentra jugadores por su nombre o identificador FUTGO, clubes, torneos públicos y canchas.</p>
     @endif
 
 </div>

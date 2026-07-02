@@ -303,7 +303,7 @@ class DemoSocialSeeder extends Seeder
             if ($conv) {
                 $cap = DemoData::captainOf('independiente-sur');
                 $fredy = DemoData::user('fredy.agudelo@futgo.co');
-                $this->conversations->postMessage($conv, $cap, 'Vi tu respuesta. ¿Podés venir a un entrenamiento esta semana?');
+                $this->conversations->postMessage($conv, $cap, 'Vi tu respuesta. ¿Puedes venir a un entrenamiento esta semana?');
                 $this->conversations->postMessage($conv, $fredy, 'Claro, ¿qué día y a qué hora?');
                 $this->conversations->postMessage($conv, $cap, 'El jueves a las 7 pm en la sede. Te paso ubicación.');
             }

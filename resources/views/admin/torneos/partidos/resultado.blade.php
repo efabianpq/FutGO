@@ -123,7 +123,7 @@ $formInit = [
         <div class="mb-6 bg-pitch-mist border border-line rounded-md px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <p class="text-[13px] text-ink-soft">
                 Este partido está <strong class="text-pitch">finalizado</strong>. La planilla quedó como documento oficial.
-                Para corregir datos, anulá el resultado y volvé a cargarlo.
+                Para corregir datos, anula el resultado y vuelve a cargarlo.
             </p>
             <form method="POST" action="{{ route('admin.torneos.partidos.destroy', [$tournament, $match]) }}"
                   x-data @submit.prevent="if (confirm('¿Anular el resultado para editar la planilla?')) $el.submit()">
@@ -168,7 +168,7 @@ $formInit = [
                     </div>
                     <button type="button" @click="closePopup()" class="text-ink-mute hover:text-pitch text-xl leading-none">&times;</button>
                 </div>
-                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mb-3">Opcional — dejá en blanco si no lo sabés</p>
+                <p class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute mb-3">Opcional — deja en blanco si no lo sabes</p>
                 <div class="space-y-2">
                     <template x-for="(min, i) in popup.minutes" :key="i">
                         <div class="flex items-center gap-3">
@@ -233,7 +233,7 @@ $formInit = [
                 <input type="checkbox" x-model="isWalkover" class="w-4 h-4 mt-0.5 rounded border-line accent-alerta">
                 <span>
                     <span class="font-display font-bold text-pitch uppercase text-[14px]">Partido ganado por W.O.</span>
-                    <span class="block font-mono text-[11px] text-ink-mute mt-0.5">Marcá esta opción si un equipo no se presentó. Se asigna ganador y marcador 3–0 sin cargar goles a jugadores.</span>
+                    <span class="block font-mono text-[11px] text-ink-mute mt-0.5">Marca esta opción si un equipo no se presentó. Se asigna ganador y marcador 3–0 sin cargar goles a jugadores.</span>
                 </span>
             </label>
 
@@ -402,7 +402,7 @@ $formInit = [
         @if ($mvpEnabled)
             <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6" x-show="!isWalkover" x-cloak>
                 <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1">⭐ Figura del partido (MVP)</p>
-                <p class="font-mono text-[11px] text-ink-mute mb-3">Opcional. Elegí un jugador entre los que participaron.</p>
+                <p class="font-mono text-[11px] text-ink-mute mb-3">Opcional. Elige un jugador entre los que participaron.</p>
                 <select x-model="mvp"
                         class="w-full border border-line rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-pitch">
                     <option value="">— Sin MVP —</option>
@@ -492,7 +492,7 @@ $formInit = [
                 </template>
                 <template x-if="confirming">
                     <div class="flex items-center gap-3 flex-wrap">
-                        <p class="text-[13px] text-ink">¿Confirmás? El partido pasará a finalizado y se actualizarán estadísticas y posiciones.</p>
+                        <p class="text-[13px] text-ink">¿Confirmas? El partido pasará a finalizado y se actualizarán estadísticas y posiciones.</p>
                         <button type="submit"
                                 class="px-5 py-2.5 font-display font-bold uppercase text-[14px] bg-gol text-bone rounded-md hover:bg-gol-deep transition-all duration-fast">
                             Sí, confirmar
