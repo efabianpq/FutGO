@@ -172,14 +172,16 @@ class DemoSeeder extends Seeder
 
     private function claimCandidateExists(): bool
     {
-        // Un usuario cuyo documento coincide con un club_player 'por_verificar' sin cuenta.
-        $docs = DB::table('club_players')
+        // `document` está cifrado (AsEncryptedString): no admite WHERE directo ni
+        // comparación de ciphertext entre filas. El match real usa el blind index
+        // `document_hash` (HMAC determinista), igual que ProfileClaimService.
+        $hashes = DB::table('club_players')
             ->where('verification_status', 'por_verificar')
             ->whereNull('user_id')
-            ->whereNotNull('document')
-            ->pluck('document');
+            ->whereNotNull('document_hash')
+            ->pluck('document_hash');
 
-        return DB::table('users')->whereIn('document', $docs)->exists();
+        return DB::table('users')->whereIn('document_hash', $hashes)->exists();
     }
 
     private function count(string $table): int
