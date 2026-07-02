@@ -47,8 +47,8 @@ class SupportAIGateway
     public function classify(string $message, array $history = []): array
     {
         $prompt = <<<PROMPT
-Clasificá el siguiente mensaje de soporte de una app de fútbol amateur.
-Respondé ÚNICAMENTE con JSON válido, sin markdown, sin explicaciones.
+Clasifica el siguiente mensaje de soporte de una app de fútbol amateur.
+Responde ÚNICAMENTE con JSON válido, sin markdown, sin explicaciones.
 
 Categorías posibles: bug, duda, disputa, sugerencia, funcionalidad, reclamo, abuso, cuenta, verificacion, otro
 Prioridades posibles: critica, alta, media, baja
@@ -213,7 +213,7 @@ SYSTEM;
                     sleep(2 ** $attempts); // 2s, 4s, 8s
                     continue;
                 }
-                throw new \RuntimeException('Demasiadas solicitudes al asistente. Intentá en unos segundos.');
+                throw new \RuntimeException('Demasiadas solicitudes al asistente. Intenta en unos segundos.');
             }
 
             if ($response->failed()) {
@@ -225,7 +225,7 @@ SYSTEM;
             }
 
             return $response->json('candidates.0.content.parts.0.text')
-                ?? 'No pude generar una respuesta. Por favor intentá de nuevo.';
+                ?? 'No pude generar una respuesta. Por favor intenta de nuevo.';
         }
 
         throw new \RuntimeException('El asistente no está disponible.');

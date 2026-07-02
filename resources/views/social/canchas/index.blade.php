@@ -65,7 +65,7 @@
                         <p class="text-ink-mute text-[12px] mt-1">Capacidad aprox. {{ number_format($venue->approx_capacity) }}</p>
                     @endif
                     @if ($venue->maps_url)
-                        <span class="text-[12px] text-pitch/70 mt-2 inline-block">📍 Ver en mapa</span>
+                        <span class="text-[12px] text-pitch/70 mt-2 inline-flex items-center gap-1"><x-icon name="map-pin" class="w-3.5 h-3.5" /> Ver en mapa</span>
                     @endif
                 </a>
             @endforeach

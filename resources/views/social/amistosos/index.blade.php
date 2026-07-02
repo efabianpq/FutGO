@@ -34,7 +34,7 @@
     {{-- ── En disputa (notificación de desacuerdo) ─────────────────────── --}}
     @if ($enDisputa->isNotEmpty())
         <section class="mb-8">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-alerta mb-3">⚠ En disputa ({{ $enDisputa->count() }})</p>
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-alerta mb-3 inline-flex items-center gap-1.5"><x-icon name="warning" class="w-3.5 h-3.5" /> En disputa ({{ $enDisputa->count() }})</p>
             <div class="flex flex-col gap-3">
                 @foreach ($enDisputa as $m)
                     @php $side = $mySide($m); @endphp
@@ -94,11 +94,11 @@
                             <span class="font-mono text-[11px] text-ink-mute">{{ $m->scheduled_at?->format('d/m/Y H:i') ?? 'Sin fecha' }}</span>
                         </div>
                         @if ($m->venue)
-                            <p class="text-[12px] text-ink-mute mb-2">
-                                📍 <a href="{{ route('social.canchas.show', $m->venue->slug) }}" class="hover:underline text-pitch/70">{{ $m->venue->name }}</a>
+                            <p class="text-[12px] text-ink-mute mb-2 inline-flex items-center gap-1">
+                                <x-icon name="map-pin" class="w-3.5 h-3.5" /> <a href="{{ route('social.canchas.show', $m->venue->slug) }}" class="hover:underline text-pitch/70">{{ $m->venue->name }}</a>
                             </p>
                         @elseif ($m->location)
-                            <p class="text-[12px] text-ink-mute mb-2">📍 {{ $m->location }}</p>
+                            <p class="text-[12px] text-ink-mute mb-2 inline-flex items-center gap-1"><x-icon name="map-pin" class="w-3.5 h-3.5" /> {{ $m->location }}</p>
                         @endif
                         @if ($rivalReported && ! $iReported)
                             <p class="font-mono text-[11px] text-gol-deep mb-2">El rival ya cargó su marcador. Carga el tuyo para confirmar.</p>
@@ -160,7 +160,7 @@
                             @endif
                             {{-- Compartir resultado --}}
                             <div x-data="{ open: false }" class="relative">
-                                <button type="button" @click="open=!open" class="font-mono text-[11px] text-gol-deep font-bold uppercase tracking-wide-label hover:underline">🖼️</button>
+                                <button type="button" @click="open=!open" class="font-mono text-[11px] text-gol-deep font-bold uppercase tracking-wide-label hover:underline"><x-icon name="photo" class="w-4 h-4" /></button>
                                 <div x-show="open" x-cloak @click.outside="open=false" class="absolute right-0 z-10 mt-1 bg-white border border-line rounded-md shadow-card-2 py-1 w-44 text-left">
                                     <a href="{{ route('social.amistosos.img.card', $m) }}" target="_blank" class="block px-3 py-2 text-[13px] text-ink hover:bg-bone-soft">Ver tarjeta SVG</a>
                                     <a href="{{ route('social.amistosos.img.png', $m) }}" download class="block px-3 py-2 text-[13px] text-ink hover:bg-bone-soft">Descargar PNG</a>

@@ -43,10 +43,10 @@ class EnsureTournamentParticipant
         }
 
         if ($request->expectsJson()) {
-            return response()->json(['error' => 'No pertenecés a este torneo.'], 403);
+            return response()->json(['error' => 'No perteneces a este torneo.'], 403);
         }
 
-        abort(403, 'No pertenecés a este torneo.');
+        abort(403, 'No perteneces a este torneo.');
     }
 
     /** ¿El usuario pertenece al torneo en alguno de los roles permitidos? */

@@ -28,7 +28,7 @@
     <template x-if="selected">
         <div class="flex items-center gap-2 p-2 bg-gol/10 border border-gol/30 rounded-md">
             <span class="text-[13px] text-pitch-deep font-semibold flex-1" x-text="selected.name"></span>
-            <button type="button" @click="clear()" class="text-ink-mute hover:text-red-500 text-[11px]">✕ Quitar</button>
+            <button type="button" @click="clear()" class="text-ink-mute hover:text-red-500 text-[11px] inline-flex items-center gap-1"><x-icon name="x-mark" class="w-3 h-3" /> Quitar</button>
         </div>
     </template>
 

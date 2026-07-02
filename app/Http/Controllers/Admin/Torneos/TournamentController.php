@@ -326,7 +326,7 @@ class TournamentController extends Controller
                 // teams_per_group requerido y classifies < teams_per_group.
                 $teamsPerGroup = (int) $request->input('teams_per_group');
                 if ($teamsPerGroup < 2) {
-                    $validator->errors()->add('teams_per_group', 'Indicá cuántos equipos hay por grupo (mínimo 2).');
+                    $validator->errors()->add('teams_per_group', 'Indica cuántos equipos hay por grupo (mínimo 2).');
                 } elseif ((int) $request->input('classifies_per_group') >= $teamsPerGroup) {
                     $validator->errors()->add('classifies_per_group', 'La cantidad que clasifica debe ser menor que los equipos por grupo.');
                 }

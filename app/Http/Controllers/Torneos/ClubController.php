@@ -120,7 +120,7 @@ class ClubController extends Controller
         $request->validate([
             'shield' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
-            'shield.required' => 'Seleccioná una imagen.',
+            'shield.required' => 'Selecciona una imagen.',
             'shield.image'    => 'El archivo debe ser una imagen.',
             'shield.mimes'    => 'Formatos permitidos: JPG, PNG o WEBP.',
             'shield.max'      => 'La imagen no puede superar los 2 MB.',
@@ -258,7 +258,7 @@ class ClubController extends Controller
         abort_unless($clubPlayer->club_id === $club->id, 404);
 
         if ($clubPlayer->isCaptain()) {
-            return back()->with('error', 'No se puede quitar al capitán. Asigná otro capitán primero.');
+            return back()->with('error', 'No se puede quitar al capitán. Asigna otro capitán primero.');
         }
 
         $this->membership->syncMemberRemoved($clubPlayer);

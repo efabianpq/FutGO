@@ -89,7 +89,7 @@ class FriendlyMatchController extends Controller
         $data = $request->validate([
             'reason' => ['required', 'string', 'max:255'],
         ], [
-            'reason.required' => 'Indicá el motivo de la cancelación.',
+            'reason.required' => 'Indica el motivo de la cancelación.',
         ]);
 
         try {

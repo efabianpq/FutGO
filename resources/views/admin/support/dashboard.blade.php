@@ -19,8 +19,8 @@
         <x-stat-card label="Resueltos hoy" :value="$stats['resueltos_hoy']" />
         <x-stat-card label="Sin asignar" :value="$stats['sin_asignar']" accent="gol" />
         <x-stat-card label="Críticos abiertos" :value="$stats['criticos']" accent="gol" />
-        <x-stat-card label="👍 Satisfechos" :value="$stats['satisfaccion_positiva']" />
-        <x-stat-card label="👎 Insatisfechos" :value="$stats['satisfaccion_negativa']" />
+        <x-stat-card label="Satisfechos" :value="$stats['satisfaccion_positiva']" />
+        <x-stat-card label="Insatisfechos" :value="$stats['satisfaccion_negativa']" />
     </div>
 
     <div class="flex flex-wrap gap-2 mb-8">
@@ -32,7 +32,7 @@
 
     @if($patronesActivos->isNotEmpty())
         <div class="mb-8 p-4 rounded-xl border border-yellow-400 bg-yellow-400/10">
-            <p class="font-semibold text-yellow-600 dark:text-yellow-300 mb-2">⚠️ Patrones de incidente activos</p>
+            <p class="font-semibold text-yellow-600 dark:text-yellow-300 mb-2 inline-flex items-center gap-1.5"><x-icon name="warning" class="w-4 h-4" /> Patrones de incidente activos</p>
             <ul class="text-sm text-text space-y-1">
                 @foreach($patronesActivos as $p)
                     <li>{{ $p->pattern_key }} — {{ $p->tickets_count }} tickets (desde {{ $p->first_detected_at->diffForHumans() }})</li>
@@ -58,7 +58,7 @@
                         </div>
                     </a>
                 @empty
-                    <p class="text-sm text-muted p-4 rounded-xl border border-border">No hay tickets abiertos. 🎉</p>
+                    <p class="text-sm text-muted p-4 rounded-xl border border-border inline-flex items-center gap-1.5"><x-icon name="check-circle" class="w-4 h-4 text-green" /> No hay tickets abiertos.</p>
                 @endforelse
             </div>
         </div>

@@ -6,12 +6,12 @@
 
     // Ícono + color por tipo de evento (presentación liviana, sin lógica de negocio).
     $meta = [
-        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA => ['emoji' => '📣', 'accent' => 'text-pitch'],
-        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA  => ['emoji' => '🤝', 'accent' => 'text-gol-deep'],
-        FeedEvent::TYPE_AMISTOSO_CONFIRMADO   => ['emoji' => '📅', 'accent' => 'text-pitch'],
-        FeedEvent::TYPE_RESULTADO_AMISTOSO    => ['emoji' => '⚽', 'accent' => 'text-gol-deep'],
-        FeedEvent::TYPE_RESULTADO_TORNEO      => ['emoji' => '🏆', 'accent' => 'text-pitch'],
-        FeedEvent::TYPE_LOGRO_DESBLOQUEADO    => ['emoji' => '🏅', 'accent' => 'text-gol-deep'],
+        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA => ['icon' => 'megaphone', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA  => ['icon' => 'handshake', 'accent' => 'text-gol-deep'],
+        FeedEvent::TYPE_AMISTOSO_CONFIRMADO   => ['icon' => 'calendar', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_RESULTADO_AMISTOSO    => ['icon' => 'ball', 'accent' => 'text-gol-deep'],
+        FeedEvent::TYPE_RESULTADO_TORNEO      => ['icon' => 'trophy', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_LOGRO_DESBLOQUEADO    => ['icon' => 'medal', 'accent' => 'text-gol-deep'],
     ];
 @endphp
 
@@ -33,11 +33,11 @@
 
     @forelse ($events as $event)
         @php
-            $m = $meta[$event->type] ?? ['emoji' => '•', 'accent' => 'text-ink'];
+            $m = $meta[$event->type] ?? ['icon' => null, 'accent' => 'text-ink'];
             $isExpress = $event->type === FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA && $event->meta('express');
         @endphp
         <article class="bg-white border rounded-md shadow-card p-4 mb-3 flex gap-3 {{ $isExpress ? 'border-alerta ring-1 ring-alerta/30' : 'border-line' }}">
-            <div class="text-2xl shrink-0 leading-none">{{ $isExpress ? '⚡' : $m['emoji'] }}</div>
+            <div class="shrink-0"><x-icon :name="$isExpress ? 'bolt' : $m['icon']" class="w-6 h-6 {{ $isExpress ? 'text-alerta' : $m['accent'] }}" /></div>
             <div class="min-w-0 flex-1">
                 <p class="font-mono text-[11px] tracking-wide-label uppercase {{ $m['accent'] }}">
                     {{ $event->typeLabel() }}
@@ -80,7 +80,7 @@
     @empty
         {{-- Feed vacío: contenido de entrada (oportunidades de tu ciudad). --}}
         <div class="bg-white border border-line rounded-md shadow-card p-6 mb-6 text-center">
-            <p class="text-3xl mb-2">📭</p>
+            <div class="mb-2 flex justify-center"><x-icon name="inbox" class="w-8 h-8 text-ink-soft" /></div>
             <p class="font-display font-semibold text-ink">Tu Feed todavía está tranquilo</p>
             <p class="text-ink-soft text-[14px] mt-1">
                 @if ($hasCity)

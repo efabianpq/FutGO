@@ -84,7 +84,7 @@ class MatchSchedulerController extends Controller
         $this->ensureBelongs($tournament, $match);
 
         if ($match->status === 'finished') {
-            return back()->with('error', 'No se puede eliminar un partido finalizado. Anulá el resultado primero.');
+            return back()->with('error', 'No se puede eliminar un partido finalizado. Anula el resultado primero.');
         }
 
         $match->delete();

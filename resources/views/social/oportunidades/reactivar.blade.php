@@ -12,7 +12,7 @@
     {{-- Alerta de pausa --}}
     <div class="rounded-lg border border-red-300 bg-red-50 p-5 mb-6">
         <div class="flex gap-3">
-            <span class="text-red-500 text-xl shrink-0">⚠</span>
+            <x-icon name="warning" class="w-5 h-5 text-red-500 shrink-0" />
             <div>
                 <p class="font-semibold text-red-700 mb-1">Tu cuenta fue pausada automáticamente</p>
                 <p class="text-sm text-red-600">

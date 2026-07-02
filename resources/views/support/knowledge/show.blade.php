@@ -28,8 +28,8 @@
     <div class="mt-10 pt-6 border-t border-border">
         <p class="text-sm text-muted mb-3">¿Te resultó útil este artículo?</p>
         <div class="flex gap-2" x-show="!voted">
-            <button @click="vote(true)" class="btn btn-secondary btn-sm">👍 Sí</button>
-            <button @click="vote(false)" class="btn btn-secondary btn-sm">👎 No</button>
+            <button @click="vote(true)" class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="thumb-up" class="w-4 h-4" /> Sí</button>
+            <button @click="vote(false)" class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="thumb-down" class="w-4 h-4" /> No</button>
         </div>
         <p x-show="voted" x-cloak class="text-sm text-green">¡Gracias por tu opinión!</p>
     </div>

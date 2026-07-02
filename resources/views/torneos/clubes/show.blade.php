@@ -72,7 +72,7 @@
     @if ($levelSuggestion ?? null)
         @php $lvlSug = ['recreativo'=>'Recreativo','intermedio'=>'Intermedio','competitivo'=>'Competitivo','elite_amateur'=>'Élite Amateur']; @endphp
         <div class="mb-6 bg-amber-50 border border-amber-300 rounded-md p-4 flex flex-wrap items-center gap-3">
-            <span class="text-2xl">📈</span>
+            <x-icon name="trending-up" class="w-6 h-6 text-amber-700" />
             <div class="min-w-0 flex-1">
                 <p class="font-display font-bold text-amber-900 text-[14px]">¿Subimos de nivel?</p>
                 <p class="text-amber-800 text-[13px]">

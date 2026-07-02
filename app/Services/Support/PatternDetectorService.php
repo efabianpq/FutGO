@@ -48,7 +48,7 @@ class PatternDetectorService
             . 'en los últimos ' . config('support.pattern_window') . " minutos.\n\n"
             . "Patrón: {$pattern->pattern_key}\n"
             . "Primer ticket: #{$ticket->id} — {$ticket->subject}\n\n"
-            . 'Revisá el panel: ' . url('/admin/soporte'),
+            . 'Revisa el panel: ' . url('/admin/soporte'),
             fn ($m) => $m->to($teamEmail)->subject("⚠️ FutGO Soporte — Patrón detectado: {$ticket->category}")
         );
     }

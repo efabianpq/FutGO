@@ -64,10 +64,10 @@
             <button type="button"
                     @click="navigator.share ? navigator.share({title: shareTitle, url: shareUrl}) : window.open('https://wa.me/?text=' + encodeURIComponent(shareTitle + ' ' + shareUrl), '_blank')"
                     class="inline-flex items-center gap-1.5 bg-gol-deep text-bone font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:opacity-90">
-                📲 Compartir
+                <x-icon name="send" class="w-4 h-4" /> Compartir
             </button>
             <div x-data="{ open: false }" class="relative">
-                <button type="button" @click="open=!open" class="inline-flex items-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft">🖼️ Imágenes</button>
+                <button type="button" @click="open=!open" class="inline-flex items-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft"><x-icon name="photo" class="w-4 h-4" /> Imágenes</button>
                 <div x-show="open" x-cloak @click.outside="open=false" class="absolute z-10 mt-1 bg-white border border-line rounded-md shadow-card-2 py-1 w-56">
                     @foreach (['goleadores' => 'Goleadores', 'posiciones' => 'Posiciones'] as $tipo => $label)
                         <div class="flex items-center justify-between px-3 py-1.5 hover:bg-bone-soft">
@@ -90,7 +90,7 @@
                 </div>
             </div>
             <div x-data="{ open: false }" class="relative">
-                <button type="button" @click="open=!open" class="inline-flex items-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft">⬇ Exportar</button>
+                <button type="button" @click="open=!open" class="inline-flex items-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft"><x-icon name="download" class="w-4 h-4" /> Exportar</button>
                 <div x-show="open" x-cloak @click.outside="open=false" class="absolute z-10 mt-1 bg-white border border-line rounded-md shadow-card-2 py-1 w-52">
                     @foreach (['resultados' => 'Resultados', 'posiciones' => 'Posiciones', 'estadisticas' => 'Estadísticas'] as $ds => $lbl)
                         <div class="flex items-center justify-between px-3 py-1.5 hover:bg-bone-soft">
@@ -170,7 +170,7 @@
                 <div class="pt-4 border-t border-line-soft">
                     <p class="font-display font-bold text-pitch uppercase text-[13px] mb-2">Premios y reglamento</p>
                     @if ($tournament->prize_description)
-                        <p class="text-[13px] text-ink mb-2"><span class="text-ink-mute">🏆 Premio:</span> {{ $tournament->prize_description }}</p>
+                        <p class="text-[13px] text-ink mb-2"><span class="text-ink-mute inline-flex items-center gap-1"><x-icon name="trophy" class="w-3.5 h-3.5" /> Premio:</span> {{ $tournament->prize_description }}</p>
                     @endif
                     @if ($tournament->rules)
                         <p class="text-[13px] text-ink-soft whitespace-pre-line">{{ $tournament->rules }}</p>
@@ -295,8 +295,8 @@
                         <span class="font-mono text-[11px] text-ink-mute shrink-0">vs</span>
                         <span class="flex-1 text-left text-[13px] font-semibold text-ink truncate">{{ $m->awayTeam?->name ?? 'Por definir' }}</span>
                     </div>
-                    <p class="text-center font-mono text-[10px] text-ink-mute mt-1">
-                        🗓 {{ $fmt($m->scheduled_at) }}@if ($m->venue) · 📍 {{ $m->venue }}@endif
+                    <p class="text-center font-mono text-[10px] text-ink-mute mt-1 inline-flex items-center justify-center gap-1">
+                        <x-icon name="calendar" class="w-3 h-3" /> {{ $fmt($m->scheduled_at) }}@if ($m->venue) · <x-icon name="map-pin" class="w-3 h-3" /> {{ $m->venue }}@endif
                     </p>
                 </div>
             @empty
@@ -309,8 +309,8 @@
     {{-- ── Goleadores ──────────────────────────────────────────────────── --}}
     <section class="bg-white border border-line rounded-md shadow-card mt-4 overflow-hidden">
         <div class="bg-pitch-mist border-b border-line px-4 py-2.5 flex items-center justify-between">
-            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch">⚽ Goleadores</p>
-            <a href="{{ route('torneos.public.img', [$tournament, 'goleadores']) }}" target="_blank" class="font-mono text-[10px] text-gol-deep font-bold uppercase tracking-wide-label">Compartir 🖼️</a>
+            <p class="font-mono text-[11px] tracking-wide-label uppercase text-pitch inline-flex items-center gap-1.5"><x-icon name="ball" class="w-3.5 h-3.5" /> Goleadores</p>
+            <a href="{{ route('torneos.public.img', [$tournament, 'goleadores']) }}" target="_blank" class="font-mono text-[10px] text-gol-deep font-bold uppercase tracking-wide-label inline-flex items-center gap-1">Compartir <x-icon name="photo" class="w-3.5 h-3.5" /></a>
         </div>
         @forelse ($scorers as $i => $st)
             <div class="flex items-center gap-3 px-4 py-2.5 border-b border-line-soft last:border-0">

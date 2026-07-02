@@ -28,8 +28,8 @@
         @auth
             <div class="flex gap-2">
                 <a href="{{ route('social.oportunidades.mine') }}" class="btn btn-secondary btn-sm">Mis oportunidades</a>
-                <a href="{{ route('social.oportunidades.express') }}" class="btn btn-secondary btn-sm">⚡ Modo rápido</a>
-                <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm">+ Publicar</a>
+                <a href="{{ route('social.oportunidades.express') }}" class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="bolt" class="w-4 h-4" /> Modo rápido</a>
+                <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm inline-flex items-center gap-1.5"><x-icon name="plus" class="w-4 h-4" /> Publicar</a>
             </div>
         @else
             <a href="{{ route('login') }}" class="btn btn-primary btn-sm">Ingresa para publicar</a>
@@ -117,7 +117,7 @@
                                 {{ $op->typeLabel() }}
                             </span>
                             @if ($op->isExpress())
-                                <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-alerta text-white animate-pulse">⚡ Urgente</span>
+                                <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-alerta text-white animate-pulse inline-flex items-center gap-1"><x-icon name="bolt" class="w-3 h-3" /> Urgente</span>
                             @endif
                             @if ($viewer && $viewer->id === $op->user_id)
                                 <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-blue-100 text-blue-700">Mía</span>

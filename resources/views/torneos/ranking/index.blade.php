@@ -8,7 +8,7 @@
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8"
      x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
-    <p class="eyebrow">📊 Reputación FUTGO</p>
+    <p class="eyebrow inline-flex items-center gap-1.5"><x-icon name="bar-chart" class="w-3.5 h-3.5" /> Reputación FUTGO</p>
     <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Ranking de la plataforma</h1>
     <p class="text-[14px] text-ink-soft mb-1">Acumulado de toda la actividad en FUTGO. Se recalcula al finalizar torneos y diariamente por cron.</p>
 

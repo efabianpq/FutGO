@@ -264,20 +264,20 @@ class ConversationService
         $responder = $response->club?->name ?? $response->user?->name ?? 'el otro participante';
 
         return match ($opportunity->type) {
-            Opportunity::TYPE_BUSCAR_JUGADOR  => "{$responder} se sumó a {$owner}. Coordiná los próximos pasos por acá.",
-            Opportunity::TYPE_BUSCAR_REFUERZO => "{$responder} fue aceptado como refuerzo de {$owner}. Coordiná los detalles por acá.",
-            Opportunity::TYPE_BUSCAR_EQUIPO   => "{$responder} sumó a {$owner} a su plantilla. Coordiná los detalles por acá.",
-            default                            => "Se aceptó la conexión entre {$owner} y {$responder}. Coordiná los detalles por acá.",
+            Opportunity::TYPE_BUSCAR_JUGADOR  => "{$responder} se sumó a {$owner}. Coordina los próximos pasos por acá.",
+            Opportunity::TYPE_BUSCAR_REFUERZO => "{$responder} fue aceptado como refuerzo de {$owner}. Coordina los detalles por acá.",
+            Opportunity::TYPE_BUSCAR_EQUIPO   => "{$responder} sumó a {$owner} a su plantilla. Coordina los detalles por acá.",
+            default                            => "Se aceptó la conexión entre {$owner} y {$responder}. Coordina los detalles por acá.",
         };
     }
 
-    /** Resumen de coordinación de un amistoso confirmado (voseo). */
+    /** Resumen de coordinación de un amistoso confirmado. */
     private function summaryForFriendly(FriendlyMatch $match, ?Club $home, ?Club $away): string
     {
         $when = $match->scheduled_at?->format('d/m/Y H:i');
         $base = 'Amistoso confirmado: ' . ($home?->name ?? 'Local') . ' vs ' . ($away?->name ?? 'Visitante') . '.';
         $base .= $when ? " Fecha propuesta: {$when}." : '';
 
-        return $base . ' Coordiná horario, cancha y equipaciones por acá.';
+        return $base . ' Coordina horario, cancha y equipaciones por acá.';
     }
 }

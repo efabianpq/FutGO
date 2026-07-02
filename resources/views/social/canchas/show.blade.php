@@ -52,7 +52,7 @@
         @if ($venue->maps_url)
             <a href="{{ $venue->maps_url }}" target="_blank" rel="noopener noreferrer"
                class="mt-4 inline-flex items-center gap-1.5 text-[13px] text-pitch hover:underline">
-                📍 Ver ubicación en el mapa
+                <x-icon name="map-pin" class="w-4 h-4" /> Ver ubicación en el mapa
             </a>
         @endif
     </div>

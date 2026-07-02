@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 py-10">
-    <h1 class="font-display text-2xl font-bold text-text mb-2">❤️ Estado del Servicio</h1>
+    <h1 class="font-display text-2xl font-bold text-text mb-2 inline-flex items-center gap-2"><x-icon name="heart" class="w-6 h-6" /> Estado del Servicio</h1>
     <p class="text-muted mb-8 text-sm">Actualizado cada 5 minutos automáticamente.</p>
 
     @php
@@ -12,12 +12,12 @@
     @endphp
 
     @if($allOk)
-        <div class="mb-6 p-4 rounded-xl bg-green/10 border border-green/30 text-green font-semibold">
-            ✅ Todos los sistemas operativos
+        <div class="mb-6 p-4 rounded-xl bg-green/10 border border-green/30 text-green font-semibold inline-flex items-center gap-1.5">
+            <x-icon name="check-circle" class="w-4 h-4" /> Todos los sistemas operativos
         </div>
     @else
-        <div class="mb-6 p-4 rounded-xl bg-yellow-400/10 border border-yellow-400 text-yellow-600 dark:text-yellow-300 font-semibold">
-            ⚠️ Hay componentes con problemas activos
+        <div class="mb-6 p-4 rounded-xl bg-yellow-400/10 border border-yellow-400 text-yellow-600 dark:text-yellow-300 font-semibold inline-flex items-center gap-1.5">
+            <x-icon name="warning" class="w-4 h-4" /> Hay componentes con problemas activos
         </div>
     @endif
 

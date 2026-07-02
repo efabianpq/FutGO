@@ -55,13 +55,13 @@
                                 {{-- Marcador de tipo --}}
                                 @php
                                     [$icon, $accent] = match ($item->kind) {
-                                        SportsAgendaService::KIND_TOURNAMENT_MATCH => ['🏆', 'border-l-pitch'],
-                                        SportsAgendaService::KIND_FRIENDLY          => ['🤝', 'border-l-gol'],
-                                        SportsAgendaService::KIND_OPPORTUNITY       => ['📣', 'border-l-amber-400'],
-                                        default                                     => ['•', 'border-l-line'],
+                                        SportsAgendaService::KIND_TOURNAMENT_MATCH => ['trophy', 'border-l-pitch'],
+                                        SportsAgendaService::KIND_FRIENDLY          => ['handshake', 'border-l-gol'],
+                                        SportsAgendaService::KIND_OPPORTUNITY       => ['megaphone', 'border-l-amber-400'],
+                                        default                                     => [null, 'border-l-line'],
                                     };
                                 @endphp
-                                <span class="text-lg leading-none mt-0.5 shrink-0">{{ $icon }}</span>
+                                @if ($icon)<x-icon :name="$icon" class="w-5 h-5 mt-0.5 shrink-0 text-ink-mute" />@endif
 
                                 <div class="min-w-0 flex-1">
                                     <p class="font-display font-semibold text-pitch text-[14px] truncate">{{ $item->title }}</p>

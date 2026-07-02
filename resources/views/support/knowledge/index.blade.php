@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8">
     <div class="flex items-center gap-3 mb-6">
-        <h1 class="font-display text-2xl font-bold text-text">📚 Centro de ayuda</h1>
+        <h1 class="font-display text-2xl font-bold text-text inline-flex items-center gap-2"><x-icon name="book" class="w-6 h-6" /> Centro de ayuda</h1>
         <a href="{{ route('soporte.index') }}" class="ml-auto text-sm text-muted hover:text-text underline">Volver</a>
     </div>
 
@@ -27,7 +27,7 @@
                        class="block p-4 rounded-xl border border-border bg-surface hover:bg-surface-2 transition">
                         <div class="font-semibold text-text">{{ $article->title }}</div>
                         @if($article->helpful_count > 0)
-                            <div class="text-xs text-muted mt-1">👍 {{ $article->helpful_count }} personas lo encontraron útil</div>
+                            <div class="text-xs text-muted mt-1 inline-flex items-center gap-1"><x-icon name="thumb-up" class="w-3 h-3" /> {{ $article->helpful_count }} personas lo encontraron útil</div>
                         @endif
                     </a>
                 @endforeach

@@ -37,7 +37,7 @@
             <div class="flex items-center gap-1.5">
                 <span class="px-2.5 py-1 rounded-pill font-display font-bold text-[11px] uppercase tracking-wide-label bg-pitch text-bone">{{ $opportunity->typeLabel() }}</span>
                 @if ($opportunity->isExpress())
-                    <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-alerta text-white">⚡ Urgente</span>
+                    <span class="px-2 py-1 rounded-pill font-display font-bold text-[10px] uppercase tracking-wide-label bg-alerta text-white inline-flex items-center gap-1"><x-icon name="bolt" class="w-3 h-3" /> Urgente</span>
                 @endif
             </div>
             <span class="px-2.5 py-1 rounded-pill font-display font-bold text-[10.5px] uppercase tracking-wide-label {{ $statusBadge[$opportunity->status] ?? '' }}">{{ $opportunity->statusLabel() }}</span>
@@ -78,8 +78,8 @@
         </dl>
 
         @if (! empty($opportunity->payload['directed_to_name']))
-            <p class="text-[13px] text-ink-mute mt-3">
-                🎯 Dirigida a: <a href="{{ route('social.player.show', $opportunity->payload['directed_to_user_id'] ?? '#') }}" class="text-pitch font-semibold hover:underline">{{ $opportunity->payload['directed_to_name'] }}</a>
+            <p class="text-[13px] text-ink-mute mt-3 inline-flex items-center gap-1.5">
+                <x-icon name="target" class="w-4 h-4" /> Dirigida a: <a href="{{ route('social.player.show', $opportunity->payload['directed_to_user_id'] ?? '#') }}" class="text-pitch font-semibold hover:underline">{{ $opportunity->payload['directed_to_name'] }}</a>
             </p>
         @endif
 

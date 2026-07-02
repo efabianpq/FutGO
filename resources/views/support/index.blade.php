@@ -6,8 +6,8 @@
 
     @if($serviceIssues->isNotEmpty())
         <div class="mb-6 p-4 rounded-xl border border-yellow-400 bg-yellow-400/10">
-            <p class="font-semibold text-yellow-600 dark:text-yellow-300">
-                ⚠️ Hay problemas activos en la plataforma.
+            <p class="font-semibold text-yellow-600 dark:text-yellow-300 inline-flex items-center gap-1.5">
+                <x-icon name="warning" class="w-4 h-4" /> Hay problemas activos en la plataforma.
                 <a href="{{ route('soporte.status') }}" class="underline">Ver estado del servicio →</a>
             </p>
         </div>
@@ -19,31 +19,31 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <a href="{{ route('soporte.chat') }}" class="block p-5 rounded-2xl border border-green/30 bg-green/5 hover:bg-green/10 transition">
-            <div class="text-3xl mb-2">💬</div>
+            <div class="mb-2"><x-icon name="chat" class="w-8 h-8 text-green" /></div>
             <div class="font-semibold text-text">Asistente IA</div>
             <div class="text-sm text-muted mt-1">Respuestas inmediatas sobre cómo usar FutGO</div>
         </a>
 
         <a href="{{ route('soporte.knowledge') }}" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">
-            <div class="text-3xl mb-2">📚</div>
+            <div class="mb-2"><x-icon name="book" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Centro de ayuda</div>
             <div class="text-sm text-muted mt-1">Artículos y guías paso a paso</div>
         </a>
 
         <a href="{{ route('soporte.chat') }}?tipo=bug" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">
-            <div class="text-3xl mb-2">🐞</div>
+            <div class="mb-2"><x-icon name="bug" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Reportar problema</div>
             <div class="text-sm text-muted mt-1">Algo no funciona como debería</div>
         </a>
 
         <a href="{{ route('soporte.chat') }}?tipo=sugerencia" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">
-            <div class="text-3xl mb-2">💡</div>
+            <div class="mb-2"><x-icon name="lightbulb" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Enviar sugerencia</div>
             <div class="text-sm text-muted mt-1">Compartí una idea para mejorar FutGO</div>
         </a>
 
         <a href="{{ route('soporte.features') }}" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">
-            <div class="text-3xl mb-2">⭐</div>
+            <div class="mb-2"><x-icon name="star" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Solicitar funcionalidad</div>
             <div class="text-sm text-muted mt-1">Votá las ideas de la comunidad</div>
         </a>
@@ -52,13 +52,13 @@
             @if($openTickets > 0)
                 <span class="absolute top-3 right-3 bg-green text-white text-xs rounded-full px-2 py-0.5">{{ $openTickets }}</span>
             @endif
-            <div class="text-3xl mb-2">📋</div>
+            <div class="mb-2"><x-icon name="clipboard" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Mis casos</div>
             <div class="text-sm text-muted mt-1">Seguimiento de tus consultas</div>
         </a>
 
         <a href="{{ route('soporte.status') }}" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition sm:col-span-2 lg:col-span-3">
-            <div class="text-3xl mb-2">❤️</div>
+            <div class="mb-2"><x-icon name="heart" class="w-8 h-8 text-muted" /></div>
             <div class="font-semibold text-text">Estado del servicio</div>
             <div class="text-sm text-muted mt-1">Ver si hay problemas activos en la plataforma</div>
         </a>

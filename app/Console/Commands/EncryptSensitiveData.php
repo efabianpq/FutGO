@@ -31,7 +31,7 @@ class EncryptSensitiveData extends Command
     public function handle(): int
     {
         if (! $this->option('force') && ! $this->confirm('¿Hiciste backup de la BD? El cifrado modifica columnas en su lugar.')) {
-            $this->warn('Cancelado. Corré `php artisan backup:run --only-db` y volvé a intentar.');
+            $this->warn('Cancelado. Corre `php artisan backup:run --only-db` y vuelve a intentar.');
 
             return self::FAILURE;
         }

@@ -16,7 +16,7 @@
 
     {{-- Nuevo artículo --}}
     <details class="mb-8 p-4 rounded-xl border border-border bg-surface">
-        <summary class="font-semibold text-text cursor-pointer">➕ Nuevo artículo</summary>
+        <summary class="font-semibold text-text cursor-pointer inline-flex items-center gap-1.5"><x-icon name="plus" class="w-4 h-4" /> Nuevo artículo</summary>
         <form method="POST" action="{{ route('admin.soporte.knowledge.store') }}" class="mt-4 space-y-3">
             @csrf
             <input type="text" name="title" required maxlength="200" placeholder="Título"
@@ -39,7 +39,7 @@
                     <div class="font-medium text-text truncate">{{ $article->title }}</div>
                     <div class="text-xs text-muted mt-0.5">
                         {{ $article->category }} · {{ $article->source }}
-                        · 👍 {{ $article->helpful_count }} / 👎 {{ $article->not_helpful_count }}
+                        · <x-icon name="thumb-up" class="w-3 h-3 inline" /> {{ $article->helpful_count }} / <x-icon name="thumb-down" class="w-3 h-3 inline" /> {{ $article->not_helpful_count }}
                         · {{ $article->is_published ? 'Publicado' : 'Borrador' }}
                     </div>
                 </div>

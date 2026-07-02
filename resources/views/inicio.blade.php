@@ -29,13 +29,13 @@
         };
     };
 
-    $feedEmoji = [
-        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA => '📣',
-        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA  => '🤝',
-        FeedEvent::TYPE_AMISTOSO_CONFIRMADO   => '📅',
-        FeedEvent::TYPE_RESULTADO_AMISTOSO    => '⚽',
-        FeedEvent::TYPE_RESULTADO_TORNEO      => '🏆',
-        FeedEvent::TYPE_LOGRO_DESBLOQUEADO    => '🏅',
+    $feedIcon = [
+        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA => 'megaphone',
+        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA  => 'handshake',
+        FeedEvent::TYPE_AMISTOSO_CONFIRMADO   => 'calendar',
+        FeedEvent::TYPE_RESULTADO_AMISTOSO    => 'ball',
+        FeedEvent::TYPE_RESULTADO_TORNEO      => 'trophy',
+        FeedEvent::TYPE_LOGRO_DESBLOQUEADO    => 'medal',
     ];
 @endphp
 
@@ -45,7 +45,7 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
             <p class="font-mono text-[11px] tracking-[.14em] uppercase text-muted">{{ now()->translatedFormat('l d \d\e F') }}</p>
-            <h1 class="font-display font-bold text-2xl sm:text-3xl text-text mt-1">Hola, {{ $firstName }} 👋</h1>
+            <h1 class="font-display font-bold text-2xl sm:text-3xl text-text mt-1">Hola, {{ $firstName }}</h1>
         </div>
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('torneos.mi-carrera') }}" class="btn btn-primary btn-sm">Mi Carrera</a>
@@ -57,7 +57,7 @@
         <div class="mb-6 space-y-2">
             @foreach ($reminders as $item)
                 <div class="flex flex-wrap items-center gap-3 bg-green-tint border border-green/40 rounded-md px-4 py-3">
-                    <span class="text-lg leading-none shrink-0">{{ $item->status === 'convocatoria_pendiente' ? '📣' : '⚽' }}</span>
+                    <x-icon :name="$item->status === 'convocatoria_pendiente' ? 'megaphone' : 'ball'" class="w-5 h-5 shrink-0 text-green" />
                     <div class="min-w-0 flex-1">
                         <p class="font-display font-semibold text-text text-[14px] truncate">{{ $item->title }}</p>
                         <p class="font-mono text-[11px] text-muted truncate">
@@ -94,12 +94,12 @@
 
             @if ($grouped->isEmpty())
                 <div class="bg-surface border border-border rounded-md p-8 text-center">
-                    <p class="text-3xl mb-2">📭</p>
+                    <div class="mb-2 flex justify-center"><x-icon name="inbox" class="w-8 h-8 text-muted" /></div>
                     <p class="font-display font-semibold text-text text-[15px]">No tienes nada programado próximamente.</p>
                     <p class="text-muted text-[13px] mt-1">Cuando te convoquen, confirmes un amistoso o publiques una oportunidad, aparece acá.</p>
                     <div class="mt-4 flex justify-center gap-2">
                         <a href="{{ route('social.oportunidades.index') }}" class="btn btn-primary btn-sm">Ver oportunidades</a>
-                        <a href="{{ route('social.oportunidades.express') }}" class="btn btn-secondary btn-sm">⚡ Buscar rival ya</a>
+                        <a href="{{ route('social.oportunidades.express') }}" class="btn btn-secondary btn-sm inline-flex items-center gap-1.5"><x-icon name="bolt" class="w-4 h-4" /> Buscar rival ya</a>
                     </div>
                 </div>
             @else
@@ -111,14 +111,14 @@
                                 @foreach ($items as $item)
                                     @php
                                         $icon = match ($item->kind) {
-                                            SportsAgendaService::KIND_TOURNAMENT_MATCH => '🏆',
-                                            SportsAgendaService::KIND_FRIENDLY          => '🤝',
-                                            SportsAgendaService::KIND_OPPORTUNITY       => '📣',
-                                            default                                     => '•',
+                                            SportsAgendaService::KIND_TOURNAMENT_MATCH => 'trophy',
+                                            SportsAgendaService::KIND_FRIENDLY          => 'handshake',
+                                            SportsAgendaService::KIND_OPPORTUNITY       => 'megaphone',
+                                            default                                     => null,
                                         };
                                     @endphp
                                     <div class="px-4 py-3 flex items-start gap-3">
-                                        <span class="text-lg leading-none mt-0.5 shrink-0">{{ $icon }}</span>
+                                        @if ($icon)<x-icon :name="$icon" class="w-5 h-5 mt-0.5 shrink-0 text-muted" />@endif
                                         <div class="min-w-0 flex-1">
                                             <p class="font-display font-semibold text-text text-[14px] truncate">{{ $item->title }}</p>
                                             <p class="font-mono text-[11px] text-muted truncate">
@@ -162,8 +162,8 @@
                         @foreach ($suggested as $op)
                             <a href="{{ route('social.oportunidades.show', $op) }}"
                                class="block bg-surface border border-border rounded-md p-3 hover:border-green transition-colors {{ $op->isExpress() ? 'ring-1 ring-alerta/30 border-alerta/50' : '' }}">
-                                <p class="font-mono text-[10px] tracking-wide-label uppercase text-green">
-                                    {{ $op->isExpress() ? '⚡ Urgente · ' : '' }}{{ $op->typeLabel() }}
+                                <p class="font-mono text-[10px] tracking-wide-label uppercase text-green inline-flex items-center gap-1">
+                                    @if ($op->isExpress())<x-icon name="bolt" class="w-3 h-3" /> Urgente ·@endif {{ $op->typeLabel() }}
                                 </p>
                                 <p class="font-display font-semibold text-text text-[14px] mt-0.5 truncate">{{ $op->authorName() }}</p>
                                 <p class="font-mono text-[11px] text-muted truncate">{{ $op->city }}</p>
@@ -196,8 +196,11 @@
                 @if ($feedPreview->isNotEmpty())
                     <div class="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border">
                         @foreach ($feedPreview as $event)
+                            @php
+                                $eventIcon = ($event->type === FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA && $event->meta('express')) ? 'bolt' : ($feedIcon[$event->type] ?? null);
+                            @endphp
                             <div class="px-4 py-3 flex items-start gap-3">
-                                <span class="text-base leading-none mt-0.5 shrink-0">{{ ($event->type === FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA && $event->meta('express')) ? '⚡' : ($feedEmoji[$event->type] ?? '•') }}</span>
+                                @if ($eventIcon)<x-icon :name="$eventIcon" class="w-4 h-4 mt-0.5 shrink-0 text-muted" />@endif
                                 <div class="min-w-0 flex-1">
                                     <p class="text-text text-[13px] leading-snug">{{ $feedSummary($event) }}</p>
                                     <p class="font-mono text-[10px] text-muted mt-0.5">{{ $event->occurred_at?->diffForHumans() }}</p>

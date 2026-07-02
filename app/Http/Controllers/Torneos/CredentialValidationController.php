@@ -55,7 +55,7 @@ class CredentialValidationController extends Controller
             'fg'            => ['required', 'string', 'max:20'],
             'tournament_id' => ['nullable', 'integer', 'exists:tournaments,id'],
         ], [
-            'fg.required' => 'Ingresá el identificador FUTGO del jugador.',
+            'fg.required' => 'Ingresa el identificador FUTGO del jugador.',
         ]);
 
         $result = $this->performValidation(

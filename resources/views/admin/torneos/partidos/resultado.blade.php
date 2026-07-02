@@ -116,7 +116,7 @@ $formInit = [
                 {{ $match->phase->name }} · Partido #{{ $match->match_number }}
             </p>
         </div>
-        <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="ghost" size="sm">⬇ Descargar PDF</x-btn>
+        <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="ghost" size="sm"><x-icon name="download" class="w-4 h-4 inline -mt-0.5" /> Descargar PDF</x-btn>
     </div>
 
     @unless ($canEdit)
@@ -298,9 +298,9 @@ $formInit = [
                     <p class="font-display font-bold text-pitch uppercase text-[14px]"
                        x-text="(teamId === homeTeamId ? homeName : awayName)"></p>
                     <div class="flex items-center gap-3 font-mono text-[11px] text-ink-mute">
-                        <span>⚽ <strong class="text-pitch" x-text="teamGoals(teamId)"></strong></span>
-                        <span>🟨 <strong class="text-pitch" x-text="teamCards(teamId,'yellow')"></strong></span>
-                        <span>🟥 <strong class="text-pitch" x-text="teamCards(teamId,'red')"></strong></span>
+                        <span class="inline-flex items-center gap-1"><x-icon name="ball" class="w-3.5 h-3.5" /> <strong class="text-pitch" x-text="teamGoals(teamId)"></strong></span>
+                        <span class="inline-flex items-center gap-1"><x-icon name="card" class="w-3.5 h-3.5 text-warning" /> <strong class="text-pitch" x-text="teamCards(teamId,'yellow')"></strong></span>
+                        <span class="inline-flex items-center gap-1"><x-icon name="card" class="w-3.5 h-3.5 text-alerta" /> <strong class="text-pitch" x-text="teamCards(teamId,'red')"></strong></span>
                     </div>
                 </div>
 
@@ -311,10 +311,10 @@ $formInit = [
                                 <th class="px-4 py-2 text-left">Jugador</th>
                                 <th class="px-2 py-2 w-12">Jugó</th>
                                 <th class="px-2 py-2 w-12">Tit.</th>
-                                <th class="px-2 py-2 w-28">⚽ Goles</th>
-                                <th class="px-2 py-2 w-20">👟 Asist.</th>
-                                <th class="px-2 py-2 w-16">🟨</th>
-                                <th class="px-2 py-2 w-16">🟥</th>
+                                <th class="px-2 py-2 w-28"><x-icon name="ball" class="w-3.5 h-3.5 inline" /> Goles</th>
+                                <th class="px-2 py-2 w-20"><x-icon name="assist" class="w-3.5 h-3.5 inline" /> Asist.</th>
+                                <th class="px-2 py-2 w-16"><x-icon name="card" class="w-3.5 h-3.5 inline text-warning" /></th>
+                                <th class="px-2 py-2 w-16"><x-icon name="card" class="w-3.5 h-3.5 inline text-alerta" /></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-line-soft">
@@ -401,7 +401,7 @@ $formInit = [
         {{-- ─── MVP (figura del partido) — solo si el torneo lo habilita ─── --}}
         @if ($mvpEnabled)
             <div class="bg-white border border-line rounded-md shadow-card-2 p-6 mb-6" x-show="!isWalkover" x-cloak>
-                <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1">⭐ Figura del partido (MVP)</p>
+                <p class="font-display font-bold text-pitch uppercase text-[15px] mb-1 inline-flex items-center gap-1.5"><x-icon name="star" class="w-4 h-4" /> Figura del partido (MVP)</p>
                 <p class="font-mono text-[11px] text-ink-mute mb-3">Opcional. Elige un jugador entre los que participaron.</p>
                 <select x-model="mvp"
                         class="w-full border border-line rounded-md px-3 py-2 text-[14px] focus:outline-none focus:border-pitch">
@@ -510,7 +510,7 @@ $formInit = [
             </div>
         @else
             <div class="flex items-center gap-3">
-                <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="primary">⬇ Descargar planilla (PDF)</x-btn>
+                <x-btn :href="route('admin.torneos.partidos.pdf', [$tournament, $match])" variant="primary"><x-icon name="download" class="w-4 h-4 inline -mt-0.5" /> Descargar planilla (PDF)</x-btn>
                 <a href="{{ route('admin.torneos.partidos.index', $tournament) }}"
                    class="px-4 py-3 font-display font-semibold uppercase text-[13px] text-pitch hover:underline">
                     Volver a partidos

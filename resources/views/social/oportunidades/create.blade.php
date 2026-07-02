@@ -24,7 +24,7 @@
     {{-- S2-A: oportunidad dirigida a un jugador (retar / invitar desde su ficha) --}}
     @if ($targetPlayer)
         <div class="mb-4 bg-gol/10 border border-gol/40 text-pitch-deep px-4 py-3 rounded-md text-[13px] flex items-center gap-2">
-            <span class="text-lg">🎯</span>
+            <x-icon name="target" class="w-5 h-5" />
             <span>
                 @if ($initialType === 'BUSCAR_RIVAL')
                     Estás <strong>retando a un amistoso</strong> a <strong>{{ $targetPlayer->name }}</strong> ({{ $targetPlayer->futgo_id }}).

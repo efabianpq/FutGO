@@ -71,7 +71,7 @@ class MatchResultController extends Controller
         }
 
         if ($match->isFinished()) {
-            return back()->with('error', 'El partido ya está finalizado. Anulá el resultado antes de reprogramarlo.');
+            return back()->with('error', 'El partido ya está finalizado. Anula el resultado antes de reprogramarlo.');
         }
 
         $data = $request->validate([
@@ -365,7 +365,7 @@ class MatchResultController extends Controller
 
         if (! in_array($side, ['home', 'away'], true)) {
             return back()->withInput()
-                ->with('error', 'Indicá qué equipo se presentó para registrar el W.O.');
+                ->with('error', 'Indica qué equipo se presentó para registrar el W.O.');
         }
 
         if (! $match->home_team_id || ! $match->away_team_id) {
@@ -498,7 +498,7 @@ class MatchResultController extends Controller
                 ->first(fn ($m) => $m->home_team_id || $m->away_team_id);
 
             if ($downstream) {
-                return back()->with('error', "No se puede anular: el partido #{$downstream->match_number} de la ronda siguiente ya tiene un equipo asignado. Anulá primero ese resultado.");
+                return back()->with('error', "No se puede anular: el partido #{$downstream->match_number} de la ronda siguiente ya tiene un equipo asignado. Anula primero ese resultado.");
             }
         }
 

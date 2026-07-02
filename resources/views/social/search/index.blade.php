@@ -61,7 +61,7 @@
                                 @if ($club->shield_url)
                                     <img src="{{ $club->shield_url }}" alt="" class="w-9 h-9 rounded-full object-cover bg-surface-2 shrink-0">
                                 @else
-                                    <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0">⚽</span>
+                                    <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0"><x-icon name="ball" class="w-4 h-4" /></span>
                                 @endif
                                 <div class="min-w-0 flex-1">
                                     <p class="font-display font-semibold text-text text-[14px] truncate">{{ $club->name }}</p>
@@ -81,7 +81,7 @@
                     <div class="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border">
                         @foreach ($tournaments as $tournament)
                             <a href="{{ route('torneos.public.show', $tournament) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-2 transition-colors">
-                                <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0">🏆</span>
+                                <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0"><x-icon name="trophy" class="w-4 h-4" /></span>
                                 <div class="min-w-0 flex-1">
                                     <p class="font-display font-semibold text-text text-[14px] truncate">{{ $tournament->name }}</p>
                                     <p class="font-mono text-[11px] text-muted truncate">Torneo · {{ ucfirst($tournament->status) }}</p>
@@ -100,7 +100,7 @@
                     <div class="bg-surface border border-border rounded-md overflow-hidden divide-y divide-border">
                         @foreach ($venues as $venue)
                             <a href="{{ route('social.canchas.show', $venue) }}" class="flex items-center gap-3 px-4 py-3 hover:bg-surface-2 transition-colors">
-                                <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0">📍</span>
+                                <span class="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center text-muted shrink-0"><x-icon name="map-pin" class="w-4 h-4" /></span>
                                 <div class="min-w-0 flex-1">
                                     <p class="font-display font-semibold text-text text-[14px] truncate">{{ $venue->name }}</p>
                                     <p class="font-mono text-[11px] text-muted truncate">Cancha{{ $venue->city ? ' · ' . $venue->city : '' }}</p>

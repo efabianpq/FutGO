@@ -15,7 +15,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8">
     <div class="flex items-center gap-3 mb-2">
-        <h1 class="font-display text-2xl font-bold text-text">⭐ Ideas de la comunidad</h1>
+        <h1 class="font-display text-2xl font-bold text-text inline-flex items-center gap-2"><x-icon name="star" class="w-6 h-6" /> Ideas de la comunidad</h1>
         <a href="{{ route('soporte.index') }}" class="ml-auto text-sm text-muted hover:text-text underline">Volver</a>
     </div>
     <p class="text-muted mb-6 text-sm">Vota las funcionalidades que más quieres ver en FutGO.</p>

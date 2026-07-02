@@ -21,7 +21,7 @@
             ['route' => 'torneos.mis-equipos',        'label' => 'Mis Equipos',   'starts' => 'torneos.mis-equipos',  'desc' => 'Tus equipos en torneos activos'],
             ['route' => 'social.oportunidades.index', 'label' => 'Oportunidades', 'starts' => 'social.oportunidades', 'desc' => 'Busca o publica rival, jugadores o refuerzos'],
             ['route' => 'social.amistosos.index',     'label' => 'Amistosos',     'starts' => 'social.amistosos',     'desc' => 'Reporta resultados y resuelve disputas'],
-            ['route' => 'social.oportunidades.express','label' => 'Modo rápido ⚡','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitas rival para mañana?'],
+            ['route' => 'social.oportunidades.express','label' => 'Modo rápido','starts' => 'social.oportunidades.express', 'desc' => '¿Necesitas rival para mañana?'],
             ['route' => 'social.agenda.index',        'label' => 'Agenda',        'starts' => 'social.agenda',        'desc' => 'Todo lo programado, en un solo lugar'],
         ];
         $competirItems = [

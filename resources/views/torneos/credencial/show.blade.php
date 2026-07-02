@@ -15,7 +15,7 @@
 <div class="max-w-xl mx-auto px-4 sm:px-6 py-8">
 
     <div class="flex items-center justify-between mb-5">
-        <p class="eyebrow">🪪 Credencial digital FUTGO</p>
+        <p class="eyebrow inline-flex items-center gap-1.5"><x-icon name="id-card" class="w-3.5 h-3.5" /> Credencial digital FUTGO</p>
         <x-btn :href="route('torneos.mi-carrera')" variant="ghost" size="sm">← Mi carrera</x-btn>
     </div>
 

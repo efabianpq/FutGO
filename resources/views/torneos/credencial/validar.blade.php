@@ -11,7 +11,7 @@
 
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
-    <p class="eyebrow">🛡️ Control de identidad</p>
+    <p class="eyebrow inline-flex items-center gap-1.5"><x-icon name="shield" class="w-3.5 h-3.5" /> Control de identidad</p>
     <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Validar credencial</h1>
     <p class="text-[14px] text-ink-soft mb-6">
         Escanea el QR de la credencial o ingresa el identificador FUTGO a mano.
@@ -53,16 +53,16 @@
         @php
             $r = $result['result'];
             $palette = [
-                'habilitado'    => ['bg' => 'bg-gol/15',    'border' => 'border-gol',    'text' => 'text-pitch-deep', 'label' => '✓ HABILITADO'],
-                'no_habilitado' => ['bg' => 'bg-alerta/10',  'border' => 'border-alerta', 'text' => 'text-alerta',     'label' => '✗ NO HABILITADO'],
-                'no_encontrado' => ['bg' => 'bg-ink/5',      'border' => 'border-line',   'text' => 'text-ink',        'label' => '? NO ENCONTRADO'],
+                'habilitado'    => ['bg' => 'bg-gol/15',    'border' => 'border-gol',    'text' => 'text-pitch-deep', 'icon' => 'check', 'label' => 'HABILITADO'],
+                'no_habilitado' => ['bg' => 'bg-alerta/10',  'border' => 'border-alerta', 'text' => 'text-alerta',     'icon' => 'x-mark', 'label' => 'NO HABILITADO'],
+                'no_encontrado' => ['bg' => 'bg-ink/5',      'border' => 'border-line',   'text' => 'text-ink',        'icon' => 'warning', 'label' => 'NO ENCONTRADO'],
             ][$r];
         @endphp
 
         <div class="mt-6 border {{ $palette['border'] }} {{ $palette['bg'] }} rounded-md overflow-hidden">
             {{-- Banner resultado --}}
             <div class="px-5 py-3 border-b {{ $palette['border'] }} flex items-center justify-between gap-3">
-                <span class="font-display font-extrabold text-lg {{ $palette['text'] }} uppercase">{{ $palette['label'] }}</span>
+                <span class="font-display font-extrabold text-lg {{ $palette['text'] }} uppercase inline-flex items-center gap-2"><x-icon :name="$palette['icon']" class="w-5 h-5" /> {{ $palette['label'] }}</span>
                 <span class="font-mono text-[10px] uppercase tracking-wide-label text-ink-mute">
                     {{ $result['method'] === 'qr' ? 'Vía QR' : 'Manual' }}
                 </span>
@@ -72,9 +72,9 @@
                 {{-- Aviso de firma para escaneos QR --}}
                 @if ($result['method'] === 'qr')
                     @if ($result['signatureValid'])
-                        <p class="text-[12px] text-pitch font-semibold mb-3">🔒 Firma del QR verificada (emitido por FUTGO).</p>
+                        <p class="text-[12px] text-pitch font-semibold mb-3 inline-flex items-center gap-1.5"><x-icon name="lock" class="w-3.5 h-3.5" /> Firma del QR verificada (emitido por FUTGO).</p>
                     @else
-                        <p class="text-[12px] text-alerta font-semibold mb-3">⚠ Firma del QR inválida o ausente — verifica manualmente la identidad.</p>
+                        <p class="text-[12px] text-alerta font-semibold mb-3 inline-flex items-center gap-1.5"><x-icon name="warning" class="w-3.5 h-3.5" /> Firma del QR inválida o ausente — verifica manualmente la identidad.</p>
                     @endif
                 @endif
 

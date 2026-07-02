@@ -20,7 +20,7 @@
         <div class="flex gap-3">
             <div class="w-8 h-8 rounded-full bg-green/20 flex items-center justify-center text-sm shrink-0 text-text">F</div>
             <div class="bg-surface-2 rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs">
-                <p class="text-sm text-text">Hola {{ auth()->user()->name }} 👋</p>
+                <p class="text-sm text-text">Hola {{ auth()->user()->name }}</p>
                 <p class="text-sm mt-1 text-text">Soy el asistente de FutGO. Puedo ayudarte con:</p>
                 <div class="flex flex-wrap gap-2 mt-3">
                     <template x-for="option in quickOptions" :key="option.text">
@@ -64,7 +64,7 @@
 
         {{-- Ticket creado --}}
         <div x-show="ticketCreated" x-cloak class="rounded-xl border border-green/30 bg-green/5 p-4 text-sm">
-            <p class="font-semibold text-green">✅ Ticket creado</p>
+            <p class="font-semibold text-green inline-flex items-center gap-1.5"><x-icon name="check-circle" class="w-4 h-4" /> Ticket creado</p>
             <p class="text-muted mt-1">El equipo de FutGO va a revisar tu caso y te notificará por email cuando tengamos respuesta.</p>
             <a :href="'/soporte/mis-casos/' + ticketId" class="inline-block mt-2 text-green underline text-xs">Ver mi ticket →</a>
         </div>
@@ -92,7 +92,7 @@
             type="submit"
             :disabled="isLoading || !newMessage.trim() || ticketCreated"
             class="bg-green text-white px-4 py-3 rounded-xl disabled:opacity-40 hover:opacity-90 transition">
-            ➤
+            <x-icon name="send" class="w-4 h-4" />
         </button>
     </form>
 
@@ -109,11 +109,11 @@ window.supportChat = function () {
         ticketId: null,
 
         quickOptions: [
-            { label: '⚽ Crear torneo', text: '¿Cómo creo un torneo?' },
-            { label: '👥 Gestionar equipo', text: '¿Cómo gestiono mi equipo?' },
-            { label: '📅 Ver fixture', text: '¿Por qué no aparece el fixture?' },
-            { label: '📲 Credencial QR', text: '¿Cómo funciona la credencial QR?' },
-            { label: '🐞 Reportar error', text: 'Tengo un problema técnico' },
+            { label: 'Crear torneo', text: '¿Cómo creo un torneo?' },
+            { label: 'Gestionar equipo', text: '¿Cómo gestiono mi equipo?' },
+            { label: 'Ver fixture', text: '¿Por qué no aparece el fixture?' },
+            { label: 'Credencial QR', text: '¿Cómo funciona la credencial QR?' },
+            { label: 'Reportar error', text: 'Tengo un problema técnico' },
         ],
 
         init() {

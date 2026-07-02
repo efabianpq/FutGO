@@ -322,9 +322,9 @@
                 <p class="font-display font-extrabold text-5xl mt-2 {{ $fp >= 90 ? 'text-gol-deep' : ($fp < 60 ? 'text-alerta' : 'text-pitch') }}">{{ $fp }}</p>
                 <p class="font-mono text-[11px] text-ink-mute">/ 100</p>
                 <div class="flex justify-center gap-4 mt-3 text-[12px] text-ink-soft">
-                    <span>🟨 {{ $fairPlay?->yellow_cards ?? 0 }}</span>
-                    <span>🟥 {{ $fairPlay?->red_cards ?? 0 }}</span>
-                    <span>🚫 {{ $fairPlay?->absences ?? 0 }}</span>
+                    <span class="inline-flex items-center gap-1"><x-icon name="card" class="w-3.5 h-3.5 text-warning" /> {{ $fairPlay?->yellow_cards ?? 0 }}</span>
+                    <span class="inline-flex items-center gap-1"><x-icon name="card" class="w-3.5 h-3.5 text-alerta" /> {{ $fairPlay?->red_cards ?? 0 }}</span>
+                    <span class="inline-flex items-center gap-1"><x-icon name="ban" class="w-3.5 h-3.5" /> {{ $fairPlay?->absences ?? 0 }}</span>
                 </div>
             </div>
 
@@ -341,7 +341,7 @@
                     <ul class="divide-y divide-line-soft max-h-72 overflow-y-auto">
                         @foreach ($disciplinary as $ev)
                             <li class="px-4 py-3 flex items-center gap-3">
-                                <span class="text-lg">{{ $ev->type === 'red_card' ? '🟥' : '🟨' }}</span>
+                                <x-icon name="card" class="w-4 h-4 {{ $ev->type === 'red_card' ? 'text-alerta' : 'text-warning' }}" />
                                 <div class="min-w-0">
                                     <p class="font-display font-semibold text-pitch text-[13px]">
                                         {{ $ev->type === 'red_card' ? 'Roja' : 'Amarilla' }}
@@ -402,8 +402,8 @@
                                         <th class="px-3 py-2 text-center">Goles</th>
                                         <th class="px-3 py-2 text-center">Asist.</th>
                                         <th class="px-3 py-2 text-center">MVP</th>
-                                        <th class="px-3 py-2 text-center">🟨</th>
-                                        <th class="px-3 py-2 text-center">🟥</th>
+                                        <th class="px-3 py-2 text-center"><x-icon name="card" class="w-3.5 h-3.5 inline text-warning" /></th>
+                                        <th class="px-3 py-2 text-center"><x-icon name="card" class="w-3.5 h-3.5 inline text-alerta" /></th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-line-soft">

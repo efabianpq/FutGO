@@ -16,7 +16,7 @@
     <div class="mb-6">
         <a href="{{ route('social.oportunidades.index') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Volver a oportunidades</a>
         <div class="flex items-center gap-2 mt-2">
-            <span class="text-2xl">⚡</span>
+            <x-icon name="bolt" class="w-6 h-6 text-alerta" />
             <h1 class="font-display font-bold text-display-s text-pitch uppercase">Modo rápido</h1>
         </div>
         <p class="text-ink-soft text-[14px] mt-1">¿Necesitas rival para hoy o mañana? Publícalo en segundos. Vence solo al llegar la fecha.</p>
@@ -82,7 +82,7 @@
 
         <div class="flex justify-end gap-2 pt-2">
             <a href="{{ route('social.oportunidades.create') }}" class="btn btn-secondary btn-sm">Modo completo</a>
-            <button type="submit" class="btn btn-primary btn-sm">⚡ Publicar urgente</button>
+            <button type="submit" class="btn btn-primary btn-sm inline-flex items-center gap-1.5"><x-icon name="bolt" class="w-4 h-4" /> Publicar urgente</button>
         </div>
     </form>
 </div>
