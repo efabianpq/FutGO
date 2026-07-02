@@ -37,7 +37,7 @@ class ReputationTest extends TestCase
 
     private function tournament(array $attrs = []): Tournament
     {
-        $admin = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $admin = User::factory()->create([]);
 
         return Tournament::create(array_merge([
             'name' => 'Copa ' . uniqid(), 'slug' => 'copa-' . uniqid(),
@@ -51,7 +51,7 @@ class ReputationTest extends TestCase
     /** Crea un jugador con un player_stat en un torneo. Devuelve el usuario. */
     private function playerWithStats(Tournament $t, array $stats, ?string $name = null): User
     {
-        $user = User::factory()->create(['is_active' => true, 'modules' => 'torneos', 'name' => $name ?? ('Jugador ' . uniqid())]);
+        $user = User::factory()->create(['name' => $name ?? ('Jugador ' . uniqid())]);
         $team = Team::create(['tournament_id' => $t->id, 'captain_user_id' => $user->id, 'name' => 'Eq ' . uniqid(), 'status' => 'approved']);
         $tp = TeamPlayer::create(['team_id' => $team->id, 'user_id' => $user->id, 'status' => 'active']);
         PlayerStat::create(array_merge([
@@ -142,7 +142,7 @@ class ReputationTest extends TestCase
     public function test_el_fair_play_baja_con_tarjetas_e_inasistencias(): void
     {
         $t = $this->tournament();
-        $user = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $user = User::factory()->create([]);
         $team = Team::create(['tournament_id' => $t->id, 'captain_user_id' => $user->id, 'name' => 'FP', 'status' => 'approved']);
         $tp = TeamPlayer::create(['team_id' => $team->id, 'user_id' => $user->id, 'status' => 'active']);
 
@@ -190,5 +190,53 @@ class ReputationTest extends TestCase
         $this->assertSame(6, $seasons[0]['matches']);
         $this->assertSame(2024, $seasons[1]['season']);
         $this->assertSame(3, $seasons[1]['goals']);
+    }
+
+    // ── Deuda #10: freshness del ranking/fair play (cron + botón + timestamp) ──
+
+    public function test_el_comando_de_reconstruccion_esta_agendado_diariamente(): void
+    {
+        \Illuminate\Support\Facades\Artisan::call('schedule:list');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+
+        $this->assertStringContainsString('torneos:rebuild-reputation', $output);
+    }
+
+    public function test_admin_global_puede_recalcular_el_ranking_manualmente(): void
+    {
+        $t = $this->tournament(['city' => 'Cali', 'category' => 'libre']);
+        $this->playerWithStats($t, ['goals' => 10, 'matches_played' => 5], 'Crack A');
+
+        $this->assertSame(0, FutgoRanking::count());
+
+        $admin = User::factory()->create(['role' => 'admin',]);
+        $response = $this->actingAs($admin)->post(route('admin.ranking.recalculate'));
+
+        $response->assertRedirect();
+        $this->assertNotNull(session('status'));
+        $this->assertGreaterThan(0, FutgoRanking::count());
+    }
+
+    public function test_usuario_no_admin_no_puede_recalcular_el_ranking(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($user)->post(route('admin.ranking.recalculate'));
+
+        $response->assertRedirect(route('dashboard'));
+    }
+
+    public function test_la_vista_de_ranking_muestra_cuando_se_calculo_por_ultima_vez(): void
+    {
+        $t = $this->tournament(['city' => 'Cali', 'category' => 'libre']);
+        $this->playerWithStats($t, ['goals' => 10, 'matches_played' => 5], 'Crack A');
+        app(RankingService::class)->rebuild();
+
+        $user = User::factory()->create([]);
+        $response = $this->actingAs($user)->get(route('torneos.ranking'));
+
+        $response->assertOk();
+        $response->assertSee('Actualizado');
+        $response->assertDontSee('Todavía no se calculó', false);
     }
 }

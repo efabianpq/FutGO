@@ -19,7 +19,7 @@ class CaptainDashboardTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -102,7 +102,7 @@ class CaptainDashboardTest extends TestCase
         $club2 = $this->makeClub($cap2);
         $club2->update(['name' => 'Equipo Beta']);
 
-        $platformAdmin = $this->makeUser(['role' => 'admin', 'modules' => 'full']);
+        $platformAdmin = $this->makeUser(['role' => 'admin']);
 
         $this->actingAs($platformAdmin)
             ->get(route('torneos.mis-equipos'))

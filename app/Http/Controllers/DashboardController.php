@@ -5,19 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Social\Opportunity;
 use App\Services\Social\FeedService;
 use App\Services\Social\SportsAgendaService;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Pantalla de Inicio (v3) — dashboard de entrada del usuario de torneos.
+ * Pantalla de Inicio (v3) — dashboard de entrada del usuario.
  *
  * No es un dominio nuevo: agrega en una sola vista lo que ya existe —
  * agenda (qué tengo pendiente), recordatorios (qué requiere mi acción ya),
  * sugerencias (oportunidades de mi ciudad) y novedades (preview del Feed).
- *
- * Los usuarios sin módulo Torneos (polla pura) aterrizan en sus pronósticos,
- * preservando el comportamiento previo del antiguo redirect /dashboard.
  */
 class DashboardController extends Controller
 {
@@ -26,13 +22,9 @@ class DashboardController extends Controller
         private FeedService $feed,
     ) {}
 
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request): View
     {
         $user = $request->user();
-
-        if (! $user->hasTorneosAccess()) {
-            return redirect()->route('predictions.index');
-        }
 
         $now    = now();
         $agenda = $this->agenda->for($user, $now);

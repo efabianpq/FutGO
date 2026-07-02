@@ -25,7 +25,7 @@ class SponsorAndReminderTest extends TestCase
     /** Torneo en curso con un partido programado mañana y un jugador convocado. */
     private function upcomingMatchScenario(bool $notificationsEnabled = true): array
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $tournament = Tournament::create([
             'name' => 'Copa G ' . uniqid(), 'slug' => 'copa-g-' . uniqid(),
             'sport' => 'futbol', 'status' => 'in_progress', 'format' => 'round_robin',
@@ -38,7 +38,7 @@ class SponsorAndReminderTest extends TestCase
         $home = Team::create(['tournament_id' => $tournament->id, 'captain_user_id' => $admin->id, 'name' => 'Local', 'status' => 'approved']);
         $away = Team::create(['tournament_id' => $tournament->id, 'captain_user_id' => $admin->id, 'name' => 'Visita', 'status' => 'approved']);
 
-        $player = User::factory()->create(['is_active' => true, 'modules' => 'torneos', 'notifications_enabled' => $notificationsEnabled]);
+        $player = User::factory()->create(['notifications_enabled' => $notificationsEnabled]);
         $tp = TeamPlayer::create(['team_id' => $home->id, 'user_id' => $player->id, 'status' => 'active']);
 
         $match = TournamentMatch::create([
@@ -114,13 +114,11 @@ class SponsorAndReminderTest extends TestCase
 
     // ── Scheduler ─────────────────────────────────────────────────────────────
 
-    public function test_el_scheduler_de_torneos_coexiste_con_el_de_la_polla(): void
+    public function test_el_scheduler_de_torneos_esta_registrado(): void
     {
         $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
         $commands = collect($schedule->events())->map(fn ($e) => $e->command ?? '')->implode(' ');
 
-        // Ambos schedulers están registrados, sin conflicto.
         $this->assertStringContainsString('torneos:match-reminders', $commands);
-        $this->assertStringContainsString('notifications:reminders', $commands);   // polla intacta
     }
 }

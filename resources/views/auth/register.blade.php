@@ -7,7 +7,7 @@
     <div class="text-center mb-8">
         <p class="eyebrow justify-center">Registro</p>
         <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase mt-3">Crear cuenta</h1>
-        <p class="text-body-s text-ink-soft mt-2">Necesitás un código de invitación para activar tu acceso.</p>
+        <p class="text-body-s text-ink-soft mt-2">Creá tu cuenta gratis y empezá a jugar.</p>
     </div>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">

@@ -25,18 +25,14 @@ class MatchResultTest extends TestCase
     private function makeTournamentAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true,
-            'role'      => 'torneo_admin',
-            'modules'   => 'torneos',
+            'role'      => 'user',
         ]);
     }
 
     private function makeUser(): User
     {
         return User::factory()->create([
-            'is_active' => true,
             'role'      => 'user',
-            'modules'   => 'torneos',
         ]);
     }
 
@@ -687,5 +683,66 @@ class MatchResultTest extends TestCase
             // Si no hay más torneos, la fila puede no existir (igualmente correcto)
             $this->assertTrue(true);
         }
+    }
+
+    // ─── Limitación #6: convocatoria previa pre-llena la alineación ────────────
+
+    public function test_planilla_pre_marca_solo_a_los_jugadores_confirmados_en_la_convocatoria(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament, $teams] = $this->setupRoundRobinWithFixture($admin, 2);
+        $match = $this->firstMatch($tournament);
+
+        $homeTeam = $teams[0];
+        $homeCaptainPlayer = TeamPlayer::where('team_id', $homeTeam->id)->first();
+        $confirmed = TeamPlayer::create(['team_id' => $homeTeam->id, 'full_name' => 'Confirmado', 'status' => 'active']);
+        $declined  = TeamPlayer::create(['team_id' => $homeTeam->id, 'full_name' => 'Declinado', 'status' => 'active']);
+
+        \App\Models\Torneos\MatchCallUp::create(['match_id' => $match->id, 'team_player_id' => $homeCaptainPlayer->id, 'team_id' => $homeTeam->id, 'status' => 'confirmado']);
+        \App\Models\Torneos\MatchCallUp::create(['match_id' => $match->id, 'team_player_id' => $confirmed->id, 'team_id' => $homeTeam->id, 'status' => 'confirmado']);
+        \App\Models\Torneos\MatchCallUp::create(['match_id' => $match->id, 'team_player_id' => $declined->id, 'team_id' => $homeTeam->id, 'status' => 'declinado']);
+
+        $response = $this->actingAs($admin)->get(route('admin.torneos.partidos.resultado', [$tournament, $match]));
+        $response->assertOk();
+
+        $confirmedIds = $response->viewData('confirmedCallUpIds');
+        $this->assertTrue($confirmedIds->contains($homeCaptainPlayer->id));
+        $this->assertTrue($confirmedIds->contains($confirmed->id));
+        $this->assertFalse($confirmedIds->contains($declined->id));
+
+        $teamsWithCallUps = $response->viewData('teamsWithCallUps');
+        $this->assertTrue($teamsWithCallUps->contains($homeTeam->id));
+        $this->assertFalse($teamsWithCallUps->contains($teams[1]->id));
+
+        // El equipo visitante (sin convocatoria cargada) mantiene el fallback: todos jugados.
+        preg_match('/resultadoForm\((.*?)\)"/s', $response->getContent(), $m);
+        $formInit = json_decode(html_entity_decode($m[1]), true);
+        $players = collect($formInit['players']);
+
+        $this->assertTrue($players->firstWhere('id', $homeCaptainPlayer->id)['played']);
+        $this->assertTrue($players->firstWhere('id', $confirmed->id)['played']);
+        $this->assertFalse($players->firstWhere('id', $declined->id)['played']);
+
+        $awayCaptainPlayer = TeamPlayer::where('team_id', $teams[1]->id)->first();
+        $this->assertTrue($players->firstWhere('id', $awayCaptainPlayer->id)['played']);
+    }
+
+    public function test_planilla_sin_convocatoria_previa_mantiene_todo_el_plantel_marcado(): void
+    {
+        $admin = $this->makeTournamentAdmin();
+        [$tournament, $teams] = $this->setupRoundRobinWithFixture($admin, 2);
+        $match = $this->firstMatch($tournament);
+
+        $response = $this->actingAs($admin)->get(route('admin.torneos.partidos.resultado', [$tournament, $match]));
+        $response->assertOk();
+
+        $this->assertTrue($response->viewData('confirmedCallUpIds')->isEmpty());
+        $this->assertTrue($response->viewData('teamsWithCallUps')->isEmpty());
+
+        preg_match('/resultadoForm\((.*?)\)"/s', $response->getContent(), $m);
+        $formInit = json_decode(html_entity_decode($m[1]), true);
+        $players = collect($formInit['players']);
+
+        $this->assertTrue($players->every(fn ($p) => $p['played'] === true));
     }
 }

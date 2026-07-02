@@ -24,12 +24,12 @@ class MatchDynamicsTest extends TestCase
 
     private function makeAdmin(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function makeUser(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     /** Torneo round_robin con fixture; cada equipo tiene capitán + 1 jugador extra. */

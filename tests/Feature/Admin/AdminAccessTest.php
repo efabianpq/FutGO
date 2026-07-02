@@ -12,10 +12,10 @@ class AdminAccessTest extends TestCase
 
     public function test_usuario_normal_es_redirigido_con_mensaje(): void
     {
-        $user = User::factory()->create(['role' => 'user', 'is_active' => true]);
+        $user = User::factory()->create(['role' => 'user']);
 
         $res = $this->actingAs($user)->get('/admin');
-        $res->assertRedirect(route('predictions.index'));
+        $res->assertRedirect(route('dashboard'));
         $res->assertSessionHas('status', fn ($m) => str_contains($m, 'No tienes permisos'));
     }
 
@@ -26,25 +26,21 @@ class AdminAccessTest extends TestCase
 
     public function test_admin_accede_al_dashboard(): void
     {
-        $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+        $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk();
     }
 
     public function test_todas_las_rutas_admin_protegidas(): void
     {
-        $user = User::factory()->create(['role' => 'user', 'is_active' => true]);
+        $user = User::factory()->create(['role' => 'user']);
         $this->actingAs($user);
 
         foreach ([
             route('admin.dashboard'),
-            route('admin.codes.index'),
             route('admin.users.index'),
-            route('admin.fixture.index'),
-            route('admin.results.index'),
-            route('admin.settings.edit'),
         ] as $url) {
-            $this->get($url)->assertRedirect(route('predictions.index'));
+            $this->get($url)->assertRedirect(route('dashboard'));
         }
     }
 }

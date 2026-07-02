@@ -33,9 +33,7 @@ class ConversationTest extends TestCase
             'name'      => 'User ' . uniqid(),
             'email'     => uniqid('user') . '@test.com',
             'password'  => bcrypt('password'),
-            'is_active' => true,
             'role'      => 'user',
-            'modules'   => 'torneos',
         ], $extra));
     }
 

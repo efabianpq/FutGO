@@ -176,38 +176,40 @@ $matchStatusMeta = [
                                         @if ($standingsPhase->groups->count() > 1)
                                             <p class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute mb-2">Grupo {{ $group->name }}</p>
                                         @endif
-                                        <table class="w-full text-left">
-                                            <thead>
-                                                <tr class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute border-b border-line">
-                                                    <th class="py-2 w-6">#</th>
-                                                    <th class="py-2">Equipo</th>
-                                                    <th class="py-2 text-center w-10">PJ</th>
-                                                    <th class="py-2 text-center w-10">DG</th>
-                                                    <th class="py-2 text-center w-12 text-pitch">PTS</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-line-soft">
-                                                @foreach ($group->standings->take(4) as $standing)
-                                                    @php $qualifies = $classifies > 0 && $standing->position <= $classifies; @endphp
-                                                    <tr class="{{ $qualifies ? 'bg-gol/5' : '' }}">
-                                                        <td class="py-2 font-mono text-[12px] {{ $qualifies ? 'text-gol-deep font-bold' : 'text-ink-mute' }}">{{ $standing->position }}</td>
-                                                        <td class="py-2">
-                                                            <div class="flex items-center gap-1.5">
-                                                                @if ($standing->team?->color)
-                                                                    <span class="w-2.5 h-2.5 rounded-full border border-line/50 shrink-0" style="background:{{ $standing->team->color }}"></span>
-                                                                @endif
-                                                                <span class="font-display font-semibold text-pitch text-[13px] truncate">{{ $standing->team?->name ?? 'Por definir' }}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="py-2 text-center font-mono text-[12px]">{{ $standing->played }}</td>
-                                                        <td class="py-2 text-center font-mono text-[12px] {{ $standing->goal_difference > 0 ? 'text-gol-deep' : ($standing->goal_difference < 0 ? 'text-alerta' : '') }}">
-                                                            {{ $standing->goal_difference > 0 ? '+' : '' }}{{ $standing->goal_difference }}
-                                                        </td>
-                                                        <td class="py-2 text-center font-display font-extrabold text-[14px] text-pitch">{{ $standing->points }}</td>
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left">
+                                                <thead>
+                                                    <tr class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute border-b border-line">
+                                                        <th class="py-2 w-6">#</th>
+                                                        <th class="py-2">Equipo</th>
+                                                        <th class="py-2 text-center w-10">PJ</th>
+                                                        <th class="py-2 text-center w-10">DG</th>
+                                                        <th class="py-2 text-center w-12 text-pitch">PTS</th>
                                                     </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody class="divide-y divide-line-soft">
+                                                    @foreach ($group->standings->take(4) as $standing)
+                                                        @php $qualifies = $classifies > 0 && $standing->position <= $classifies; @endphp
+                                                        <tr class="{{ $qualifies ? 'bg-gol/5' : '' }}">
+                                                            <td class="py-2 font-mono text-[12px] {{ $qualifies ? 'text-gol-deep font-bold' : 'text-ink-mute' }}">{{ $standing->position }}</td>
+                                                            <td class="py-2">
+                                                                <div class="flex items-center gap-1.5">
+                                                                    @if ($standing->team?->color)
+                                                                        <span class="w-2.5 h-2.5 rounded-full border border-line/50 shrink-0" style="background:{{ $standing->team->color }}"></span>
+                                                                    @endif
+                                                                    <span class="font-display font-semibold text-pitch text-[13px] truncate">{{ $standing->team?->name ?? 'Por definir' }}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td class="py-2 text-center font-mono text-[12px]">{{ $standing->played }}</td>
+                                                            <td class="py-2 text-center font-mono text-[12px] {{ $standing->goal_difference > 0 ? 'text-gol-deep' : ($standing->goal_difference < 0 ? 'text-alerta' : '') }}">
+                                                                {{ $standing->goal_difference > 0 ? '+' : '' }}{{ $standing->goal_difference }}
+                                                            </td>
+                                                            <td class="py-2 text-center font-display font-extrabold text-[14px] text-pitch">{{ $standing->points }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 @endif
                             @endforeach
@@ -262,29 +264,31 @@ $matchStatusMeta = [
                 @if ($topScorers->isEmpty())
                     <p class="text-[13px] text-ink-mute italic">Sin estadísticas registradas aún.</p>
                 @else
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute border-b border-line">
-                                <th class="py-2 w-5">#</th>
-                                <th class="py-2">Jugador</th>
-                                <th class="py-2 text-center w-8" title="Goles">⚽</th>
-                                <th class="py-2 text-center w-8" title="Asistencias">👟</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-line-soft">
-                            @foreach ($topScorers as $i => $stat)
-                                <tr>
-                                    <td class="py-2 font-mono text-[11px] text-ink-mute">{{ $i + 1 }}</td>
-                                    <td class="py-2 min-w-0">
-                                        <p class="font-display font-semibold text-pitch text-[13px] truncate">{{ $stat->teamPlayer?->user?->name ?? '—' }}</p>
-                                        <p class="font-mono text-[10px] text-ink-mute truncate">{{ $stat->teamPlayer?->team?->name ?? '—' }}</p>
-                                    </td>
-                                    <td class="py-2 text-center font-mono font-bold text-[14px] text-pitch">{{ $stat->goals }}</td>
-                                    <td class="py-2 text-center font-mono text-[13px]">{{ $stat->assists }}</td>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="font-mono text-[10px] tracking-wide-label uppercase text-ink-mute border-b border-line">
+                                    <th class="py-2 w-5">#</th>
+                                    <th class="py-2">Jugador</th>
+                                    <th class="py-2 text-center w-8" title="Goles">⚽</th>
+                                    <th class="py-2 text-center w-8" title="Asistencias">👟</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-line-soft">
+                                @foreach ($topScorers as $i => $stat)
+                                    <tr>
+                                        <td class="py-2 font-mono text-[11px] text-ink-mute">{{ $i + 1 }}</td>
+                                        <td class="py-2 min-w-0">
+                                            <p class="font-display font-semibold text-pitch text-[13px] truncate">{{ $stat->teamPlayer?->user?->name ?? '—' }}</p>
+                                            <p class="font-mono text-[10px] text-ink-mute truncate">{{ $stat->teamPlayer?->team?->name ?? '—' }}</p>
+                                        </td>
+                                        <td class="py-2 text-center font-mono font-bold text-[14px] text-pitch">{{ $stat->goals }}</td>
+                                        <td class="py-2 text-center font-mono text-[13px]">{{ $stat->assists }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </section>
 

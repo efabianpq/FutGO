@@ -19,9 +19,7 @@ class FixtureGeneratorTest extends TestCase
     private function makeTournament(array $attrs = []): Tournament
     {
         $admin = User::factory()->create([
-            'is_active' => true,
-            'role'      => 'torneo_admin',
-            'modules'   => 'torneos',
+            'role'      => 'user',
         ]);
 
         return Tournament::create(array_merge([
@@ -42,7 +40,7 @@ class FixtureGeneratorTest extends TestCase
     private function addApprovedTeams(Tournament $tournament, int $n): void
     {
         for ($i = 0; $i < $n; $i++) {
-            $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+            $captain = User::factory()->create([]);
             Team::create([
                 'tournament_id'   => $tournament->id,
                 'captain_user_id' => $captain->id,

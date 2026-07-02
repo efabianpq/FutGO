@@ -22,7 +22,7 @@ class TournamentHubTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -36,7 +36,7 @@ class TournamentHubTest extends TestCase
      */
     private function makeScenario(int $n = 4): array
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
 
         $tournament = Tournament::create([
             'name'                 => 'Copa ' . uniqid(),
@@ -144,7 +144,7 @@ class TournamentHubTest extends TestCase
     public function test_administrador_global_puede_acceder(): void
     {
         [$tournament] = $this->makeScenario();
-        $globalAdmin = $this->makeUser(['role' => 'admin', 'modules' => 'full']);
+        $globalAdmin = $this->makeUser(['role' => 'admin']);
 
         $this->actingAs($globalAdmin)
             ->get(route('torneos.hub', $tournament))
@@ -166,7 +166,7 @@ class TournamentHubTest extends TestCase
         [$tournament] = $this->makeScenario();
 
         // Usuario que pertenece a OTRO torneo, no a este
-        $otherAdmin = $this->makeUser(['role' => 'torneo_admin']);
+        $otherAdmin = $this->makeUser(['role' => 'user']);
         $otherTournament = Tournament::create([
             'name' => 'Otra', 'slug' => 'otra-' . uniqid(), 'sport' => 'futbol',
             'status' => 'open', 'format' => 'round_robin', 'groups_count' => 1,

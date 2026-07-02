@@ -17,9 +17,7 @@ class CredentialRateLimitTest extends TestCase
     private function makeReferee(): User
     {
         return User::factory()->create([
-            'is_active' => true,
-            'role'      => 'torneo_admin',
-            'modules'   => 'torneos',
+            'role'      => 'user',
         ]);
     }
 

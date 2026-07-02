@@ -193,7 +193,7 @@
     {{-- Historial de temporadas --}}
     @if ($seasons->isNotEmpty())
         <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute mb-3">Historial de temporadas</p>
-        <div class="bg-white border border-line rounded-md shadow-card overflow-hidden mb-6">
+        <div class="bg-white border border-line rounded-md shadow-card overflow-hidden overflow-x-auto mb-6">
             <table class="w-full text-[13px]">
                 <thead class="bg-pitch-mist">
                     <tr>

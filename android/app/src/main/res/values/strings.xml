@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FutGO</string>
+    <string name="title_activity_main">FutGO</string>
+    <string name="package_name">com.futgo.app</string>
+    <string name="custom_url_scheme">com.futgo.app</string>
+</resources>

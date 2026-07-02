@@ -43,9 +43,7 @@ class PlayedWithAndAgendaTest extends TestCase
             'name'      => 'Jugador ' . uniqid(),
             'email'     => uniqid('user') . '@test.com',
             'password'  => bcrypt('password'),
-            'is_active' => true,
             'role'      => 'user',
-            'modules'   => 'torneos',
         ], $extra));
     }
 
@@ -75,7 +73,7 @@ class PlayedWithAndAgendaTest extends TestCase
      */
     private function makeTournamentWithTeams(User $capA, User $capB, string $status = 'in_progress'): array
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
 
         $tournament = Tournament::create([
             'name'               => 'Torneo ' . uniqid(),

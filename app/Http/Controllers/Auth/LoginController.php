@@ -33,24 +33,14 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        if (! $request->user()->is_active) {
-            return redirect()->route('activate.show');
-        }
-
         $user = $request->user();
 
-        // H1: el admin de plataforma va a su dashboard.
-        // Usuarios con acceso a torneos van a Mi Carrera (torneos.mi-carrera).
-        // Usuarios solo-polla van al dashboard (que redirige a predictions.index).
+        // H1: el admin de plataforma va a su dashboard; el resto va a Mi Carrera.
         if ($user->isAdmin()) {
             return redirect()->intended(route('dashboard'));
         }
 
-        if ($user->hasTorneosAccess()) {
-            return redirect()->intended(route('torneos.mi-carrera'));
-        }
-
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('torneos.mi-carrera'));
     }
 
     public function destroy(Request $request): RedirectResponse

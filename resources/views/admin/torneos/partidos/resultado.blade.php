@@ -9,16 +9,25 @@
 // roster completo como titular. En re-edición se respeta lo guardado.
 $freshSheet = $existingLineups->isEmpty();
 
+// Limitación #6: si hay convocatoria previa cargada para el equipo, la planilla
+// arranca marcando solo a los jugadores confirmados (no todo el plantel activo).
+$confirmedCallUpIds ??= collect();
+$teamsWithCallUps ??= collect();
+
 // Eventos existentes agrupados por jugador (para re-edición de un partido en vivo).
 $eventsByPlayer = $match->events->groupBy('team_player_id');
 
-$buildPlayers = function ($players, $teamId, $captainId) use ($existingLineups, $eventsByPlayer, $freshSheet) {
-    return $players->map(function ($p) use ($existingLineups, $eventsByPlayer, $freshSheet, $teamId, $captainId) {
+$buildPlayers = function ($players, $teamId, $captainId) use ($existingLineups, $eventsByPlayer, $freshSheet, $confirmedCallUpIds, $teamsWithCallUps) {
+    return $players->map(function ($p) use ($existingLineups, $eventsByPlayer, $freshSheet, $confirmedCallUpIds, $teamsWithCallUps, $teamId, $captainId) {
         $evs         = $eventsByPlayer->get($p->id, collect());
         $goalMinutes = $evs->where('type', 'goal')
             ->pluck('minute')
             ->map(fn ($m) => $m !== null ? (string) $m : '')
             ->values()->all();
+
+        $playedOnFreshSheet = $teamsWithCallUps->contains($teamId)
+            ? $confirmedCallUpIds->contains($p->id)
+            : true;
 
         return [
             'id'          => $p->id,
@@ -27,7 +36,7 @@ $buildPlayers = function ($players, $teamId, $captainId) use ($existingLineups, 
             'position'    => $p->position,
             'is_captain'  => $captainId && $p->user_id === $captainId,
             'team_id'     => $teamId,
-            'played'      => $freshSheet ? true : $existingLineups->has($p->id),
+            'played'      => $freshSheet ? $playedOnFreshSheet : $existingLineups->has($p->id),
             'starter'     => $existingLineups->has($p->id) ? (bool) $existingLineups[$p->id]->started : true,
             'goals'       => $evs->where('type', 'goal')->count(),
             'assists'     => $evs->where('type', 'assist')->count(),

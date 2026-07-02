@@ -145,7 +145,7 @@
                 @if ($league['matches']->isEmpty())
                     <p class="text-[13px] text-ink-mute italic">Todavía no hay partidos cargados.</p>
                 @else
-                    <div class="border border-line rounded-md overflow-hidden">
+                    <div class="border border-line rounded-md overflow-hidden overflow-x-auto">
                         <table class="w-full text-left text-[13px]">
                             <thead class="bg-pitch-mist border-b border-line">
                                 <tr class="font-mono text-[10px] tracking-wide-label uppercase text-pitch">

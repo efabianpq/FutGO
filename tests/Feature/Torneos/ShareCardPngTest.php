@@ -48,13 +48,12 @@ class ShareCardPngTest extends TestCase
     private function activeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge([
-            'is_active' => true, 'role' => 'user', 'modules' => 'torneos',
-        ], $attrs));
+'role' => 'user',        ], $attrs));
     }
 
     private function buildPublicTournament(): array
     {
-        $admin = $this->activeUser(['role' => 'torneo_admin']);
+        $admin = $this->activeUser(['role' => 'user']);
 
         $t = Tournament::create([
             'name' => 'Copa PNG Test', 'slug' => 'copa-png-' . uniqid(),
@@ -161,7 +160,7 @@ class ShareCardPngTest extends TestCase
     /** Torneo privado: el endpoint PNG devuelve 404. */
     public function test_png_de_torneo_privado_retorna_404(): void
     {
-        $admin = $this->activeUser(['role' => 'torneo_admin']);
+        $admin = $this->activeUser(['role' => 'user']);
         $t = Tournament::create([
             'name' => 'Privado', 'slug' => 'privado-' . uniqid(), 'sport' => 'futbol',
             'status' => 'in_progress', 'format' => 'round_robin', 'visibility' => 'private',

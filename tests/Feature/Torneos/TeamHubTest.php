@@ -18,7 +18,7 @@ class TeamHubTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -64,7 +64,7 @@ class TeamHubTest extends TestCase
 
     public function test_capitan_puede_acceder(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -77,7 +77,7 @@ class TeamHubTest extends TestCase
 
     public function test_jugador_puede_acceder(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $player  = $this->makeUser(['name' => 'Jugador Raso']);
         $t       = $this->makeTournament($admin);
@@ -92,7 +92,7 @@ class TeamHubTest extends TestCase
 
     public function test_usuario_externo_no_puede_acceder(): void
     {
-        $admin    = $this->makeUser(['role' => 'torneo_admin']);
+        $admin    = $this->makeUser(['role' => 'user']);
         $captain  = $this->makeUser();
         $outsider = $this->makeUser(['name' => 'Ajeno']);
         $t        = $this->makeTournament($admin);
@@ -108,7 +108,7 @@ class TeamHubTest extends TestCase
 
     public function test_admin_del_torneo_aprueba_jugador_pendiente(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -126,7 +126,7 @@ class TeamHubTest extends TestCase
 
     public function test_admin_del_torneo_rechaza_jugador_pendiente(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -144,8 +144,8 @@ class TeamHubTest extends TestCase
 
     public function test_admin_ajeno_no_puede_aprobar_jugador(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
-        $otro    = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
+        $otro    = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -165,7 +165,7 @@ class TeamHubTest extends TestCase
 
     public function test_dashboard_carga_correctamente(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -180,7 +180,7 @@ class TeamHubTest extends TestCase
 
     public function test_perfil_de_jugador_accesible_desde_plantilla(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -196,7 +196,7 @@ class TeamHubTest extends TestCase
     {
         // H7: dentro de un torneo, "Mi equipo" muestra el contexto y las stats de
         // ESE torneo (la consolidación cross-torneo vive en el perfil del club).
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);
@@ -210,7 +210,7 @@ class TeamHubTest extends TestCase
 
     public function test_aviso_de_pendientes_visible_en_el_hub(): void
     {
-        $admin   = $this->makeUser(['role' => 'torneo_admin']);
+        $admin   = $this->makeUser(['role' => 'user']);
         $captain = $this->makeUser();
         $t       = $this->makeTournament($admin);
         $team    = $this->makeTeam($t, $captain);

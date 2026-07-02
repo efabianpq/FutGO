@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * En cualquier otro caso responde 403.
  *
  * Reutilizable: depende únicamente del parámetro de ruta {tournament}.
- * Pensado para usarse junto a ['auth','ensure.active','ensure.module:torneos'].
+ * Pensado para usarse junto a ['auth'].
  */
 class EnsureTournamentParticipant
 {
@@ -26,9 +26,12 @@ class EnsureTournamentParticipant
         $user = $request->user();
 
         // El binding de ruta ya resolvió el modelo (SubstituteBindings corre antes).
+        // La ruta liga por slug ({tournament:slug}); el fallback intenta slug y,
+        // por compatibilidad, id numérico.
         $tournament = $request->route('tournament');
         if (! $tournament instanceof Tournament) {
-            $tournament = Tournament::find($tournament);
+            $tournament = Tournament::where('slug', $tournament)->first()
+                ?? Tournament::find($tournament);
         }
 
         if (! $tournament) {

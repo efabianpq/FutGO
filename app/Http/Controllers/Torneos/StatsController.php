@@ -15,7 +15,7 @@ class StatsController extends Controller
 {
     public function index(Tournament $tournament): View
     {
-        // Solo torneos públicos o si el usuario es admin/torneo_admin del torneo
+        // Solo torneos públicos o si el usuario administra este torneo
         $this->authorizeView($tournament);
 
         $teams = $tournament->teams()
@@ -78,7 +78,7 @@ class StatsController extends Controller
 
     private function authorizeView(Tournament $tournament): void
     {
-        // Accesible si el torneo es público o el usuario es admin/torneo_admin del torneo
+        // Accesible si el torneo es público o el usuario administra este torneo
         if ($tournament->isPublic()) {
             return;
         }

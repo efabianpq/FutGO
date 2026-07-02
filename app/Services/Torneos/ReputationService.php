@@ -2,14 +2,15 @@
 
 namespace App\Services\Torneos;
 
+use App\Models\Torneos\Club;
 use App\Models\Torneos\TeamPlayer;
 use App\Models\Torneos\Tournament;
 use App\Models\User;
 
 /**
  * Orquestador de reputación (Sesión F). Coordina el recálculo de acumulados,
- * fair play, logros y ranking. NO se ejecuta por request: solo al finalizar un
- * torneo o vía el comando torneos:rebuild-reputation (cron).
+ * fair play, logros, ranking y stats de club. NO se ejecuta por request: solo
+ * al finalizar un torneo o vía el comando torneos:rebuild-reputation (cron).
  */
 class ReputationService
 {
@@ -18,15 +19,21 @@ class ReputationService
         private FairPlayService $fairPlay,
         private AchievementService $achievements,
         private RankingService $ranking,
+        private ClubStatsService $clubStats,
     ) {}
 
-    /** Consolidación al finalizar un torneo: acumulados → fair play → logros → ranking. */
+    /** Consolidación al finalizar un torneo: acumulados → fair play → logros → ranking → stats de club. */
     public function consolidateTournament(Tournament $tournament): void
     {
         $this->career->refreshForTournament($tournament);
         $this->fairPlay->refreshForTournament($tournament);
         $this->achievements->evaluateForTournament($tournament);
         $this->ranking->rebuild();
+
+        $clubIds = $tournament->teams()->whereNotNull('club_id')->distinct()->pluck('club_id');
+        foreach (Club::whereIn('id', $clubIds)->get() as $club) {
+            $this->clubStats->refreshForClub($club);
+        }
     }
 
     /** Reconstrucción total (comando periódico). */
@@ -40,5 +47,6 @@ class ReputationService
         $this->fairPlay->rebuild();
         $this->achievements->rebuild();
         $this->ranking->rebuild();
+        $this->clubStats->rebuild();
     }
 }

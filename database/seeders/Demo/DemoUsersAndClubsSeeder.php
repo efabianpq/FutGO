@@ -53,11 +53,11 @@ class DemoUsersAndClubsSeeder extends Seeder
     private function createPlatformAccounts(): void
     {
         $this->makeUser('Administrador FutGO', DemoData::ADMIN_EMAIL, [
-            'role' => 'admin', 'modules' => 'full', 'document' => $this->nextDocument(),
+            'role' => 'admin', 'document' => $this->nextDocument(),
         ]);
 
         $this->makeUser('Andrés Rojas', DemoData::ARBITRO_EMAIL, [
-            'role' => 'user', 'modules' => 'torneos', 'city' => 'Bucaramanga',
+            'role' => 'user', 'city' => 'Bucaramanga',
             'document' => $this->nextDocument(),
         ]);
     }
@@ -71,7 +71,6 @@ class DemoUsersAndClubsSeeder extends Seeder
         // 1. Capitán (cuenta documentada).
         $captain = $this->makeUser($spec['captain']['name'], $spec['captain']['email'], [
             'role'       => $spec['captain']['role'],
-            'modules'    => 'torneos',
             'city'       => $spec['city'],
             'play_level' => $spec['level'],
             'document'   => $this->nextDocument(),
@@ -100,14 +99,14 @@ class DemoUsersAndClubsSeeder extends Seeder
             // El primer registrado de Halcones es el jugador estrella.
             if ($isHalcones && $i === 0) {
                 $player = $this->makeUser('Andrés Suárez', DemoData::ESTRELLA_EMAIL, [
-                    'role' => 'user', 'modules' => 'torneos',
+                    'role' => 'user',
                     'city' => $spec['city'], 'play_level' => $spec['level'],
                     'document' => $this->nextDocument(),
                 ]);
             } else {
                 $name = $this->nextName();
                 $player = $this->makeUser($name, $this->emailFor($name), [
-                    'role' => 'user', 'modules' => 'torneos',
+                    'role' => 'user',
                     'city' => $spec['city'], 'play_level' => $spec['level'],
                     // ~80% carga su documento (cédula); el resto lo deja en blanco.
                     'document' => ($i % 5 === 4) ? null : $this->nextDocument(),
@@ -157,7 +156,7 @@ class DemoUsersAndClubsSeeder extends Seeder
     {
         // 1. libre@futgo.co — publicará una BUSCAR_EQUIPO activa (en DemoSocial).
         $this->makeUser('Brayan Lerma', DemoData::LIBRE_EMAIL, [
-            'role' => 'user', 'modules' => 'torneos',
+            'role' => 'user',
             'city' => 'Bucaramanga', 'play_level' => 'intermedio',
             'document' => $this->nextDocument(),
         ]);
@@ -165,14 +164,14 @@ class DemoUsersAndClubsSeeder extends Seeder
         // 2. Fredy Agudelo — su documento coincide con un `por_verificar` de
         //    Deportivo Café: al iniciar sesión verá el banner de reclamo de perfil.
         $this->makeUser($this->claimableName ?? 'Fredy Agudelo', 'fredy.agudelo@futgo.co', [
-            'role' => 'user', 'modules' => 'torneos',
+            'role' => 'user',
             'city' => 'Bucaramanga', 'play_level' => 'intermedio',
             'document' => $this->claimableDocument ?? $this->nextDocument(),
         ]);
 
         // 3. Marlon Bacca — jugador libre con una BUSCAR_EQUIPO ya vencida.
         $this->makeUser('Marlon Bacca', 'marlon.bacca@futgo.co', [
-            'role' => 'user', 'modules' => 'torneos',
+            'role' => 'user',
             'city' => 'Barranquilla', 'play_level' => 'competitivo',
         ]);
     }
@@ -194,8 +193,6 @@ class DemoUsersAndClubsSeeder extends Seeder
                 'name'                  => $name,
                 'password'              => Hash::make(DemoData::PASSWORD),
                 'role'                  => 'user',
-                'modules'               => 'torneos',
-                'is_active'             => true,
                 'notifications_enabled' => $notifications,
                 'email_verified_at'     => now(),
             ], $attrs)

@@ -280,6 +280,7 @@
             @empty
                 <p class="px-3 py-4 text-center text-ink-soft text-[14px]">Todavía no hay partidos jugados.</p>
             @endforelse
+            <div class="px-3 py-2">{{ $results->onEachSide(1)->links() }}</div>
         </section>
 
         {{-- ── Próximos partidos ───────────────────────────────────────── --}}
@@ -301,6 +302,7 @@
             @empty
                 <p class="px-3 py-4 text-center text-ink-soft text-[14px]">No hay partidos programados.</p>
             @endforelse
+            <div class="px-3 py-2">{{ $upcoming->onEachSide(1)->links() }}</div>
         </section>
     </div>
 
@@ -322,6 +324,7 @@
         @empty
             <p class="px-3 py-4 text-center text-ink-soft text-[14px]">Aún no hay goles registrados.</p>
         @endforelse
+        <div class="px-4 py-2">{{ $scorers->onEachSide(1)->links() }}</div>
     </section>
 
     {{-- ── Patrocinadores (Sesión G) ───────────────────────────────────── --}}

@@ -4,14 +4,10 @@
         <span class="font-mono text-[11px] tracking-wide-label uppercase text-pitch mr-3">⚙ Admin</span>
         @foreach ([
             'admin.dashboard'              => 'Dashboard',
-            'admin.results.index'          => 'Resultados',
-            'admin.codes.index'            => 'Códigos',
             'admin.users.index'            => 'Usuarios',
             'admin.amistosos.index'        => 'Amistosos',
             'admin.social.moderacion.index'=> 'Moderación',
             'admin.torneos.reclamos.index' => 'Reclamos',
-            'admin.fixture.index'          => 'Fixture',
-            'admin.settings.edit'          => 'Configuración',
         ] as $name => $label)
             <a href="{{ route($name) }}"
                class="px-3 py-2 rounded-md transition-all duration-fast {{ $r === $name ? 'bg-pitch text-bone' : 'text-pitch hover:bg-white' }}">

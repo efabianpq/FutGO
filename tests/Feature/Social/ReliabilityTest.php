@@ -39,9 +39,7 @@ class ReliabilityTest extends TestCase
             'name'      => 'User ' . uniqid(),
             'email'     => uniqid('rel') . '@test.com',
             'password'  => bcrypt('pass'),
-            'is_active' => true,
             'role'      => 'user',
-            'modules'   => 'torneos',
         ], $extra));
     }
 

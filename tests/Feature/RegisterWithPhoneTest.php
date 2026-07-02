@@ -51,7 +51,7 @@ class RegisterWithPhoneTest extends TestCase
 
         // Válido (10 dígitos): pasa
         $this->post(route('register.store'), $base + ['telefono' => '3001234567'])
-            ->assertRedirect(route('activate.show'));
+            ->assertRedirect(route('torneos.mi-carrera'));
 
         $u = User::where('email', 'juan@test.com')->first();
         $this->assertNotNull($u);
@@ -61,7 +61,6 @@ class RegisterWithPhoneTest extends TestCase
     public function test_perfil_permite_editar_telefono(): void
     {
         $u = User::factory()->create([
-            'is_active' => true,
             'phone_whatsapp' => '3001111111',
         ]);
 

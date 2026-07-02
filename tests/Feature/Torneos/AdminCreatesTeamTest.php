@@ -20,7 +20,7 @@ class AdminCreatesTeamTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function tournament(User $admin, string $status = 'open'): Tournament
@@ -68,7 +68,7 @@ class AdminCreatesTeamTest extends TestCase
     {
         $admin   = $this->admin();
         $t       = $this->tournament($admin);
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos', 'email' => 'cap@futgo.test']);
+        $captain = User::factory()->create(['email' => 'cap@futgo.test']);
 
         $this->actingAs($admin)
             ->post(route('admin.torneos.equipos.create', $t), [
@@ -112,7 +112,7 @@ class AdminCreatesTeamTest extends TestCase
     {
         $admin   = $this->admin();
         $t       = $this->tournament($admin);
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos', 'email' => 'nuevo.cap@futgo.test']);
+        $captain = User::factory()->create(['email' => 'nuevo.cap@futgo.test']);
 
         // Admin crea el equipo sin capitán.
         $this->actingAs($admin)->post(route('admin.torneos.equipos.create', $t), ['name' => 'Equipo X']);
@@ -137,7 +137,7 @@ class AdminCreatesTeamTest extends TestCase
     {
         $admin   = $this->admin();
         $t       = $this->tournament($admin);
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos', 'email' => 'val@futgo.test']);
+        $captain = User::factory()->create(['email' => 'val@futgo.test']);
 
         // Un equipo por_validar (creado por admin) y uno validado (con capitán).
         $this->actingAs($admin)->post(route('admin.torneos.equipos.create', $t), ['name' => 'Equipo Por Validar']);
@@ -160,12 +160,12 @@ class AdminCreatesTeamTest extends TestCase
     {
         $admin  = $this->admin();
         $t      = $this->tournament($admin);
-        $player = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+        $player = User::factory()->create(['role' => 'user',]);
 
-        // El middleware ensure.torneo_admin redirige (no aborta con 403).
+        // El controlador autoriza por-torneo (tournament_admins/admin global): 403.
         $this->actingAs($player)
             ->post(route('admin.torneos.equipos.create', $t), ['name' => 'Equipo Intruso'])
-            ->assertRedirect();
+            ->assertForbidden();
 
         $this->assertDatabaseMissing('clubs', ['name' => 'Equipo Intruso']);
     }

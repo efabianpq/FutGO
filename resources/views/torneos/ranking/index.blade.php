@@ -10,7 +10,23 @@
      x-data="{ q: '', match(s){ return this.q === '' || s.toLowerCase().includes(this.q.toLowerCase()); } }">
     <p class="eyebrow">📊 Reputación FUTGO</p>
     <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Ranking de la plataforma</h1>
-    <p class="text-[14px] text-ink-soft mb-6">Acumulado de toda la actividad en FUTGO. Se recalcula al finalizar torneos.</p>
+    <p class="text-[14px] text-ink-soft mb-1">Acumulado de toda la actividad en FUTGO. Se recalcula al finalizar torneos y diariamente por cron.</p>
+
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+        <p class="text-[12px] text-ink-mute">
+            @if ($lastCalculated)
+                Actualizado {{ \Illuminate\Support\Carbon::parse($lastCalculated)->diffForHumans() }}.
+            @else
+                Todavía no se calculó.
+            @endif
+        </p>
+        @if (auth()->user()?->isAdmin())
+            <form method="POST" action="{{ route('admin.ranking.recalculate') }}">
+                @csrf
+                <button type="submit" class="text-[12px] font-display font-bold uppercase text-pitch hover:underline">Recalcular ahora</button>
+            </form>
+        @endif
+    </div>
 
     {{-- Tipo: jugadores / equipos --}}
     <div class="flex gap-2 mb-4">

@@ -14,7 +14,7 @@ class EnsureAdmin
 
         if (! $user || $user->role !== 'admin') {
             return redirect()
-                ->route('predictions.index')
+                ->route('dashboard')
                 ->with('status', 'No tienes permisos para acceder a esta sección.');
         }
 

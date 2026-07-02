@@ -20,7 +20,7 @@ class ScheduleTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -31,7 +31,7 @@ class ScheduleTest extends TestCase
      */
     private function makeScenario(int $n = 4, array $attrs = []): array
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
 
         $tournament = Tournament::create(array_merge([
             'name'                 => 'Copa ' . uniqid(),
@@ -96,15 +96,14 @@ class ScheduleTest extends TestCase
             ->assertSee('Cronograma');
     }
 
-    public function test_usuario_sin_modulo_torneos_no_puede_acceder(): void
+    public function test_cualquier_usuario_autenticado_accede_al_cronograma(): void
     {
         [$tournament] = $this->makeScenario();
-        $user = User::factory()->create(['is_active' => true, 'modules' => 'polla']);
+        $user = User::factory()->create();
 
-        // EnsureModule redirige (302) a predictions.index, no devuelve 403 en HTTP normal
         $this->actingAs($user)
             ->get(route('torneos.cronograma.index', $tournament))
-            ->assertRedirect();
+            ->assertOk();
     }
 
     public function test_usuario_no_autenticado_no_puede_acceder(): void

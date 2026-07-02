@@ -4,11 +4,11 @@
 <tr>
 <td class="content-cell" align="center">
 <p style="color: #8a8884; font-size: 13px; margin-bottom: 4px;">
-&copy; 2026 SoyPach&oacute;n Mundial &middot; <a href="https://soypachonmundial.online" style="color: #8a8884;">soypachonmundial.online</a>
+&copy; {{ date('Y') }} FutGO
 </p>
 <p style="color: #8a8884; font-size: 11px; margin-top: 4px;">
-Sos parte de este juego porque quer&eacute;s. Para dejar de recibir recordatorios,
-ingres&aacute; a tu perfil y desactiv&aacute; las notificaciones.
+Recib&iacute;s este correo porque ten&eacute;s una cuenta en FutGO. Para dejar de recibir
+notificaciones, ingres&aacute; a tu perfil y desactiv&aacute;las.
 </p>
 </td>
 </tr>

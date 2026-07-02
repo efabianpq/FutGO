@@ -31,7 +31,7 @@ class PublicPortalTest extends TestCase
      */
     private function buildTournament(string $visibility = 'public'): array
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
 
         $tournament = Tournament::create([
             'name' => 'Copa Pública Test', 'slug' => 'copa-publica-' . uniqid(),
@@ -69,7 +69,7 @@ class PublicPortalTest extends TestCase
 
         // Goleador con DATOS SENSIBLES (no deben filtrarse al portal).
         $sensitive = User::factory()->create([
-            'is_active' => true, 'modules' => 'torneos', 'name' => 'Goleador Estrella',
+'name' => 'Goleador Estrella',
             'email' => 'secreto@privado.test', 'phone_whatsapp' => '3001234567', 'document' => 'CC-998877',
         ]);
         $tp = TeamPlayer::create(['team_id' => $leones->id, 'user_id' => $sensitive->id, 'is_captain' => false, 'status' => 'active']);
@@ -160,7 +160,7 @@ class PublicPortalTest extends TestCase
     public function test_export_admin_requiere_gestionar_el_torneo(): void
     {
         ['tournament' => $t] = $this->buildTournament('private');
-        $intruso = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $intruso = User::factory()->create(['role' => 'user',]);
 
         $this->actingAs($intruso)
             ->get(route('admin.torneos.export', [$t, 'resultados', 'pdf']))
@@ -213,7 +213,7 @@ class PublicPortalTest extends TestCase
         // Un torneo abierto público + uno en juego público.
         ['tournament' => $inProgress] = $this->buildTournament('public');
 
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $open = Tournament::create([
             'name' => 'Copa Abierta Inscripcion', 'slug' => 'copa-abierta-' . uniqid(),
             'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
@@ -243,7 +243,7 @@ class PublicPortalTest extends TestCase
 
     public function test_listado_publico_ignora_borradores_y_finalizados(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
 
         foreach (['draft' => 'Copa Borrador', 'finished' => 'Copa Finalizada'] as $status => $name) {
             Tournament::create([
@@ -264,7 +264,7 @@ class PublicPortalTest extends TestCase
 
     public function test_capitan_ve_boton_inscribir_su_equipo_en_torneo_abierto(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $open = Tournament::create([
             'name' => 'Copa Para Inscribir', 'slug' => 'copa-inscribir-' . uniqid(),
             'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
@@ -275,7 +275,7 @@ class PublicPortalTest extends TestCase
         ]);
 
         // Capitán con un club permanente.
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $captain = User::factory()->create([]);
         \App\Models\Torneos\Club::create([
             'name' => 'Mi Club', 'slug' => 'mi-club-' . uniqid(),
             'captain_user_id' => $captain->id, 'created_by_user_id' => $captain->id,
@@ -289,7 +289,7 @@ class PublicPortalTest extends TestCase
 
     public function test_inscripcion_deja_equipo_pendiente_de_aprobacion_admin(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $tournament = Tournament::create([
             'name' => 'Copa Aprobacion', 'slug' => 'copa-aprobacion-' . uniqid(),
             'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
@@ -301,7 +301,7 @@ class PublicPortalTest extends TestCase
         $tournament->tournamentAdmins()->create(['user_id' => $admin->id]);
 
         // Capitán con club permanente.
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $captain = User::factory()->create([]);
         $club = \App\Models\Torneos\Club::create([
             'name' => 'Club Inscriptor', 'slug' => 'club-inscriptor-' . uniqid(),
             'captain_user_id' => $captain->id, 'created_by_user_id' => $captain->id,
@@ -336,7 +336,7 @@ class PublicPortalTest extends TestCase
 
     public function test_ver_detalle_muestra_ficha_completa_e_inscripcion(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $tournament = Tournament::create([
             'name' => 'Copa Ficha Completa', 'slug' => 'copa-ficha-' . uniqid(),
             'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
@@ -365,7 +365,7 @@ class PublicPortalTest extends TestCase
         // Un torneo privado en juego.
         ['tournament' => $privateT] = $this->buildTournament('private');
 
-        $platformAdmin = User::factory()->create(['is_active' => true, 'role' => 'admin', 'modules' => 'full']);
+        $platformAdmin = User::factory()->create(['role' => 'admin',]);
 
         // El admin de plataforma SÍ lo ve en el listado…
         $this->actingAs($platformAdmin)
@@ -383,7 +383,7 @@ class PublicPortalTest extends TestCase
     public function test_usuario_normal_no_ve_privados_ni_su_detalle(): void
     {
         ['tournament' => $privateT] = $this->buildTournament('private');
-        $user = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $user = User::factory()->create([]);
 
         $this->actingAs($user)
             ->get(route('torneos.public.index'))
@@ -397,7 +397,7 @@ class PublicPortalTest extends TestCase
 
     public function test_capitan_ve_boton_inscribir_en_ver_detalle(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $tournament = Tournament::create([
             'name' => 'Copa Detalle Cap', 'slug' => 'copa-detalle-cap-' . uniqid(),
             'sport' => 'futbol', 'status' => 'open', 'format' => 'round_robin',
@@ -406,7 +406,7 @@ class PublicPortalTest extends TestCase
             'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0, 'created_by_user_id' => $admin->id,
         ]);
 
-        $captain = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $captain = User::factory()->create([]);
         \App\Models\Torneos\Club::create([
             'name' => 'Club Detalle', 'slug' => 'club-detalle-' . uniqid(),
             'captain_user_id' => $captain->id, 'created_by_user_id' => $captain->id,
@@ -416,5 +416,101 @@ class PublicPortalTest extends TestCase
             ->get(route('torneos.public.show', $tournament))
             ->assertOk()
             ->assertSee('Inscribir mi equipo');
+    }
+
+    // ── Deuda #9: paginación de resultados/próximos/goleadores ──────────────
+
+    /** Torneo con 15 resultados, 15 próximos (cada uno con cancha única) y 15 goleadores. */
+    private function buildTournamentWithManyItems(): Tournament
+    {
+        $admin = User::factory()->create(['role' => 'user',]);
+        $tournament = Tournament::create([
+            'name' => 'Copa Paginación', 'slug' => 'copa-paginacion-' . uniqid(),
+            'sport' => 'futbol', 'status' => 'in_progress', 'format' => 'round_robin',
+            'visibility' => 'public', 'category' => 'libre',
+            'groups_count' => 1, 'teams_per_group' => 2, 'classifies_per_group' => 1, 'max_teams' => 2,
+            'points_win' => 3, 'points_draw' => 1, 'points_loss' => 0, 'created_by_user_id' => $admin->id,
+        ]);
+        $tournament->tournamentAdmins()->create(['user_id' => $admin->id]);
+
+        $phase = TournamentPhase::create(['tournament_id' => $tournament->id, 'name' => 'Fase de Grupos', 'type' => 'groups', 'order' => 1, 'is_active' => true, 'status' => 'active']);
+        $group = TournamentGroup::create(['phase_id' => $phase->id, 'name' => 'Grupo A', 'order' => 1]);
+        $home = Team::create(['tournament_id' => $tournament->id, 'captain_user_id' => $admin->id, 'name' => 'Equipo Local', 'status' => 'approved']);
+        $away = Team::create(['tournament_id' => $tournament->id, 'captain_user_id' => $admin->id, 'name' => 'Equipo Visita', 'status' => 'approved']);
+        foreach ([$home, $away] as $t) {
+            GroupTeam::create(['group_id' => $group->id, 'team_id' => $t->id]);
+        }
+
+        // 15 resultados: marcadores 101..115 (3 dígitos fijos, sin colisión de substring)
+        // y scheduled_at ascendente, de modo que el más reciente (115) sea el primero en la página 1.
+        for ($i = 1; $i <= 15; $i++) {
+            TournamentMatch::create([
+                'phase_id' => $phase->id, 'group_id' => $group->id,
+                'home_team_id' => $home->id, 'away_team_id' => $away->id,
+                'home_score' => 100 + $i, 'away_score' => 0, 'winner_team_id' => $home->id,
+                'status' => 'finished', 'match_number' => $i, 'scheduled_at' => now()->subDays(30 - $i),
+            ]);
+        }
+
+        // 15 próximos, cada uno con cancha distinta.
+        for ($i = 1; $i <= 15; $i++) {
+            TournamentMatch::create([
+                'phase_id' => $phase->id, 'group_id' => $group->id,
+                'home_team_id' => $home->id, 'away_team_id' => $away->id,
+                'status' => 'scheduled', 'match_number' => 100 + $i,
+                'scheduled_at' => now()->addDays($i), 'venue' => "Cancha-Numero-{$i}",
+            ]);
+        }
+
+        // 15 goleadores con nombres sin colisión de substring (letras A..O) y goles únicos.
+        $letters = range('A', 'O');
+        foreach ($letters as $idx => $letter) {
+            $tp = TeamPlayer::create(['team_id' => $home->id, 'full_name' => "Jugador-{$letter}", 'status' => 'active']);
+            PlayerStat::create(['tournament_id' => $tournament->id, 'team_player_id' => $tp->id, 'goals' => 100 - $idx, 'matches_played' => 1]);
+        }
+
+        return $tournament;
+    }
+
+    public function test_el_portal_pagina_los_resultados(): void
+    {
+        $t = $this->buildTournamentWithManyItems();
+
+        $page1 = $this->get(route('torneos.public.show', $t));
+        $page1->assertOk();
+        $page1->assertSee('115-0');   // el más reciente, en la página 1
+        $page1->assertDontSee('101-0'); // el más viejo, debería quedar en la página 2
+
+        $page2 = $this->get(route('torneos.public.show', $t) . '?resultados_page=2');
+        $page2->assertOk();
+        $page2->assertSee('101-0');
+    }
+
+    public function test_el_portal_pagina_los_proximos_partidos(): void
+    {
+        $t = $this->buildTournamentWithManyItems();
+
+        $page1 = $this->get(route('torneos.public.show', $t));
+        $page1->assertOk();
+        $page1->assertSee('Cancha-Numero-1');    // el más próximo, en la página 1
+        $page1->assertDontSee('Cancha-Numero-15'); // el más lejano, debería quedar en la página 2
+
+        $page2 = $this->get(route('torneos.public.show', $t) . '?proximos_page=2');
+        $page2->assertOk();
+        $page2->assertSee('Cancha-Numero-15');
+    }
+
+    public function test_el_portal_pagina_los_goleadores(): void
+    {
+        $t = $this->buildTournamentWithManyItems();
+
+        $page1 = $this->get(route('torneos.public.show', $t));
+        $page1->assertOk();
+        $page1->assertSee('Jugador-A');   // goles=100, el líder, en la página 1
+        $page1->assertDontSee('Jugador-O'); // goles=86, el último, debería quedar en la página 2
+
+        $page2 = $this->get(route('torneos.public.show', $t) . '?goleadores_page=2');
+        $page2->assertOk();
+        $page2->assertSee('Jugador-O');
     }
 }

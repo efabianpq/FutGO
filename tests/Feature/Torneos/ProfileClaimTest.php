@@ -36,8 +36,7 @@ class ProfileClaimTest extends TestCase
     private function activeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge([
-            'is_active' => true, 'role' => 'user', 'modules' => 'torneos',
-        ], $attrs));
+'role' => 'user',        ], $attrs));
     }
 
     private function makeTournament(User $admin): Tournament
@@ -144,7 +143,7 @@ class ProfileClaimTest extends TestCase
             'password' => 'SuperSecret123',
             'password_confirmation' => 'SuperSecret123',
         ])
-            ->assertRedirect(route('activate.show'))
+            ->assertRedirect(route('torneos.mi-carrera'))
             ->assertSessionHas('claim_candidates', 1);
 
         $user = User::where('email', 'pedro@test.com')->firstOrFail();

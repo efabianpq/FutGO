@@ -172,6 +172,13 @@ class MatchResultController extends Controller
         // Lineups existentes indexadas por team_player_id para pre-llenar el form
         $existingLineups = $match->lineups->keyBy('team_player_id');
 
+        // Convocatoria previa (Limitación #6): si el capitán ya convocó y algunos
+        // jugadores confirmaron asistencia, la planilla arranca pre-marcada con
+        // esos jugadores en vez de todo el plantel activo.
+        $callUps = \App\Models\Torneos\MatchCallUp::where('match_id', $match->id)->get();
+        $confirmedCallUpIds = $callUps->where('status', 'confirmado')->pluck('team_player_id');
+        $teamsWithCallUps = $callUps->pluck('team_id')->unique();
+
         // La planilla solo es editable si el partido está programado o en vivo.
         // Un partido finalizado se consulta/exporta; para corregirlo hay que anularlo.
         $canEdit = $match->isScheduled() || $match->isLive();
@@ -180,7 +187,8 @@ class MatchResultController extends Controller
         $mvpEnabled = $tournament->mvpEnabled();
 
         return view('admin.torneos.partidos.resultado', compact(
-            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups', 'canEdit', 'mvpEnabled'
+            'tournament', 'match', 'homePlayers', 'awayPlayers', 'statsConfig', 'existingLineups',
+            'confirmedCallUpIds', 'teamsWithCallUps', 'canEdit', 'mvpEnabled'
         ));
     }
 
@@ -483,6 +491,15 @@ class MatchResultController extends Controller
 
         if (! $match->isFinished()) {
             return back()->with('error', 'Solo se puede anular el resultado de un partido finalizado.');
+        }
+
+        if ($match->phase->type === 'knockout' && $match->winner_team_id) {
+            $downstream = collect($this->fixture->downstreamMatchesFor($match))
+                ->first(fn ($m) => $m->home_team_id || $m->away_team_id);
+
+            if ($downstream) {
+                return back()->with('error', "No se puede anular: el partido #{$downstream->match_number} de la ronda siguiente ya tiene un equipo asignado. Anulá primero ese resultado.");
+            }
         }
 
         DB::transaction(function () use ($match, $tournament) {

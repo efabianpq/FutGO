@@ -12,15 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'ensure.active' => \App\Http\Middleware\EnsureActive::class,
-            'redirect.if.active' => \App\Http\Middleware\RedirectIfActive::class,
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
-            'ensure.module'        => \App\Http\Middleware\EnsureModule::class,
-            'ensure.torneo_admin'  => \App\Http\Middleware\EnsureTorneoAdmin::class,
             'ensure.tournament_participant' => \App\Http\Middleware\EnsureTournamentParticipant::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
+
+        // CORS para el wrapper Capacitor (WebView): HandleCors ya corre en el
+        // stack global de Laravel 11 por defecto; ver config/cors.php para
+        // los orígenes permitidos (allowed_origins/supports_credentials).
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: []);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

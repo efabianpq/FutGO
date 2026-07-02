@@ -221,7 +221,7 @@ class TournamentController extends Controller
 
     // ─────────────────────────────────────────────────────────────────
 
-    /** Query base filtrada según el rol: admin global ve todo, torneo_admin solo los suyos. */
+    /** Query base: admin global ve todo, el resto solo los torneos que creó/administra. */
     private function scopedQuery(): Builder
     {
         $user = auth()->user();

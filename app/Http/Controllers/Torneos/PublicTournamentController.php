@@ -54,12 +54,9 @@ class PublicTournamentController extends Controller
             ->orderByDesc('starts_at')
             ->get();
 
-        // Para usuarios autenticados con módulo torneos: clubs que capitanean
-        // (para ofrecer "Inscribir mi equipo" directo).
-        $isCaptain = false;
-        if ($user && $user->hasTorneosAccess()) {
-            $isCaptain = $user->isCaptainAnywhere();
-        }
+        // Para usuarios autenticados: clubs que capitanean (para ofrecer
+        // "Inscribir mi equipo" directo).
+        $isCaptain = $user ? $user->isCaptainAnywhere() : false;
 
         return view('torneos.public.index', compact('open', 'inProgress', 'isCaptain', 'isPlatformAdmin'));
     }
@@ -71,9 +68,9 @@ class PublicTournamentController extends Controller
         abort_unless($tournament->isPublic() || (auth()->user()?->isAdmin() ?? false), 404);
 
         $standings = $this->report->groupStandings($tournament);
-        $results   = $this->report->finishedMatches($tournament, 12);
-        $upcoming  = $this->report->upcomingMatches($tournament, 12);
-        $scorers   = $this->report->topScorers($tournament, 10);
+        $results   = $this->report->paginatedFinishedMatches($tournament, 12);
+        $upcoming  = $this->report->paginatedUpcomingMatches($tournament, 12);
+        $scorers   = $this->report->paginatedTopScorers($tournament, 10);
         $summary   = $this->report->summary($tournament);
         $sponsors  = $tournament->sponsors()->active()->orderBy('sort_order')->orderBy('id')->get();
 
@@ -81,7 +78,7 @@ class PublicTournamentController extends Controller
         // Reusa summary['teams'] (equipos aprobados) para no agregar otra consulta.
         $approvedTeams = $summary['teams'];
         $canRegister   = $tournament->status === 'open';
-        $isCaptain     = ($u = auth()->user()) && $u->hasTorneosAccess() ? $u->isCaptainAnywhere() : false;
+        $isCaptain     = ($u = auth()->user()) ? $u->isCaptainAnywhere() : false;
 
         // Bracket: fases de eliminatoria ordenadas con sus partidos.
         $knockoutPhases = $tournament->phases()

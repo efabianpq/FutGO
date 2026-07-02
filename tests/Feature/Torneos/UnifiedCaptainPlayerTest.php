@@ -20,7 +20,7 @@ class UnifiedCaptainPlayerTest extends TestCase
 
     private function torneoUser(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function makeTournament(User $admin, string $status = 'open'): Tournament
@@ -178,7 +178,7 @@ class UnifiedCaptainPlayerTest extends TestCase
 
     public function test_enrolar_equipo_copia_plantilla_y_aprueba_a_todos(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $user  = $this->torneoUser();
         $club  = $this->createClub($user, 'Enrolado');
         $this->actingAs($user)->post(route('torneos.clubes.players.addGuest', $club), ['full_name' => 'Invitado X', 'document' => 'D-9']);
@@ -195,7 +195,7 @@ class UnifiedCaptainPlayerTest extends TestCase
 
     public function test_jugador_agregado_con_torneo_en_curso_queda_pendiente(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $user  = $this->torneoUser();
         $club  = $this->createClub($user, 'EnCurso');
 
@@ -216,7 +216,7 @@ class UnifiedCaptainPlayerTest extends TestCase
 
     public function test_no_se_puede_editar_equipo_en_torneo_activo(): void
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
         $user  = $this->torneoUser();
         $club  = $this->createClub($user, 'Bloqueado');
 

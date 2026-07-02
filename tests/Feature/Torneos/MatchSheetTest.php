@@ -20,7 +20,7 @@ class MatchSheetTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -28,7 +28,7 @@ class MatchSheetTest extends TestCase
     /** @return array{0:Tournament,1:User} [tournament, admin] */
     private function makeScenario(int $n = 4): array
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
 
         $tournament = Tournament::create([
             'name'                 => 'Copa ' . uniqid(),
@@ -181,7 +181,7 @@ class MatchSheetTest extends TestCase
         [$tournament] = $this->makeScenario();
         $match = $this->firstMatch($tournament);
 
-        $otherAdmin = $this->makeUser(['role' => 'torneo_admin']);
+        $otherAdmin = $this->makeUser(['role' => 'user']);
 
         $this->actingAs($otherAdmin)
             ->get(route('admin.torneos.partidos.pdf', [$tournament, $match]))

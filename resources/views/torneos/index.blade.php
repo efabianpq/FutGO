@@ -26,11 +26,9 @@
             <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis Torneos</h1>
             <p class="text-ink-soft text-[13px] mt-1">Los torneos donde participás como administrador, capitán o jugador.</p>
         </div>
-        @if ($isTorneoAdmin)
-            <div class="flex gap-3">
-                <x-btn :href="route('admin.torneos.create')" variant="primary">+ Nuevo torneo</x-btn>
-            </div>
-        @endif
+        <div class="flex gap-3">
+            <x-btn :href="route('admin.torneos.create')" variant="primary">+ Nuevo torneo</x-btn>
+        </div>
     </div>
 
     @if ($cards->isNotEmpty())
@@ -40,14 +38,10 @@
     @if ($cards->isEmpty())
         <div class="bg-white border border-line rounded-md shadow-card-2 p-10 text-center">
             <p class="text-ink-soft text-lg">Todavía no participás en ningún torneo.</p>
-            @if ($isTorneoAdmin)
-                <p class="text-[13px] text-ink-mute mt-2">Creá tu primer torneo para empezar a gestionarlo.</p>
-                <div class="mt-4">
-                    <x-btn :href="route('admin.torneos.create')" variant="accent">Crear mi primer torneo</x-btn>
-                </div>
-            @else
-                <p class="text-[13px] text-ink-mute mt-2">Cuando un organizador te sume a un equipo, lo vas a ver acá.</p>
-            @endif
+            <p class="text-[13px] text-ink-mute mt-2">Creá tu primer torneo para empezar a gestionarlo.</p>
+            <div class="mt-4">
+                <x-btn :href="route('admin.torneos.create')" variant="accent">Crear mi primer torneo</x-btn>
+            </div>
         </div>
     @else
         <div class="grid grid-cols-1 gap-6">

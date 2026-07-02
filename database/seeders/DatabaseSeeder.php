@@ -8,12 +8,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Módulo Polla Mundial (CONGELADO) + datos base de plataforma.
+        // Datos base de plataforma.
         $this->call([
-            MatchSeeder::class,
-            EliminatorySeeder::class,
             AdminUserSeeder::class,
-            InvitationCodeSeeder::class,
             // Catálogo de logros del módulo Torneos (requerido por el mundo demo).
             AchievementSeeder::class,
         ]);

@@ -14,12 +14,11 @@ class AdminUserSeeder extends Seeder
         $now = Carbon::now();
 
         DB::table('users')->updateOrInsert(
-            ['email' => 'admin@soypachonmundial.com'],
+            ['email' => 'admin@futgo.co'],
             [
-                'name' => 'Admin SoyPachon',
+                'name' => 'Admin FutGO',
                 'password' => Hash::make('Admin2026!'),
                 'role' => 'admin',
-                'is_active' => true,
                 'notifications_enabled' => true,
                 'email_verified_at' => $now,
                 'created_at' => $now,

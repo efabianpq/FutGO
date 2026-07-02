@@ -20,7 +20,7 @@ class PlayerDashboardTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -32,7 +32,7 @@ class PlayerDashboardTest extends TestCase
      */
     private function makeScenario(int $n = 4): array
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
 
         $tournament = Tournament::create([
             'name'                 => 'Liga ' . uniqid(),
@@ -150,13 +150,13 @@ class PlayerDashboardTest extends TestCase
 
     // ─── Autorización / menú ────────────────────────────────────────────────────
 
-    public function test_usuario_sin_modulo_torneos_es_redirigido(): void
+    public function test_cualquier_usuario_autenticado_accede_a_mi_carrera(): void
     {
-        $pollaUser = $this->makeUser(['modules' => 'polla']);
+        $user = $this->makeUser();
 
-        $this->actingAs($pollaUser)
+        $this->actingAs($user)
             ->get(route('torneos.mi-carrera'))
-            ->assertRedirect(route('predictions.index'));
+            ->assertOk();
     }
 
     public function test_navbar_jugador_muestra_mi_actividad_y_oculta_gestion(): void

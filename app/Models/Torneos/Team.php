@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Team extends Model
 {
@@ -15,10 +16,30 @@ class Team extends Model
         'club_id',
         'captain_user_id',
         'name',
+        'slug',
         'color',
         'shield_url',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        // Slug único derivado del nombre si no se pasó explícitamente (URLs sin id numérico).
+        static::creating(function (Team $team) {
+            if (! empty($team->slug)) {
+                return;
+            }
+
+            $base = Str::slug($team->name) ?: 'equipo';
+            $slug = $base;
+            $i = 1;
+            while (static::where('slug', $slug)->exists()) {
+                $i++;
+                $slug = $base . '-' . $i;
+            }
+            $team->slug = $slug;
+        });
+    }
 
     public function tournament(): BelongsTo
     {

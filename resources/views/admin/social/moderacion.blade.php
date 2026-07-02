@@ -143,7 +143,7 @@
         @if ($resolved->isEmpty())
             <div class="bg-white border border-line rounded-md shadow-card p-6 text-center text-ink-soft text-[14px]">Sin historial aún.</div>
         @else
-            <div class="bg-white border border-line rounded-md shadow-card overflow-hidden">
+            <div class="bg-white border border-line rounded-md shadow-card overflow-hidden overflow-x-auto">
                 <table class="w-full text-[13px]">
                     <thead class="bg-pitch-mist">
                         <tr>

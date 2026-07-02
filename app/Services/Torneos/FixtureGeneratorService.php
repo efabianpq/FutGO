@@ -707,6 +707,57 @@ class FixtureGeneratorService
         return $winners;
     }
 
+    /**
+     * Partidos de rondas posteriores que ya heredaron un equipo desde $match
+     * (mismo mapeo posicional que assignBracket, en sentido inverso): el
+     * ganador avanza a la ronda de eliminatoria siguiente y, si $match es de
+     * semifinal (fase con exactamente 2 partidos), el perdedor alimenta el
+     * partido de Tercer Puesto. No hay next_match_id persistido: se deriva
+     * del orden por match_number dentro de cada fase.
+     *
+     * @return array<int,TournamentMatch>
+     */
+    public function downstreamMatchesFor(TournamentMatch $match): array
+    {
+        $phase = $match->phase;
+        if (! $phase || $phase->type !== 'knockout') {
+            return [];
+        }
+
+        $ordered = $phase->matches()->orderBy('match_number')->get()->values();
+        $position = $ordered->search(fn ($m) => $m->id === $match->id);
+        if ($position === false) {
+            return [];
+        }
+        $pairIndex = intdiv($position, 2);
+
+        $tournament = $phase->tournament;
+        $downstream = [];
+
+        $next = $tournament->phases()
+            ->where('type', 'knockout')
+            ->where('order', '>', $phase->order)
+            ->orderBy('order')
+            ->first();
+
+        if ($next) {
+            $nextMatch = $next->matches()->orderBy('match_number')->get()->values()->get($pairIndex);
+            if ($nextMatch) {
+                $downstream[] = $nextMatch;
+            }
+        }
+
+        if ($ordered->count() === 2) {
+            $third = $tournament->phases()->where('type', 'third_place')->first();
+            $thirdMatch = $third?->matches()->first();
+            if ($thirdMatch) {
+                $downstream[] = $thirdMatch;
+            }
+        }
+
+        return $downstream;
+    }
+
     // ───────────────────────── Validaciones ─────────────────────────
 
     private function assertCanGenerate(Tournament $tournament): void

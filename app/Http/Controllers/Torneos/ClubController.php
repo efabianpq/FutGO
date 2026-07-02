@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Torneos;
 use App\Http\Controllers\Controller;
 use App\Models\Torneos\Club;
 use App\Models\Torneos\ClubPlayer;
-use App\Models\Torneos\PlayerStat;
-use App\Models\Torneos\TeamPlayer;
-use App\Models\Torneos\TournamentMatch;
 use App\Models\User;
 use App\Services\Torneos\ClubMembershipService;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +20,10 @@ use Illuminate\View\View;
  */
 class ClubController extends Controller
 {
-    public function __construct(private ClubMembershipService $membership) {}
+    public function __construct(
+        private ClubMembershipService $membership,
+        private \App\Services\Torneos\ClubStatsService $clubStats,
+    ) {}
 
     /** Crea un equipo permanente; el creador queda como capitán y primer jugador. */
     public function store(Request $request): RedirectResponse
@@ -292,46 +292,26 @@ class ClubController extends Controller
     {
         $club->load(['teams.tournament']);
 
-        $teamIds = $club->teams->pluck('id');
-
         $participations = $club->teams
             ->filter(fn ($t) => $t->tournament)
             ->sortByDesc(fn ($t) => $t->tournament->created_at)
             ->values();
 
-        $matches = TournamentMatch::where('status', 'finished')
-            ->where(fn ($q) => $q->whereIn('home_team_id', $teamIds)->orWhereIn('away_team_id', $teamIds))
-            ->get();
+        // Deuda #3: agregados históricos (PJ/G/E/P, goles, goleadores) cacheados
+        // en club_stats en vez de recalcularse en cada lectura. Si el club
+        // todavía no tiene cache (nunca se refrescó), se calcula una vez acá y
+        // queda listo para las próximas lecturas.
+        $clubStat = \App\Models\Torneos\ClubStat::where('club_id', $club->id)->first()
+            ?? $this->clubStats->refreshForClub($club);
 
-        $agg = ['played' => 0, 'won' => 0, 'drawn' => 0, 'lost' => 0, 'goals_for' => 0, 'goals_against' => 0];
-        foreach ($matches as $m) {
-            $isHome    = $teamIds->contains($m->home_team_id);
-            $forScore  = (int) ($isHome ? $m->home_score : $m->away_score);
-            $againstSc = (int) ($isHome ? $m->away_score : $m->home_score);
-            $agg['played']++;
-            $agg['goals_for']     += $forScore;
-            $agg['goals_against'] += $againstSc;
-            if ($forScore > $againstSc)      $agg['won']++;
-            elseif ($forScore < $againstSc)  $agg['lost']++;
-            else                             $agg['drawn']++;
-        }
+        $agg = [
+            'played' => $clubStat->played, 'won' => $clubStat->won, 'drawn' => $clubStat->drawn,
+            'lost' => $clubStat->lost, 'goals_for' => $clubStat->goals_for, 'goals_against' => $clubStat->goals_against,
+        ];
+        $topScorers = collect($clubStat->top_scorers ?? []);
 
         // Jugadores históricos = plantilla permanente.
         $players = $club->players()->with('user')->get();
-
-        $tpIds = TeamPlayer::whereIn('team_id', $teamIds)->pluck('id');
-        $topScorers = PlayerStat::whereIn('team_player_id', $tpIds)
-            ->with('teamPlayer.user')
-            ->get()
-            ->groupBy(fn ($s) => $s->teamPlayer?->user_id ?? 'guest-' . $s->team_player_id)
-            ->map(fn ($rows) => [
-                'name'  => $rows->first()->teamPlayer?->displayName() ?? '—',
-                'goals' => (int) $rows->sum('goals'),
-            ])
-            ->filter(fn ($r) => $r['goals'] > 0)
-            ->sortByDesc('goals')
-            ->take(10)
-            ->values();
 
         $canManage = $club->isCaptainedBy(auth()->user()) || auth()->user()->isAdmin();
 

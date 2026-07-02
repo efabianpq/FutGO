@@ -21,12 +21,12 @@ class TeamsTest extends TestCase
 
     private function torneoAdmin(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function torneoUser(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function makeTournament(User $admin, string $status = 'open'): Tournament
@@ -129,18 +129,18 @@ class TeamsTest extends TestCase
         $this->assertDatabaseMissing('teams', ['tournament_id' => $torneo->id, 'club_id' => $clubB->id]);
     }
 
-    public function test_usuario_sin_modulo_torneos_no_puede_enrolar(): void
+    public function test_usuario_que_no_es_capitan_del_club_no_puede_enrolar(): void
     {
         $admin   = $this->torneoAdmin();
         $torneo  = $this->makeTournament($admin, 'open');
         $captain = $this->torneoUser();
         $club    = $this->makeClub($captain);
 
-        $outsider = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'polla']);
+        $outsider = User::factory()->create(['role' => 'user']);
 
         $this->actingAs($outsider)
             ->post(route('torneos.equipo.store', $torneo), ['club_id' => $club->id])
-            ->assertRedirect();
+            ->assertForbidden();
 
         $this->assertDatabaseMissing('teams', ['tournament_id' => $torneo->id, 'club_id' => $club->id]);
     }

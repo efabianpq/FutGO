@@ -1,0 +1,2 @@
+New-Item .capacitorignore -ItemType File
+Add-Content .capacitorignore "storage"

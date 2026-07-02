@@ -171,7 +171,7 @@ $hasScheduledAt = $allMatches->whereNotNull('scheduled_at')->isNotEmpty();
                                                           style="background:{{ $match->homeTeam->color }}"></span>
                                                 @endif
                                                 @if ($match->home_team_id && $match->homeTeam)
-                                                    <a href="{{ route('torneos.cronograma.team', [$tournament, $match->home_team_id]) }}"
+                                                    <a href="{{ route('torneos.cronograma.team', [$tournament, $match->homeTeam]) }}"
                                                        class="font-display font-bold text-pitch text-[15px] hover:underline truncate">
                                                         {{ $match->homeTeam->name }}
                                                     </a>
@@ -208,7 +208,7 @@ $hasScheduledAt = $allMatches->whereNotNull('scheduled_at')->isNotEmpty();
                                         <div class="flex-1 text-left min-w-0">
                                             <div class="flex items-center gap-2">
                                                 @if ($match->away_team_id && $match->awayTeam)
-                                                    <a href="{{ route('torneos.cronograma.team', [$tournament, $match->away_team_id]) }}"
+                                                    <a href="{{ route('torneos.cronograma.team', [$tournament, $match->awayTeam]) }}"
                                                        class="font-display font-bold text-pitch text-[15px] hover:underline truncate">
                                                         {{ $match->awayTeam->name }}
                                                     </a>

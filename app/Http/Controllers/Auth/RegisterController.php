@@ -41,7 +41,6 @@ class RegisterController extends Controller
             'document' => $data['documento'] ?? null,
             'password' => $data['password'],
             'role' => 'user',
-            'is_active' => false,
             'notifications_enabled' => true,
             'email_verified_at' => now(),
         ]);
@@ -66,6 +65,6 @@ class RegisterController extends Controller
             ]);
         }
 
-        return redirect()->route('activate.show');
+        return redirect()->route('torneos.mi-carrera');
     }
 }

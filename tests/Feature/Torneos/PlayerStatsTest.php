@@ -24,15 +24,13 @@ class PlayerStatsTest extends TestCase
     private function makeTournamentAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
     }
 
     private function makeUser(): User
     {
         return User::factory()->create([
-            'is_active' => true, 'role' => 'user', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
     }
 
     /** Crea torneo round_robin con fixture y retorna [tournament, teams[]] */

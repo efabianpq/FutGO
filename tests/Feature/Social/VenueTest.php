@@ -27,9 +27,7 @@ class VenueTest extends TestCase
             'name'      => 'User ' . uniqid(),
             'email'     => uniqid('v') . '@test.com',
             'password'  => bcrypt('password'),
-            'is_active' => true,
             'role'      => 'user',
-            'modules'   => 'torneos',
         ], $extra));
     }
 

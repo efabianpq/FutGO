@@ -2,7 +2,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#00c853">
+    <link rel="manifest" href="/manifest.json">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Anti-FOUC del tema: aplica tema antes de pintar (default: light) --}}
@@ -41,12 +46,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 
-    {{-- PWA --}}
-    <link rel="manifest" href="/FutGO/pwa/manifest.webmanifest">
-    <meta name="theme-color" content="#0b0f14">
+    {{-- PWA: manifest e ícono fusionados en /manifest.json (ver meta tags arriba) --}}
     <link rel="apple-touch-icon" href="/FutGO/pwa/icon-180.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FutGO">
 
     <style>[x-cloak] { display: none !important; }</style>

@@ -6,6 +6,7 @@ use App\Models\Torneos\PlayerStat;
 use App\Models\Torneos\Tournament;
 use App\Models\Torneos\TournamentMatch;
 use App\Models\Torneos\TournamentPhase;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 /**
@@ -76,6 +77,43 @@ class TournamentReportService
             ->orderByDesc('matches_played')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Variantes paginadas de finishedMatches/upcomingMatches/topScorers, solo
+     * para el portal público (deuda #9). Los métodos originales quedan intactos
+     * para tarjetas compartibles y exportación PDF/CSV (necesitan un top-N fijo,
+     * no paginado). Cada listado usa un pageName distinto porque los 3 conviven
+     * en la misma página.
+     */
+    public function paginatedFinishedMatches(Tournament $tournament, int $perPage = 12): LengthAwarePaginator
+    {
+        return $this->matchesQuery($tournament)
+            ->where('status', 'finished')
+            ->orderByDesc('scheduled_at')
+            ->orderByDesc('match_number')
+            ->paginate($perPage, ['*'], 'resultados_page');
+    }
+
+    public function paginatedUpcomingMatches(Tournament $tournament, int $perPage = 12): LengthAwarePaginator
+    {
+        return $this->matchesQuery($tournament)
+            ->where('status', 'scheduled')
+            ->orderByRaw('scheduled_at IS NULL')
+            ->orderBy('scheduled_at')
+            ->orderBy('match_number')
+            ->paginate($perPage, ['*'], 'proximos_page');
+    }
+
+    public function paginatedTopScorers(Tournament $tournament, int $perPage = 10): LengthAwarePaginator
+    {
+        return PlayerStat::where('tournament_id', $tournament->id)
+            ->where('goals', '>', 0)
+            ->with($this->playerStatRelations())
+            ->orderByDesc('goals')
+            ->orderByDesc('assists')
+            ->orderByDesc('matches_played')
+            ->paginate($perPage, ['*'], 'goleadores_page');
     }
 
     /** Estadísticas completas de jugadores con al menos un partido jugado. */

@@ -2,24 +2,8 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('predictions:lock')
-    ->everyMinute()
-    ->withoutOverlapping()
-    ->runInBackground();
-
-Schedule::command('notifications:reminders')
-    ->everyMinute()
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/reminders.log'));
-
-Schedule::command('results:sync')
-    ->everyFiveMinutes()
-    ->withoutOverlapping()
-    ->runInBackground();
-
 // ─── Módulo Torneos (Sesión G) ───────────────────────────────────────────
-// Recordatorios de partidos próximos a jugadores convocados. Coexiste con los
-// schedulers de la polla (de arriba) — no los modifica.
+// Recordatorios de partidos próximos a jugadores convocados.
 Schedule::command('torneos:match-reminders')
     ->hourly()
     ->withoutOverlapping()
@@ -27,7 +11,7 @@ Schedule::command('torneos:match-reminders')
 
 // ─── FutGO Social — Fase 1 (Sesión S1-B) ─────────────────────────────────
 // Vence las oportunidades cuya ventana de fecha ya pasó, para que no aparezcan
-// en el listado activo. Coexiste con los schedulers de torneos y polla.
+// en el listado activo. Coexiste con los schedulers de torneos.
 Schedule::command('social:expire-opportunities')
     ->hourly()
     ->withoutOverlapping()
@@ -46,6 +30,15 @@ Schedule::command('social:rebuild-reliability')
     ->dailyAt('04:00')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/social.log'));
+
+// ─── Módulo Torneos (deuda #10) ──────────────────────────────────────────
+// Reconstruye acumulados, fair play, logros y ranking FUTGO (cache). Hasta
+// ahora solo se recalculaba al cerrar un torneo puntual (ReputationService::
+// consolidateTournament); este cron lo mantiene fresco aunque no cierre nada.
+Schedule::command('torneos:rebuild-reputation')
+    ->dailyAt('04:30')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/torneos-reputation.log'));
 
 // ─── Backups (P-0) ───────────────────────────────────────────────────────
 // Solo DB (los medios viven en R2 en producción). Hora 03:00 para minimizar

@@ -41,10 +41,6 @@
                 <p class="font-mono text-body-s text-ink mt-1 break-all">{{ auth()->user()->email }}</p>
             </div>
             <div>
-                <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Código usado</p>
-                <p class="font-mono font-bold text-body text-pitch mt-1">{{ auth()->user()->invitation_code ?? '—' }}</p>
-            </div>
-            <div>
                 <p class="font-mono text-[11px] tracking-wide-label uppercase text-ink-mute">Rol</p>
                 <p class="font-display font-bold text-display-s text-pitch uppercase mt-1">{{ auth()->user()->role }}</p>
             </div>

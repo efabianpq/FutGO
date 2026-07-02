@@ -25,8 +25,7 @@ class CareerAndProfileTest extends TestCase
     private function torneoUser(): User
     {
         return User::factory()->create([
-            'is_active' => true, 'role' => 'user', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
     }
 
     private function makeTournament(User $admin, string $status = 'in_progress'): Tournament
@@ -181,8 +180,7 @@ class CareerAndProfileTest extends TestCase
     public function test_finalizar_torneo_conserva_y_consolida_historico(): void
     {
         $admin  = User::factory()->create([
-            'is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
         $player = $this->torneoUser();
 
         $t = $this->makeTournament($admin, 'in_progress');
@@ -228,7 +226,7 @@ class CareerAndProfileTest extends TestCase
 
     public function test_equipo_permanente_se_enrola_en_dos_torneos(): void
     {
-        $admin   = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin   = User::factory()->create(['role' => 'user',]);
         $captain = $this->torneoUser();
 
         // Crear equipo permanente (vía HTTP: el creador queda capitán).

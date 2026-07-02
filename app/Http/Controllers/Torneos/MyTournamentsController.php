@@ -24,7 +24,7 @@ class MyTournamentsController extends Controller
 
         // ── 1. Torneos visibles para el usuario (vista unificada H3) ──────────
         // - Admin de plataforma: ve TODOS los torneos (inventario global).
-        // - Torneo_admin / capitán / jugador: ve los que administra o donde juega.
+        // - Cualquier otro usuario: ve los que creó/administra o donde juega.
         $tournaments = Tournament::query()
             ->when(! $user->isAdmin(), fn ($query) => $query
                 ->where(fn ($q) => $q
@@ -47,7 +47,7 @@ class MyTournamentsController extends Controller
             ->get();
 
         if ($tournaments->isEmpty()) {
-            return view('torneos.index', ['cards' => collect(), 'isTorneoAdmin' => $user->isTorneoAdmin()]);
+            return view('torneos.index', ['cards' => collect()]);
         }
 
         $tournamentIds = $tournaments->pluck('id');
@@ -113,9 +113,6 @@ class MyTournamentsController extends Controller
             ];
         });
 
-        return view('torneos.index', [
-            'cards'        => $cards,
-            'isTorneoAdmin' => $user->isTorneoAdmin(),
-        ]);
+        return view('torneos.index', ['cards' => $cards]);
     }
 }

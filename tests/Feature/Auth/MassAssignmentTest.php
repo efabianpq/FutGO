@@ -10,9 +10,9 @@ use Tests\TestCase;
 /**
  * Verifica que los endpoints de perfil no permiten mass-assignment de campos sensibles.
  *
- * El riesgo: $fillable del modelo User incluye role, is_active y modules.
- * Ningún controlador usa $request->all() sobre User, pero este test lo documenta
- * y lo hace un contrato explícito de regresión.
+ * El riesgo: $fillable del modelo User incluye role. Ningún controlador usa
+ * $request->all() sobre User, pero este test lo documenta y lo hace un
+ * contrato explícito de regresión.
  */
 class MassAssignmentTest extends TestCase
 {
@@ -26,7 +26,7 @@ class MassAssignmentTest extends TestCase
 
     public function test_patch_perfil_no_puede_escalar_role_a_admin(): void
     {
-        $user = User::factory()->create(['is_active' => true, 'role' => 'user']);
+        $user = User::factory()->create(['role' => 'user']);
 
         $this->actingAs($user)->patch(route('profile.update'), [
             'phone_whatsapp' => '3001234567',
@@ -36,34 +36,9 @@ class MassAssignmentTest extends TestCase
         $this->assertSame('user', $user->fresh()->role);
     }
 
-    public function test_patch_perfil_no_puede_desactivar_la_cuenta(): void
-    {
-        $user = User::factory()->create(['is_active' => true, 'role' => 'user']);
-
-        $this->actingAs($user)->patch(route('profile.update'), [
-            'phone_whatsapp' => '3001234567',
-            'is_active'      => false,
-        ]);
-
-        $this->assertTrue((bool) $user->fresh()->is_active);
-    }
-
-    public function test_patch_perfil_no_puede_ampliar_modulos(): void
-    {
-        $user = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
-
-        $this->actingAs($user)->patch(route('profile.update'), [
-            'phone_whatsapp' => '3001234567',
-            'modules'        => 'full',
-        ]);
-
-        $this->assertSame('torneos', $user->fresh()->modules);
-    }
-
     public function test_patch_perfil_actualiza_correctamente_los_campos_permitidos(): void
     {
         $user = User::factory()->create([
-            'is_active'      => true,
             'phone_whatsapp' => '3001111111',
             'document'       => null,
         ]);

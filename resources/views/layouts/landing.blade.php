@@ -2,7 +2,12 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#00c853">
+    <link rel="manifest" href="/manifest.json">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Anti-FOUC: aplica el tema ANTES de pintar (default light) --}}
@@ -32,6 +37,7 @@
     {{-- ══ TOPBAR ══════════════════════════════════════════════════════════ --}}
     <header class="sticky top-0 z-40 flex items-center gap-4 h-16 px-5
                    bg-bg/80 backdrop-blur-md border-b border-border"
+            style="padding-top: env(safe-area-inset-top);"
             x-data="{ mopen: false }">
 
         <a href="{{ route('home') }}" class="shrink-0"><x-logo size="sm" /></a>

@@ -25,7 +25,7 @@ class DrawTiebreakerTest extends TestCase
 
     private function scaffold(): array
     {
-        $admin = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $admin = User::factory()->create([]);
         $t = Tournament::create([
             'name' => 'Copa ' . uniqid(), 'slug' => 'copa-' . uniqid(),
             'sport' => 'futbol', 'status' => 'in_progress', 'format' => 'round_robin',

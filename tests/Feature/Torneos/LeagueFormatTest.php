@@ -23,7 +23,7 @@ class LeagueFormatTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function makeLeague(User $admin, int $teamCount = 4, int $classifies = 2): array
@@ -40,7 +40,7 @@ class LeagueFormatTest extends TestCase
 
         $teams = [];
         for ($i = 0; $i < $teamCount; $i++) {
-            $cap = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+            $cap = User::factory()->create([]);
             $team = Team::create([
                 'tournament_id' => $tournament->id, 'captain_user_id' => $cap->id,
                 'name' => "Equipo $i", 'status' => 'approved',

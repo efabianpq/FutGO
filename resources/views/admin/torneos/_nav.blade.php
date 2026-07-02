@@ -16,7 +16,7 @@
         @if (auth()->user()?->isAdmin())
             <a href="{{ route('admin.dashboard') }}"
                class="px-3 py-2 rounded-md transition-all duration-fast text-ink-mute hover:bg-white ml-auto">
-                ← Panel Polla
+                ← Panel Admin
             </a>
         @endif
     </div>

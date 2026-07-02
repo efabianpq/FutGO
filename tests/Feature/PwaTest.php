@@ -35,8 +35,6 @@ class PwaTest extends TestCase
     private function authPage(): \Illuminate\Testing\TestResponse
     {
         $user = User::factory()->create([
-            'is_active' => true,
-            'modules'   => 'torneos',
         ]);
         return $this->actingAs($user)->get(route('profile.show'));
     }

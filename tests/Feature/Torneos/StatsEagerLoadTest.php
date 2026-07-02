@@ -34,7 +34,7 @@ class StatsEagerLoadTest extends TestCase
      */
     private function setupScenario(User $player, int $matchCount): array
     {
-        $admin = User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        $admin = User::factory()->create(['role' => 'user',]);
 
         $tournament = Tournament::create([
             'name'                 => 'Torneo N+1 Test',
@@ -74,7 +74,7 @@ class StatsEagerLoadTest extends TestCase
             'status'     => 'active',
         ]);
 
-        $opponent = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $opponent = User::factory()->create([]);
         $teamB = Team::create([
             'tournament_id'   => $tournament->id,
             'captain_user_id' => $opponent->id,
@@ -112,7 +112,7 @@ class StatsEagerLoadTest extends TestCase
 
     public function test_jugador_page_carga_ok_con_multiples_partidos(): void
     {
-        $player = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $player = User::factory()->create([]);
 
         [$tournament, $teamPlayer] = $this->setupScenario($player, 3);
 
@@ -123,7 +123,7 @@ class StatsEagerLoadTest extends TestCase
 
     public function test_jugador_page_muestra_datos_de_lineup_desde_eager_load(): void
     {
-        $player = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+        $player = User::factory()->create([]);
 
         // 3 partidos con lineup — antes del fix, el map() hacía 1 query por partido
         [$tournament, $teamPlayer] = $this->setupScenario($player, 3);

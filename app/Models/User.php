@@ -14,11 +14,6 @@ class User extends Authenticatable
 {
     use HasFactory, HasPlayLevel, Notifiable;
 
-    public function predictions(): HasMany
-    {
-        return $this->hasMany(Prediction::class);
-    }
-
     protected $fillable = [
         'name',
         'email',
@@ -31,13 +26,10 @@ class User extends Authenticatable
         'play_level',
         'city',
         'feed_last_read_at',
-        'invitation_code',
-        'is_active',
         'is_suspended',
         'suspended_until',
         'suspended_reason',
         'role',
-        'modules',
         'notifications_enabled',
         'accepts_direct_messages',
         'email_verified_at',
@@ -66,7 +58,6 @@ class User extends Authenticatable
         return [
             'email_verified_at'  => 'datetime',
             'password'           => 'hashed',
-            'is_active'          => 'boolean',
             'is_suspended'       => 'boolean',
             'suspended_until'    => 'datetime',
             'notifications_enabled'      => 'boolean',
@@ -97,29 +88,6 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
-    }
-
-    // --- Módulo Torneos ---
-
-    public function hasModuleAccess(string $module): bool
-    {
-        if ($this->isAdmin()) return true;
-        return $this->modules === 'full' || $this->modules === $module;
-    }
-
-    public function hasPollaAccess(): bool
-    {
-        return $this->hasModuleAccess('polla');
-    }
-
-    public function hasTorneosAccess(): bool
-    {
-        return $this->hasModuleAccess('torneos');
-    }
-
-    public function isTorneoAdmin(): bool
-    {
-        return $this->role === 'torneo_admin' || $this->isAdmin();
     }
 
     /** Inscripciones por torneo (participaciones) que este usuario capitanea. */

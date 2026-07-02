@@ -8,7 +8,6 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Recordatorio de partido próximo para jugadores convocados (módulo Torneos, Sesión G).
- * Reutiliza el patrón de PredictionReminderNotification de la polla.
  */
 class MatchReminderNotification extends Notification
 {

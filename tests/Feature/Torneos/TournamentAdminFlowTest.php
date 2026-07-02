@@ -18,7 +18,7 @@ class TournamentAdminFlowTest extends TestCase
     private function makeUser(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'modules' => 'torneos'],
+            [],
             $attrs
         ));
     }
@@ -78,10 +78,10 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_torneo_admin_ve_solo_sus_torneos(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$mine] = $this->makeTournament($admin);
 
-        $otherAdmin = $this->makeUser(['role' => 'torneo_admin']);
+        $otherAdmin = $this->makeUser(['role' => 'user']);
         [$theirs] = $this->makeTournament($otherAdmin);
 
         $this->actingAs($admin)
@@ -93,7 +93,7 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_mis_torneos_carga_informacion_real(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament] = $this->makeTournament($admin, 4);
 
         $this->actingAs($admin)
@@ -109,7 +109,7 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_navegacion_a_fixture_funciona(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament, $teams] = $this->makeTournament($admin, 4, withFixture: true);
 
         // Vista operativa de partidos (fixture + resultados).
@@ -127,7 +127,7 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_navegacion_a_estadisticas_funciona(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament] = $this->makeTournament($admin, 4, withFixture: true);
 
         $this->actingAs($admin)
@@ -137,7 +137,7 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_dashboard_admin_enlaza_estadisticas_y_fixture(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament] = $this->makeTournament($admin, 4, withFixture: true);
 
         $this->actingAs($admin)
@@ -152,7 +152,7 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_torneo_admin_puede_programar_partido(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament] = $this->makeTournament($admin, 4, withFixture: true);
 
         $match = TournamentMatch::whereHas('phase', fn ($q) => $q->where('tournament_id', $tournament->id))
@@ -183,26 +183,28 @@ class TournamentAdminFlowTest extends TestCase
 
     public function test_torneo_admin_ajeno_recibe_403(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         [$mine] = $this->makeTournament($admin);
 
-        $otherAdmin = $this->makeUser(['role' => 'torneo_admin']);
+        $otherAdmin = $this->makeUser(['role' => 'user']);
 
         $this->actingAs($otherAdmin)
             ->get(route('admin.torneos.show', $mine))
             ->assertForbidden();
     }
 
-    public function test_usuario_sin_rol_admin_no_entra_a_gestion(): void
+    public function test_cualquier_usuario_autenticado_entra_a_gestion(): void
     {
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        // Sin diferenciación de rol: cualquier usuario logueado accede; solo ve
+        // (y administra) los torneos que creó/donde es admin.
+        $admin = $this->makeUser(['role' => 'user']);
         [$tournament] = $this->makeTournament($admin);
 
-        $player = $this->makeUser(); // sin rol torneo_admin
+        $player = $this->makeUser();
 
         $this->actingAs($player)
             ->get(route('admin.torneos.index'))
-            ->assertRedirect(route('predictions.index'));
+            ->assertRedirect(route('torneos.index'));
     }
 
     // ─── Menú por rol ──────────────────────────────────────────────────────────
@@ -211,7 +213,7 @@ class TournamentAdminFlowTest extends TestCase
     {
         // v2.0: la gestión se accede desde la tarjeta de Mis Torneos ("Panel de
         // Control"), no desde un item de nav. El admin ve "Mis Torneos" en el nav.
-        $admin = $this->makeUser(['role' => 'torneo_admin']);
+        $admin = $this->makeUser(['role' => 'user']);
         $this->makeTournament($admin);
 
         $this->actingAs($admin)

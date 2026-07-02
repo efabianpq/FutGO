@@ -85,7 +85,7 @@ class TournamentHubController extends Controller
         ));
     }
 
-    /** ¿El usuario administra este torneo (admin global o torneo_admin del torneo)? */
+    /** ¿El usuario administra este torneo (admin global, creador o admin agregado del torneo)? */
     private function canManage(Tournament $tournament): bool
     {
         $user = auth()->user();

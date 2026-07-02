@@ -24,8 +24,7 @@ class PhaseClosureTest extends TestCase
     private function makeAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
     }
 
     /**
@@ -58,7 +57,7 @@ class PhaseClosureTest extends TestCase
 
         $teams = collect();
         for ($i = 0; $i < 8; $i++) {
-            $cap = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+            $cap = User::factory()->create([]);
             $team = Team::create([
                 'tournament_id'   => $tournament->id,
                 'captain_user_id' => $cap->id,

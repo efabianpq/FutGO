@@ -28,13 +28,13 @@ class CredentialQrTest extends TestCase
 
     private function makeReferee(): User
     {
-        return User::factory()->create(['is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos']);
+        return User::factory()->create(['role' => 'user',]);
     }
 
     private function makePlayer(array $attrs = []): User
     {
         return User::factory()->create(array_merge(
-            ['is_active' => true, 'role' => 'user', 'modules' => 'torneos'],
+            ['role' => 'user',],
             $attrs
         ));
     }
@@ -252,11 +252,13 @@ class CredentialQrTest extends TestCase
 
     // ── Control de acceso ─────────────────────────────────────────────────
 
-    public function test_un_jugador_no_admin_no_puede_validar_credenciales(): void
+    public function test_cualquier_usuario_autenticado_puede_validar_credenciales(): void
     {
+        // Sin diferenciación de rol: cualquier usuario logueado puede validar
+        // credenciales (la pantalla solo lista los torneos que administra).
         $player = $this->makePlayer();
 
         $this->actingAs($player)->get(route('torneos.validar'))
-            ->assertRedirect(route('predictions.index'));
+            ->assertOk();
     }
 }

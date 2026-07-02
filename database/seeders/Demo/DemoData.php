@@ -24,14 +24,15 @@ final class DemoData
     // ── Cuentas documentadas (las que aparecen en el informe de la demo) ──────
     public const ADMIN_EMAIL       = 'admin@futgo.co';
     public const ARBITRO_EMAIL     = 'arbitro@futgo.co';
-    public const ORGANIZADOR_EMAIL = 'organizador@futgo.co';     // torneo_admin + capitán Los Cóndores
+    public const ORGANIZADOR_EMAIL = 'organizador@futgo.co';     // creador de torneos + capitán Los Cóndores
     public const HALCONES_EMAIL    = 'capitan.halcones@futgo.co'; // capitán del campeón
     public const ESTRELLA_EMAIL    = 'jugador.estrella@futgo.co'; // carrera más rica
     public const LIBRE_EMAIL       = 'libre@futgo.co';            // jugador libre con oportunidad activa
 
     /**
-     * Equipos permanentes. El capitán de cada club se crea con el email indicado;
-     * `role` distingue a los 3 torneo_admins que también juegan.
+     * Equipos permanentes. El capitán de cada club se crea con el email indicado.
+     * Todos los usuarios son `role='user'`; no hay rol de organizador diferenciado —
+     * cualquier usuario puede crear y administrar torneos.
      *
      * @var array<int, array<string, mixed>>
      */
@@ -44,12 +45,12 @@ final class DemoData
         [
             'slug' => 'los-condores', 'name' => 'Los Cóndores', 'city' => 'Bucaramanga',
             'level' => 'intermedio', 'color' => '#DC2626',
-            'captain' => ['name' => 'Mauricio Ortiz', 'email' => self::ORGANIZADOR_EMAIL, 'role' => 'torneo_admin'],
+            'captain' => ['name' => 'Mauricio Ortiz', 'email' => self::ORGANIZADOR_EMAIL, 'role' => 'user'],
         ],
         [
             'slug' => 'deportivo-cafe', 'name' => 'Deportivo Café', 'city' => 'Bucaramanga',
             'level' => 'recreativo', 'color' => '#15803D',
-            'captain' => ['name' => 'Hernán Cárdenas', 'email' => 'hernan.cardenas@futgo.co', 'role' => 'torneo_admin'],
+            'captain' => ['name' => 'Hernán Cárdenas', 'email' => 'hernan.cardenas@futgo.co', 'role' => 'user'],
         ],
         [
             'slug' => 'atletico-guane', 'name' => 'Atlético Guane', 'city' => 'Bucaramanga',
@@ -84,7 +85,7 @@ final class DemoData
         [
             'slug' => 'academia-oro', 'name' => 'Academia Oro', 'city' => 'Medellín',
             'level' => 'elite_amateur', 'color' => '#CA8A04',
-            'captain' => ['name' => 'Gustavo Henao', 'email' => 'gustavo.henao@futgo.co', 'role' => 'torneo_admin'],
+            'captain' => ['name' => 'Gustavo Henao', 'email' => 'gustavo.henao@futgo.co', 'role' => 'user'],
         ],
     ];
 

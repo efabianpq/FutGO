@@ -22,8 +22,7 @@ class StandingsTest extends TestCase
     private function makeAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true, 'role' => 'torneo_admin', 'modules' => 'torneos',
-        ]);
+'role' => 'user',        ]);
     }
 
     /**
@@ -57,7 +56,7 @@ class StandingsTest extends TestCase
 
         $teams = collect();
         for ($i = 0; $i < $n; $i++) {
-            $cap = User::factory()->create(['is_active' => true, 'modules' => 'torneos']);
+            $cap = User::factory()->create([]);
             $team = Team::create([
                 'tournament_id'   => $tournament->id,
                 'captain_user_id' => $cap->id,

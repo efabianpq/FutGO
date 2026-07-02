@@ -26,7 +26,7 @@ class RegistrationConfirmationTest extends TestCase
         Notification::fake();
 
         $this->post(route('register.store'), $this->validPayload)
-            ->assertRedirect(route('activate.show'));
+            ->assertRedirect(route('torneos.mi-carrera'));
 
         $user = User::where('email', 'carlos.prueba@test.com')->first();
         $this->assertNotNull($user);
@@ -41,15 +41,14 @@ class RegistrationConfirmationTest extends TestCase
 
         $response = $this->post(route('register.store'), $this->validPayload);
 
-        // El registro igual redirige a /activate — el error de email no bloquea
-        $response->assertRedirect(route('activate.show'));
+        // El registro igual redirige a Mi Carrera — el error de email no bloquea
+        $response->assertRedirect(route('torneos.mi-carrera'));
 
         $user = User::where('email', 'carlos.prueba@test.com')->first();
         $this->assertNotNull($user);
-        $this->assertFalse((bool) $user->is_active);
     }
 
-    public function test_email_contiene_numero_whatsapp_y_pasos(): void
+    public function test_email_contiene_saludo_y_boton_de_ingreso(): void
     {
         $user = User::factory()->make([
             'name'  => 'María Test',
@@ -59,23 +58,12 @@ class RegistrationConfirmationTest extends TestCase
         $notification = new RegistrationConfirmationNotification($user);
         $mail = $notification->toMail($user)->toArray();
 
-        // Asunto con nombre
+        // Asunto y saludo con nombre
         $this->assertStringContainsString('María', $mail['subject']);
+        $this->assertStringContainsString('María', $mail['greeting']);
 
-        // Número de WhatsApp en el cuerpo
-        $body = collect($mail['introLines'])->implode("\n");
-        $this->assertStringContainsString('3013966515', $body);
-
-        // Los 3 pasos presentes
-        $this->assertStringContainsString('Hacé la transferencia', $body);
-        $this->assertStringContainsString('comprobante', $body);
-        $this->assertStringContainsString('código de activación', $body);
-
-        // Email del usuario inyectado en el paso 2
-        $this->assertStringContainsString('maria@test.com', $body);
-
-        // Botón a /login
-        $this->assertStringContainsString('Iniciar sesión', $mail['actionText']);
-        $this->assertStringContainsString('/login', $mail['actionUrl']);
+        // Botón de ingreso
+        $this->assertStringContainsString('FutGO', $mail['actionText']);
+        $this->assertStringContainsString('/dashboard', $mail['actionUrl']);
     }
 }

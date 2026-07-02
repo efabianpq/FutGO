@@ -14,18 +14,14 @@ class TournamentAdminTest extends TestCase
     private function torneoAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true,
-            'role'      => 'torneo_admin',
-            'modules'   => 'torneos',
+            'role'      => 'user',
         ]);
     }
 
     private function globalAdmin(): User
     {
         return User::factory()->create([
-            'is_active' => true,
             'role'      => 'admin',
-            'modules'   => 'full',
         ]);
     }
 
@@ -138,7 +134,7 @@ class TournamentAdminTest extends TestCase
     {
         // Un jugador (no admin del torneo) ve "Ver torneo", no "Panel de Control".
         $admin  = $this->torneoAdmin();
-        $player = User::factory()->create(['is_active' => true, 'role' => 'user', 'modules' => 'torneos']);
+        $player = User::factory()->create(['role' => 'user',]);
 
         $t = $this->makeTournamentFor($admin, ['name' => 'Torneo Jugado', 'status' => 'open']);
         $team = \App\Models\Torneos\Team::create([
@@ -340,21 +336,18 @@ class TournamentAdminTest extends TestCase
         $this->assertEquals('open', $t->fresh()->status);
     }
 
-    public function test_usuario_sin_rol_torneo_admin_no_accede(): void
+    public function test_cualquier_usuario_autenticado_puede_crear_torneos(): void
     {
-        $user = User::factory()->create([
-            'is_active' => true,
-            'role'      => 'user',
-            'modules'   => 'torneos',
-        ]);
+        // Sin diferenciación de rol: cualquier usuario logueado puede crear torneos.
+        $user = User::factory()->create(['role' => 'user']);
 
         $this->actingAs($user)
              ->get(route('admin.torneos.index'))
-             ->assertRedirect();
+             ->assertRedirect(route('torneos.index'));
 
         $this->actingAs($user)
              ->get(route('admin.torneos.create'))
-             ->assertRedirect();
+             ->assertOk();
     }
 
     public function test_formularios_create_y_edit_renderizan_para_el_dueno(): void

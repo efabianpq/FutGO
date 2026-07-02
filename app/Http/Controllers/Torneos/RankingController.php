@@ -33,8 +33,11 @@ class RankingController extends Controller
         $cities = DB::table('tournaments')->whereNotNull('city')->distinct()->orderBy('city')->pluck('city');
         $categories = DB::table('tournaments')->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
 
+        // Deuda #10: el ranking es cache — mostrar cuándo se calculó por última vez.
+        $lastCalculated = FutgoRanking::max('calculated_at');
+
         return view('torneos.ranking.index', compact(
-            'rankings', 'type', 'scopeType', 'scopeValue', 'cities', 'categories'
+            'rankings', 'type', 'scopeType', 'scopeValue', 'cities', 'categories', 'lastCalculated'
         ));
     }
 }

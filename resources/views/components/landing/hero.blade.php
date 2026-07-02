@@ -35,10 +35,10 @@
         <div class="flex flex-wrap gap-3 mt-9 justify-center">
             @guest
                 <a href="{{ route('register') }}"     class="btn btn-primary btn-lg">Crear cuenta</a>
-                <a href="{{ route('how-it-works') }}" class="btn btn-outline btn-lg">Hablar con ventas</a>
+                <a href="{{ route('torneos.public.index') }}" class="btn btn-outline btn-lg">Ver torneos públicos</a>
             @else
                 <a href="{{ route('inicio') }}"       class="btn btn-primary btn-lg">Ir a mi panel</a>
-                <a href="{{ route('how-it-works') }}" class="btn btn-outline btn-lg">Ver demo</a>
+                <a href="{{ route('torneos.public.index') }}" class="btn btn-outline btn-lg">Ver torneos públicos</a>
             @endguest
         </div>
 
