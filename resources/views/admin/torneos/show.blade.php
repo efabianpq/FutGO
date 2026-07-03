@@ -399,35 +399,61 @@
             </div>
 
 
-            {{-- Validar jugador (H17) --}}
+            {{-- Accesos rápidos: validar credencial / patrocinadores / portal público --}}
             <div class="mt-4 bg-white border border-line rounded-md shadow-card p-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Validar credencial</p>
-                        <p class="text-[12px] text-ink-mute mt-0.5">Verifica si un jugador está habilitado para este torneo.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="flex flex-col gap-2">
+                        <div>
+                            <p class="font-display font-bold text-pitch uppercase text-[13px]">Validar credencial</p>
+                            <p class="text-[11px] text-ink-mute mt-0.5">Verifica si un jugador está habilitado.</p>
+                        </div>
+                        <a href="{{ route('torneos.validar', ['tournament_id' => $tournament->id]) }}"
+                           class="inline-flex items-center justify-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft">
+                            <x-icon name="id-card" class="w-4 h-4" /> Validar jugador
+                        </a>
                     </div>
-                    <a href="{{ route('torneos.validar', ['tournament_id' => $tournament->id]) }}"
-                       class="btn btn-secondary btn-sm">Validar jugador</a>
+
+                    <div class="flex flex-col gap-2 sm:border-l sm:border-line-soft sm:pl-3">
+                        <div>
+                            <p class="font-display font-bold text-pitch uppercase text-[13px]">Patrocinadores</p>
+                            <p class="text-[11px] text-ink-mute mt-0.5">Administra los espacios de marca del torneo.</p>
+                        </div>
+                        <a href="{{ route('admin.torneos.sponsors.index', $tournament) }}"
+                           class="inline-flex items-center justify-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft">
+                            <x-icon name="megaphone" class="w-4 h-4" /> Patrocinadores
+                        </a>
+                    </div>
+
+                    <div class="flex flex-col gap-2 sm:border-l sm:border-line-soft sm:pl-3">
+                        <div>
+                            <p class="font-display font-bold text-pitch uppercase text-[13px]">Portal público</p>
+                            <p class="text-[11px] text-ink-mute mt-0.5">
+                                @if ($tournament->isPublic())
+                                    Vista pública del torneo, sin necesidad de sesión.
+                                @else
+                                    Torneo privado: no tiene portal público.
+                                @endif
+                            </p>
+                        </div>
+                        @if ($tournament->isPublic())
+                            <a href="{{ route('torneos.public.show', $tournament) }}" target="_blank"
+                               class="inline-flex items-center justify-center gap-1.5 bg-white border border-line text-pitch font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md hover:bg-bone-soft">
+                                <x-icon name="send" class="w-4 h-4" /> Ver portal ↗
+                            </a>
+                        @else
+                            <span class="inline-flex items-center justify-center gap-1.5 bg-bone-soft border border-line-soft text-ink-mute font-display font-bold text-[12px] uppercase tracking-wide-label px-3 py-2 rounded-md">
+                                No disponible
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            {{-- Exportar + portal público (Sesión E) --}}
+            {{-- Exportar (Sesión E) --}}
             <div class="mt-4 bg-white border border-line rounded-md shadow-card p-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <p class="font-display font-bold text-pitch uppercase text-[14px]">Exportar y compartir</p>
-                        <p class="text-[12px] text-ink-mute mt-0.5">Descarga los datos del torneo o abre el portal público.</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('admin.torneos.sponsors.index', $tournament) }}"
-                           class="font-mono text-[11px] uppercase tracking-wide-label text-pitch font-bold">Patrocinadores</a>
-                        @if ($tournament->isPublic())
-                            <a href="{{ route('torneos.public.show', $tournament) }}" target="_blank"
-                               class="font-mono text-[11px] uppercase tracking-wide-label text-gol-deep font-bold">Ver portal público ↗</a>
-                        @else
-                            <span class="font-mono text-[11px] uppercase tracking-wide-label text-ink-mute">Torneo privado (sin portal)</span>
-                        @endif
-                    </div>
+                <div>
+                    <p class="font-display font-bold text-pitch uppercase text-[14px]">Exportar</p>
+                    <p class="text-[12px] text-ink-mute mt-0.5">Descarga los datos del torneo en PDF o CSV.</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
                     @foreach (['resultados' => 'Resultados', 'posiciones' => 'Posiciones', 'estadisticas' => 'Estadísticas'] as $ds => $lbl)

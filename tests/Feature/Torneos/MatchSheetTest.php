@@ -76,7 +76,7 @@ class MatchSheetTest extends TestCase
 
     // ─── Autogeneración ──────────────────────────────────────────────────────
 
-    public function test_planilla_autogenera_convocatoria_desde_el_roster(): void
+    public function test_planilla_nueva_no_premarca_jugadores(): void
     {
         [$tournament, $admin] = $this->makeScenario();
         $match = $this->firstMatch($tournament);
@@ -86,10 +86,9 @@ class MatchSheetTest extends TestCase
             ->assertOk()
             ->assertSee('Planilla del Partido');
 
-        // En una planilla nueva (sin lineups guardados) los jugadores se pre-cargan
-        // como convocados (asistencia automática desde el roster). El JSON va dentro
-        // de un atributo x-data, por eso se busca con el escaping HTML por defecto.
-        $response->assertSee('"played":true');
+        // En una planilla nueva sin convocatoria previa cargada, nadie sale
+        // marcado por defecto: quien diligencia la planilla decide jugó/titular.
+        $response->assertDontSee('"played":true');
     }
 
     // ─── Observaciones arbitrales ──────────────────────────────────────────────

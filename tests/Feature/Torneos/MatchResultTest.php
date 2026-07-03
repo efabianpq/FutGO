@@ -714,7 +714,8 @@ class MatchResultTest extends TestCase
         $this->assertTrue($teamsWithCallUps->contains($homeTeam->id));
         $this->assertFalse($teamsWithCallUps->contains($teams[1]->id));
 
-        // El equipo visitante (sin convocatoria cargada) mantiene el fallback: todos jugados.
+        // El equipo visitante (sin convocatoria cargada) no sale premarcado: lo
+        // decide quien diligencia la planilla.
         preg_match('/resultadoForm\((.*?)\)"/s', $response->getContent(), $m);
         $formInit = json_decode(html_entity_decode($m[1]), true);
         $players = collect($formInit['players']);
@@ -724,10 +725,10 @@ class MatchResultTest extends TestCase
         $this->assertFalse($players->firstWhere('id', $declined->id)['played']);
 
         $awayCaptainPlayer = TeamPlayer::where('team_id', $teams[1]->id)->first();
-        $this->assertTrue($players->firstWhere('id', $awayCaptainPlayer->id)['played']);
+        $this->assertFalse($players->firstWhere('id', $awayCaptainPlayer->id)['played']);
     }
 
-    public function test_planilla_sin_convocatoria_previa_mantiene_todo_el_plantel_marcado(): void
+    public function test_planilla_sin_convocatoria_previa_no_marca_a_nadie_por_defecto(): void
     {
         $admin = $this->makeTournamentAdmin();
         [$tournament, $teams] = $this->setupRoundRobinWithFixture($admin, 2);
@@ -743,6 +744,6 @@ class MatchResultTest extends TestCase
         $formInit = json_decode(html_entity_decode($m[1]), true);
         $players = collect($formInit['players']);
 
-        $this->assertTrue($players->every(fn ($p) => $p['played'] === true));
+        $this->assertTrue($players->every(fn ($p) => $p['played'] === false));
     }
 }

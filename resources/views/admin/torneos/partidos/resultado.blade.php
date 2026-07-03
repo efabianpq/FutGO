@@ -5,8 +5,10 @@
 @include('admin.torneos._nav')
 
 @php
-// Convocatoria: si la planilla nunca se guardó (sin lineups), se pre-carga el
-// roster completo como titular. En re-edición se respeta lo guardado.
+// Convocatoria: si la planilla nunca se guardó (sin lineups), nadie sale
+// marcado por defecto — solo se pre-cargan los confirmados en convocatoria
+// previa (si existe). Quien diligencia la planilla marca jugó/titular.
+// En re-edición se respeta lo guardado.
 $freshSheet = $existingLineups->isEmpty();
 
 // Limitación #6: si hay convocatoria previa cargada para el equipo, la planilla
@@ -27,7 +29,7 @@ $buildPlayers = function ($players, $teamId, $captainId) use ($existingLineups, 
 
         $playedOnFreshSheet = $teamsWithCallUps->contains($teamId)
             ? $confirmedCallUpIds->contains($p->id)
-            : true;
+            : false;
 
         return [
             'id'          => $p->id,
@@ -37,7 +39,7 @@ $buildPlayers = function ($players, $teamId, $captainId) use ($existingLineups, 
             'is_captain'  => $captainId && $p->user_id === $captainId,
             'team_id'     => $teamId,
             'played'      => $freshSheet ? $playedOnFreshSheet : $existingLineups->has($p->id),
-            'starter'     => $existingLineups->has($p->id) ? (bool) $existingLineups[$p->id]->started : true,
+            'starter'     => $existingLineups->has($p->id) ? (bool) $existingLineups[$p->id]->started : false,
             'goals'       => $evs->where('type', 'goal')->count(),
             'assists'     => $evs->where('type', 'assist')->count(),
             'yellow'      => $evs->where('type', 'yellow_card')->count(),
