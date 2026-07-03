@@ -5,6 +5,7 @@ namespace App\Services\Social;
 use App\Models\Social\FeedEvent;
 use App\Models\Social\Follow;
 use App\Models\Social\Opportunity;
+use App\Models\Torneos\Club;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -80,19 +81,38 @@ class FeedService
     }
 
     /**
-     * Query base de eventos relevantes para el usuario. Si no hay ni follows ni
-     * ciudad, devuelve una query vacía (nada es relevante todavía).
+     * Query base de eventos relevantes para el usuario. El Feed es notificación
+     * personal, no un canal de descubrimiento: solo entra lo propio o lo de
+     * quien sigues. NO se distribuye por ciudad — eso ya lo cubre la sección
+     * Oportunidades (búsqueda/filtro explícito por ciudad). Distribuir eventos
+     * por ciudad aquí llenaría el Feed de cosas sin relación con el usuario
+     * solo por compartir ubicación. Si no hay identidad propia ni follows,
+     * devuelve una query vacía (nada es relevante todavía).
      */
     public function relevantQuery(User $user): Builder
     {
+        // "Yo mismo": eventos donde el usuario es directamente el actor/subject
+        // (como user) o donde lo es un club que capitanea. Siempre relevante,
+        // sin depender de follows — es lo que garantiza que una notificación
+        // dirigida (p. ej. "respondieron tu oportunidad") llegue al dueño
+        // aunque nadie lo siga.
+        $own      = $this->ownedKeys($user);
         $followed = $this->followedKeys($user);
-        $city     = $user->city;
-        $level    = $user->play_level;
 
-        return FeedEvent::query()->where(function (Builder $q) use ($followed, $city, $level) {
+        return FeedEvent::query()->where(function (Builder $q) use ($own, $followed) {
             $matched = false;
 
-            // 1. Sigue al actor o al subject (por tipo de entidad).
+            // 1. Soy el actor o el subject (directamente o vía un club que capitaneo).
+            foreach ($own as $type => $ids) {
+                if ($ids->isEmpty()) {
+                    continue;
+                }
+                $matched = true;
+                $q->orWhere(fn (Builder $s) => $s->where('actor_type', $type)->whereIn('actor_id', $ids));
+                $q->orWhere(fn (Builder $s) => $s->where('subject_type', $type)->whereIn('subject_id', $ids));
+            }
+
+            // 2. Sigo al actor o al subject (por tipo de entidad).
             foreach ($followed as $type => $ids) {
                 if ($ids->isEmpty()) {
                     continue;
@@ -102,20 +122,7 @@ class FeedService
                 $q->orWhere(fn (Builder $s) => $s->where('subject_type', $type)->whereIn('subject_id', $ids));
             }
 
-            // 2. Distribución por ciudad + nivel (nivel nulo del evento = para todos).
-            if ($city) {
-                $matched = true;
-                $q->orWhere(function (Builder $s) use ($city, $level) {
-                    $s->where('city', $city)->where(function (Builder $l) use ($level) {
-                        $l->whereNull('required_level');
-                        if ($level) {
-                            $l->orWhere('required_level', $level);
-                        }
-                    });
-                });
-            }
-
-            // Sin follows ni ciudad: nada es relevante.
+            // Sin identidad propia ni follows: nada es relevante todavía.
             if (! $matched) {
                 $q->whereRaw('1 = 0');
             }
@@ -178,6 +185,20 @@ class FeedService
     // ─────────────────────────────────────────────────────────────────────
     // Helpers
     // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Identidades que el usuario ES: su propio user id y los clubes que
+     * capitanea. Da soporte a notificaciones dirigidas (ver `relevantQuery`).
+     *
+     * @return array<string,\Illuminate\Support\Collection<int,int>>
+     */
+    private function ownedKeys(User $user): array
+    {
+        return [
+            'user' => collect([$user->id]),
+            'club' => Club::where('captain_user_id', $user->id)->pluck('id'),
+        ];
+    }
 
     /**
      * Entidades que el usuario sigue, agrupadas por tipo (morph alias).

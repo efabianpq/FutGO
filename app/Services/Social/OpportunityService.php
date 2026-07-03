@@ -110,12 +110,11 @@ class OpportunityService
 
         $opportunity = Opportunity::create($attributes);
 
-        // Feed: una nueva oportunidad se difunde a su ciudad/nivel y a los
-        // seguidores del publicante (no bloqueante).
+        // Feed: notifica a los seguidores del publicante (no bloqueante). El
+        // descubrimiento por ciudad vive en la sección Oportunidades, no en
+        // el Feed — ver relevantQuery() en FeedService.
         $author = $opportunity->club ?? $opportunity->user;
         $this->feed->record(FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, $author, $opportunity, [
-            'city'    => $opportunity->city,
-            'level'   => $opportunity->required_level,
             'payload' => [
                 'opportunity_id' => $opportunity->id,
                 'type'           => $opportunity->type,
@@ -177,17 +176,23 @@ class OpportunityService
             'status'  => OpportunityResponse::STATUS_PENDIENTE,
         ]);
 
-        // Notifica al dueño de la oportunidad vía Feed (no bloqueante).
+        // Notifica al dueño de la oportunidad vía Feed (no bloqueante). Sin
+        // difusión por ciudad: actor/subject son entidades "seguibles"
+        // (club o user), así el evento llega al dueño y a quien siga a
+        // cualquiera de las dos partes — no a toda la ciudad.
+        $responderEntity = $clubId ? Club::find($clubId) : $responder;
+        $ownerEntity      = $opportunity->club ?? $opportunity->user;
+
         $this->feed->record(
             FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA,
-            $responder,
-            $opportunity,
+            $responderEntity,
+            $ownerEntity,
             [
-                'city'    => $opportunity->city,
                 'payload' => [
                     'opportunity_id'   => $opportunity->id,
                     'opportunity_type' => $opportunity->typeLabel(),
-                    'responder_name'   => $responder->name,
+                    'responder_name'   => $responderEntity?->name ?? $responder->name,
+                    'owner_name'       => $opportunity->authorName(),
                 ],
             ]
         );
@@ -275,8 +280,6 @@ class OpportunityService
                     $friendly->homeClub()->first(),
                     $friendly->awayClub()->first(),
                     [
-                        'city'    => $opportunity->city,
-                        'level'   => $opportunity->required_level,
                         'payload' => [
                             'friendly_match_id' => $friendly->id,
                             'home'              => $opportunity->club?->name,

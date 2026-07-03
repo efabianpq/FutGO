@@ -3,12 +3,15 @@
 
 @php
     use App\Models\Social\FeedEvent;
+    use App\Models\Torneos\Club;
+    use App\Models\User;
 
     // Ícono + color por tipo de evento (presentación liviana, sin lógica de negocio).
     $meta = [
-        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA => ['icon' => 'megaphone', 'accent' => 'text-pitch'],
-        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA  => ['icon' => 'handshake', 'accent' => 'text-gol-deep'],
-        FeedEvent::TYPE_AMISTOSO_CONFIRMADO   => ['icon' => 'calendar', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA  => ['icon' => 'megaphone', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA   => ['icon' => 'handshake', 'accent' => 'text-gol-deep'],
+        FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA => ['icon' => 'chat', 'accent' => 'text-pitch'],
+        FeedEvent::TYPE_AMISTOSO_CONFIRMADO    => ['icon' => 'calendar', 'accent' => 'text-pitch'],
         FeedEvent::TYPE_RESULTADO_AMISTOSO    => ['icon' => 'ball', 'accent' => 'text-gol-deep'],
         FeedEvent::TYPE_RESULTADO_TORNEO      => ['icon' => 'trophy', 'accent' => 'text-pitch'],
         FeedEvent::TYPE_LOGRO_DESBLOQUEADO    => ['icon' => 'medal', 'accent' => 'text-gol-deep'],
@@ -35,6 +38,16 @@
         @php
             $m = $meta[$event->type] ?? ['icon' => null, 'accent' => 'text-ink'];
             $isExpress = $event->type === FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA && $event->meta('express');
+
+            // Para oportunidad_respondida el subject es el dueño (user o club);
+            // "es mía" si soy ese user, o el capitán de ese club.
+            $isMine = false;
+            if ($event->type === FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA) {
+                $subject = $event->subject;
+                $isMine  = $subject instanceof User
+                    ? $subject->id === auth()->id()
+                    : ($subject instanceof Club && $subject->captain_user_id === auth()->id());
+            }
         @endphp
         <article class="bg-white border rounded-md shadow-card p-4 mb-3 flex gap-3 {{ $isExpress ? 'border-alerta ring-1 ring-alerta/30' : 'border-line' }}">
             <div class="shrink-0"><x-icon :name="$isExpress ? 'bolt' : $m['icon']" class="w-6 h-6 {{ $isExpress ? 'text-alerta' : $m['accent'] }}" /></div>
@@ -52,6 +65,13 @@
                             @break
                         @case(FeedEvent::TYPE_OPORTUNIDAD_ACEPTADA)
                             {{ $event->meta('owner', 'Alguien') }} aceptó a {{ $event->meta('responder', 'un equipo') }} ({{ $event->meta('type_label') }})
+                            @break
+                        @case(FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA)
+                            @if ($isMine)
+                                {{ $event->meta('responder_name', 'Alguien') }} respondió a tu oportunidad de {{ $event->meta('opportunity_type', 'jugar') }}
+                            @else
+                                {{ $event->meta('responder_name', 'Alguien') }} respondió a una oportunidad de {{ $event->meta('opportunity_type', 'jugar') }} de {{ $event->meta('owner_name', 'otro usuario') }}
+                            @endif
                             @break
                         @case(FeedEvent::TYPE_AMISTOSO_CONFIRMADO)
                             Amistoso confirmado: {{ $event->meta('home') }} vs {{ $event->meta('away') }}
@@ -72,7 +92,7 @@
                 </p>
                 <p class="text-[12px] text-ink-soft mt-1">{{ $event->occurred_at?->diffForHumans() }}</p>
 
-                @if ($event->type === FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA && $event->meta('opportunity_id'))
+                @if (in_array($event->type, [FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, FeedEvent::TYPE_OPORTUNIDAD_RESPONDIDA]) && $event->meta('opportunity_id'))
                     <a href="{{ route('social.oportunidades.show', $event->meta('opportunity_id')) }}" class="text-[13px] font-semibold text-pitch hover:underline mt-1 inline-block">Ver oportunidad →</a>
                 @endif
             </div>

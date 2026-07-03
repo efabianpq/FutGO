@@ -14,9 +14,10 @@ use Tests\TestCase;
 /**
  * FutGO Social — Fase 1 · Sesión S1-E: seguir entidades y Feed de sistema.
  *
- * Cubre: toggle de seguir/dejar de seguir, relevancia del Feed por follows y por
- * ciudad/nivel, contenido de entrada para usuario nuevo y el contador de no
- * leídos (que baja al marcar como leído).
+ * Cubre: toggle de seguir/dejar de seguir, relevancia del Feed por follows
+ * (nunca por ciudad — eso vive en la sección Oportunidades), contenido de
+ * entrada para usuario nuevo y el contador de no leídos (que baja al marcar
+ * como leído).
  */
 class FollowAndFeedTest extends TestCase
 {
@@ -170,14 +171,15 @@ class FollowAndFeedTest extends TestCase
 
     public function test_notificacion_se_marca_como_leida(): void
     {
-        $user = $this->makeUser(['city' => 'Cali']);
+        $user = $this->makeUser();
+        $club = $this->makeClub($this->makeUser(), 'Tigres FC');
+        $this->follows()->toggle($user, $club);
 
         // El usuario nace en T0; el evento ocurre un minuto después.
         $this->travel(1)->minutes();
 
-        $this->feed()->record(FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, null, null, [
-            'city'    => 'Cali',
-            'payload' => ['author' => 'Tigres FC', 'type_label' => 'Busca rival', 'city' => 'Cali'],
+        $this->feed()->record(FeedEvent::TYPE_RESULTADO_AMISTOSO, $club, null, [
+            'payload' => ['home' => 'Tigres FC', 'away' => 'Rival FC', 'home_score' => 1, 'away_score' => 0],
         ]);
 
         // Hay 1 no leído.
@@ -191,12 +193,13 @@ class FollowAndFeedTest extends TestCase
 
     public function test_marcar_leido_por_endpoint_baja_el_contador(): void
     {
-        $user = $this->makeUser(['city' => 'Medellín']);
+        $user = $this->makeUser();
+        $club = $this->makeClub($this->makeUser(), 'Equipo X');
+        $this->follows()->toggle($user, $club);
 
         $this->travel(1)->minutes();
-        $this->feed()->record(FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, null, null, [
-            'city'    => 'Medellín',
-            'payload' => ['author' => 'Equipo X', 'type_label' => 'Busca jugador', 'city' => 'Medellín'],
+        $this->feed()->record(FeedEvent::TYPE_RESULTADO_AMISTOSO, $club, null, [
+            'payload' => ['home' => 'Equipo X', 'away' => 'Rival FC', 'home_score' => 2, 'away_score' => 2],
         ]);
 
         $this->assertSame(1, $this->feed()->unreadCount($user->fresh()));
@@ -206,14 +209,16 @@ class FollowAndFeedTest extends TestCase
         $this->assertSame(0, $this->feed()->unreadCount($user->fresh()));
     }
 
-    // ── 6. Relevancia por ciudad respeta el nivel ──────────────────────
+    // ── 6. Un evento sin relación (ni propio ni seguido) no es relevante ──
 
     public function test_evento_de_otra_ciudad_no_es_relevante(): void
     {
         $user = $this->makeUser(['city' => 'Cali']);
 
-        $this->feed()->record(FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, null, null, [
-            'city'    => 'Bogotá',
+        // El Feed ya no se distribuye por ciudad: un evento sin follow ni
+        // vínculo propio nunca es relevante, comparta ciudad o no.
+        $ajeno = $this->makeClub($this->makeUser(), 'Foráneo FC');
+        $this->feed()->record(FeedEvent::TYPE_OPORTUNIDAD_PUBLICADA, $ajeno, null, [
             'payload' => ['author' => 'Foráneo FC', 'type_label' => 'Busca rival', 'city' => 'Bogotá'],
         ]);
 

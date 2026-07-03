@@ -434,8 +434,8 @@ class MatchResultController extends Controller
 
     /**
      * Feed: resultado de torneo. Conecta los clubs de ambos equipos
-     * (actor=local, subject=visitante) y se distribuye por la ciudad del torneo.
-     * No bloqueante: nunca rompe el guardado del resultado.
+     * (actor=local, subject=visitante); llega a quien los siga. No bloqueante:
+     * nunca rompe el guardado del resultado.
      */
     private function recordTournamentResultFeed(Tournament $tournament, TournamentMatch $match): void
     {
@@ -447,7 +447,6 @@ class MatchResultController extends Controller
             $homeTeam?->club,
             $awayTeam?->club,
             [
-                'city'    => $tournament->city,
                 'payload' => [
                     'tournament_id'    => $tournament->id,
                     'tournament_name'  => $tournament->name,
