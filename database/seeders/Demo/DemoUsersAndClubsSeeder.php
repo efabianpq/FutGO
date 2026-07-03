@@ -60,6 +60,13 @@ class DemoUsersAndClubsSeeder extends Seeder
             'role' => 'user', 'city' => 'Bucaramanga',
             'document' => $this->nextDocument(),
         ]);
+
+        // Organizadora de la Liga Escolar Sabana — coordinadora, no capitana de
+        // ningún club (persona dedicada para el video de administradores).
+        $this->makeUser('Diana Ramírez', DemoData::SABANA_ORGANIZER_EMAIL, [
+            'role' => 'user', 'city' => 'Chía',
+            'document' => $this->nextDocument(),
+        ]);
     }
 
     // ── Clubs + plantilla ───────────────────────────────────────────────────

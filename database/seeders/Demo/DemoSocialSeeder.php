@@ -101,6 +101,9 @@ class DemoSocialSeeder extends Seeder
             ['la-floresta', 'Complejo La Floresta', 'Bucaramanga', 'Anillo Vial', 'cesped_sintetico', 150],
             ['la-flora', 'Cancha Sintética La Flora', 'Medellín', 'Cl 44 # 80-20', 'cesped_sintetico', 120],
             ['panamericano', 'Polideportivo Panamericano', 'Cali', 'Cl 5 # 50-30', 'cesped_natural', 800],
+            ['salitre', 'Polideportivo El Salitre', 'Bogotá', 'Av. 68 # 24-50', 'cesped_sintetico', 400],
+            ['cancha-chia', 'Cancha Municipal de Chía', 'Chía', 'Cra 9 # 11-30', 'cesped_sintetico', 300],
+            ['polideportivo-cajica', 'Polideportivo de Cajicá', 'Cajicá', 'Cl 2 # 4-15', 'cesped_sintetico', 250],
         ];
 
         foreach ($defs as [$key, $name, $city, $address, $surface, $cap]) {
@@ -231,6 +234,20 @@ class DemoSocialSeeder extends Seeder
             'message' => 'Me interesa, soy lateral derecho.',
         ]);
         $this->opportunities->accept($respIndep);
+
+        // 8) BUSCAR_RIVAL — modo rápido ⚡ (Colegio San Rafael Chía busca rival urgente).
+        $chiaCaptain = DemoData::captainOf('colegio-san-rafael-chia');
+        $this->opportunities->publish($chiaCaptain, [
+            'type'           => Opportunity::TYPE_BUSCAR_RIVAL,
+            'club_id'        => DemoData::club('colegio-san-rafael-chia')->id,
+            'city'           => 'Chía',
+            'required_level' => 'recreativo',
+            'is_express'     => true,
+            'venue_id'       => $this->venueId('cancha-chia'),
+            'window_start'   => Carbon::now()->addDays(2)->setTime(9, 0),
+            'window_end'     => Carbon::now()->addDays(2)->setTime(10, 30),
+            'payload'        => ['cancha_propuesta' => 'Cancha Municipal de Chía', 'hora_preferida' => '9:00 AM', 'urgente' => true],
+        ]);
     }
 
     // ── Amistosos ──────────────────────────────────────────────────────────────
@@ -255,6 +272,60 @@ class DemoSocialSeeder extends Seeder
 
         // FM confirmado (Los Guaduales vs Palmira) ya nació de la oportunidad
         // aceptada en seedOpportunities(); aquí solo lo dejamos documentado.
+
+        // FM jugado: Chapinero FC vs Suba FC (Bogotá) 2-1.
+        $chapinero = DemoData::club('chapinero-fc');
+        $suba      = DemoData::club('suba-fc');
+        $fm2 = FriendlyMatch::create([
+            'home_club_id' => $chapinero->id,
+            'away_club_id' => $suba->id,
+            'scheduled_at' => Carbon::now()->subWeeks(2)->setTime(15, 0),
+            'location'     => 'Polideportivo El Salitre',
+            'venue_id'     => $this->venueId('salitre'),
+            'status'       => FriendlyMatch::STATUS_CONFIRMADO,
+        ]);
+        $this->friendlies->reportResult($fm2, $chapinero, 2, 1);
+        $this->friendlies->reportResult($fm2->refresh(), $suba, 2, 1);
+
+        // FM jugado: Colegio San Rafael Chía vs Gimnasio Campestre Cajicá (Sabana) 3-2.
+        $sanRafael = DemoData::club('colegio-san-rafael-chia');
+        $gimnasio  = DemoData::club('gimnasio-campestre-cajica');
+        $fm3 = FriendlyMatch::create([
+            'home_club_id' => $sanRafael->id,
+            'away_club_id' => $gimnasio->id,
+            'scheduled_at' => Carbon::now()->subWeek()->setTime(9, 0),
+            'location'     => 'Cancha Municipal de Chía',
+            'venue_id'     => $this->venueId('cancha-chia'),
+            'status'       => FriendlyMatch::STATUS_CONFIRMADO,
+        ]);
+        $this->friendlies->reportResult($fm3, $sanRafael, 3, 2);
+        $this->friendlies->reportResult($fm3->refresh(), $gimnasio, 3, 2);
+
+        // FM jugado: Halcones FC vs Chapinero FC (interregional) 1-1.
+        $fm4 = FriendlyMatch::create([
+            'home_club_id' => $halcones->id,
+            'away_club_id' => $chapinero->id,
+            'scheduled_at' => Carbon::now()->subDays(10)->setTime(16, 0),
+            'location'     => 'Cancha Marte — La Concordia',
+            'venue_id'     => $this->venueId('marte'),
+            'status'       => FriendlyMatch::STATUS_CONFIRMADO,
+        ]);
+        $this->friendlies->reportResult($fm4, $halcones, 1, 1);
+        $this->friendlies->reportResult($fm4->refresh(), $chapinero, 1, 1);
+
+        // FM en_disputa: Poblado United vs Belén FC — cada capitán reporta un
+        // marcador distinto, queda en disputa para mostrar la resolución admin.
+        $poblado = DemoData::club('poblado-united');
+        $belen   = DemoData::club('belen-fc');
+        $fm5 = FriendlyMatch::create([
+            'home_club_id' => $poblado->id,
+            'away_club_id' => $belen->id,
+            'scheduled_at' => Carbon::now()->subDays(4)->setTime(17, 0),
+            'location'     => 'Unidad Deportiva Belén',
+            'status'       => FriendlyMatch::STATUS_CONFIRMADO,
+        ]);
+        $this->friendlies->reportResult($fm5, $poblado, 2, 1);
+        $this->friendlies->reportResult($fm5->refresh(), $belen, 1, 2);
     }
 
     // ── Conversaciones ──────────────────────────────────────────────────────────
@@ -317,10 +388,12 @@ class DemoSocialSeeder extends Seeder
         $halcones = DemoData::club('halcones-fc');
         $condores = DemoData::club('los-condores');
         $copa     = Tournament::where('slug', 'copa-elite-santander-2026')->first();
-        $relam    = Tournament::where('slug', 'torneo-relampago-nocturno')->first();
+        $bogota   = Tournament::where('slug', 'liga-barrial-bogota-2026')->first();
         $empre    = Tournament::where('slug', 'torneo-empresarial-cafe-2026')->first();
+        $medellin = Tournament::where('slug', 'liga-medellin-2026')->first();
+        $sabana   = Tournament::where('slug', 'liga-escolar-sabana-sub13-2026')->first();
 
-        // 5 jugadores siguen a Halcones FC (el campeón tiene hinchada).
+        // 5 jugadores siguen a Halcones FC (capitán con historial fuerte, tiene hinchada).
         foreach ($this->somePlayers(['caribe-fc', 'tigres-del-norte', 'academia-oro'], 5) as $u) {
             $this->follows->toggle($u, $halcones);
         }
@@ -337,9 +410,9 @@ class DemoSocialSeeder extends Seeder
         $this->follows->toggle($libre, $halcones);
         $this->follows->toggle($libre, $condores);
 
-        // El admin sigue los torneos activos.
+        // El admin sigue los torneos activos (uno por ciudad objetivo).
         $admin = DemoData::user(DemoData::ADMIN_EMAIL);
-        foreach ([$copa, $relam, $empre] as $t) {
+        foreach ([$copa, $bogota, $empre, $medellin, $sabana] as $t) {
             if ($t) {
                 $this->follows->toggle($admin, $t);
             }
@@ -350,6 +423,31 @@ class DemoSocialSeeder extends Seeder
         $tigresCap = DemoData::captainOf('tigres-del-norte');
         $this->follows->toggle($estrella, $tigresCap);
         $this->follows->toggle($tigresCap, $estrella);
+
+        // Bogotá y Medellín: hinchada cruzada para el campeón y el finalista.
+        $chapinero = DemoData::club('chapinero-fc');
+        foreach ($this->somePlayers(['suba-fc', 'kennedy-united', 'bosa-atletico'], 4) as $u) {
+            $this->follows->toggle($u, $chapinero);
+        }
+        if ($bogota) {
+            foreach (['suba-fc', 'kennedy-united', 'independiente-sur'] as $slug) {
+                $this->follows->toggle(DemoData::captainOf($slug), $bogota);
+            }
+        }
+
+        $tigres = DemoData::club('tigres-del-norte');
+        if ($medellin) {
+            foreach (['belen-fc', 'poblado-united', 'academia-oro'] as $slug) {
+                $this->follows->toggle(DemoData::captainOf($slug), $medellin);
+            }
+        }
+        $this->follows->toggle($libre, $tigres);
+
+        // La organizadora de la Sabana sigue a los 6 colegios de su liga.
+        $organizadoraSabana = DemoData::user(DemoData::SABANA_ORGANIZER_EMAIL);
+        foreach (['colegio-san-rafael-chia', 'gimnasio-campestre-cajica', 'liceo-sabana-zipaquira', 'instituto-tocancipa', 'escuela-futbol-sopo', 'real-funza-fc'] as $slug) {
+            $this->follows->toggle($organizadoraSabana, DemoData::club($slug));
+        }
     }
 
     // ── Confiabilidad ──────────────────────────────────────────────────────────
@@ -397,17 +495,17 @@ class DemoSocialSeeder extends Seeder
         // La mayoría del feed la generan los servicios (oportunidades, amistosos,
         // logros). Agregamos el titular del campeón, que normalmente emite el
         // controlador de resultados de torneo (que el seeder no atraviesa).
-        $t = Tournament::where('slug', 'liga-recreativa-bucaramanga-2025')->first();
+        $t = Tournament::where('slug', 'liga-barrial-bogota-2026')->first();
         if ($t) {
-            $this->feed->record(FeedEvent::TYPE_RESULTADO_TORNEO, DemoData::club('halcones-fc'), $t, [
-                'city'    => 'Bucaramanga',
+            $this->feed->record(FeedEvent::TYPE_RESULTADO_TORNEO, DemoData::club('chapinero-fc'), $t, [
+                'city'    => 'Bogotá',
                 'payload' => [
                     'tournament_id' => $t->id,
                     'tournament'    => $t->name,
-                    'champion'      => 'Halcones FC',
-                    'headline'      => 'Halcones FC se coronó campeón de la Liga Recreativa Bucaramanga 2025.',
+                    'champion'      => 'Chapinero FC',
+                    'headline'      => 'Chapinero FC se coronó campeón invicto de la Liga Barrial Bogotá 2026.',
                 ],
-                'occurred_at' => Carbon::now()->subMonths(7),
+                'occurred_at' => Carbon::now()->subWeeks(3),
             ]);
         }
     }

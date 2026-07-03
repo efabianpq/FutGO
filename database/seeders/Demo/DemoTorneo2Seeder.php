@@ -16,9 +16,10 @@ use Illuminate\Database\Seeder;
 /**
  * TORNEO 2 — Copa Élite Santander 2026 (IN_PROGRESS — eliminatoria activa).
  *
- * Copa directa de 8 equipos (cuartos de final). 2 cuartos ya jugados, 2 por
- * jugarse en los próximos días con convocatorias activas. Sirve para demostrar
- * la eliminatoria en curso, convocatorias y validación de credenciales (QR).
+ * Copa directa de 8 equipos (cuartos de final). 3 cuartos ya jugados (Halcones FC
+ * avanza con MVP del jugador estrella), 1 por jugarse en los próximos días con
+ * convocatorias activas. Sirve para demostrar la eliminatoria en curso,
+ * convocatorias y validación de credenciales (QR).
  */
 class DemoTorneo2Seeder extends Seeder
 {
@@ -95,29 +96,30 @@ class DemoTorneo2Seeder extends Seeder
         }
         $qfMatches = $qf->matches()->orderBy('match_number')->get(); // recargar
 
-        // QF1 y QF2 jugados.
+        // QF1, QF2 y QF3 jugados.
         $this->playMatch($qfMatches[0], $teamOf($qfMatches[0]->home_team_id), $teamOf($qfMatches[0]->away_team_id), 2, 1, [
             'when' => Carbon::now()->subDays(4), 'subs' => 3, 'yellows' => 2, 'mvp' => true,
         ]);
         $this->playMatch($qfMatches[1], $teamOf($qfMatches[1]->home_team_id), $teamOf($qfMatches[1]->away_team_id), 3, 0, [
             'when' => Carbon::now()->subDays(3), 'subs' => 2, 'yellows' => 1, 'mvp' => true,
         ]);
+        // QF3: Halcones FC gana con MVP del jugador estrella (Andrés Suárez, delantero).
+        $estrellaTeamPlayerId = $teams['halcones-fc']->players()->where('user_id', DemoData::user(DemoData::ESTRELLA_EMAIL)->id)->value('id');
+        $this->playMatch($qfMatches[2], $teamOf($qfMatches[2]->home_team_id), $teamOf($qfMatches[2]->away_team_id), 3, 1, [
+            'when' => Carbon::now()->subDays(2), 'subs' => 3, 'yellows' => 1, 'mvpTeamPlayerId' => $estrellaTeamPlayerId,
+        ]);
 
-        // QF3 y QF4 pendientes (próximos días) + convocatorias activas.
-        $this->scheduleMatch($qfMatches[2], Carbon::now()->addDays(3)->setTime(20, 0), 'Cancha Sintética La Floresta');
+        // QF4 pendiente (próximos días) + convocatorias activas.
         $this->scheduleMatch($qfMatches[3], Carbon::now()->addDays(5)->setTime(19, 0), 'Cancha Sintética La Floresta');
 
-        // Halcones convocó 13 (8 confirmados, 3 pendientes, 2 declinaron).
-        $this->createCallUps($qfMatches[2], $teams['halcones-fc'], ['confirmado' => 8, 'convocado' => 3, 'declinado' => 2]);
-        $this->createCallUps($qfMatches[2], $teams['los-condores'], ['confirmado' => 9, 'convocado' => 2, 'declinado' => 1]);
         // Atlético Guane convocó 11 (7 confirmados, 4 sin responder).
         $this->createCallUps($qfMatches[3], $teams['atletico-guane'], ['confirmado' => 7, 'convocado' => 4]);
         $this->createCallUps($qfMatches[3], $teams['independiente-sur'], ['confirmado' => 8, 'convocado' => 3]);
 
-        // Recordatorio programado para el próximo partido (QF3).
-        foreach ($this->pickStarters($teams['halcones-fc'], 11)->whereNotNull('user_id') as $tp) {
+        // Recordatorio programado para el próximo partido (QF4).
+        foreach ($this->pickStarters($teams['atletico-guane'], 11)->whereNotNull('user_id') as $tp) {
             TournamentMatchNotification::firstOrCreate(
-                ['user_id' => $tp->user_id, 'match_id' => $qfMatches[2]->id, 'type' => 'reminder'],
+                ['user_id' => $tp->user_id, 'match_id' => $qfMatches[3]->id, 'type' => 'reminder'],
                 ['sent_at' => Carbon::now()->subHours(20)],
             );
         }
@@ -134,6 +136,6 @@ class DemoTorneo2Seeder extends Seeder
             app(PlayerStatsCalculatorService::class)->recalculate($tournament, $team);
         }
 
-        $this->command?->info('   ⚔️  Copa Élite Santander 2026 — cuartos en curso (2 jugados, 2 pendientes).');
+        $this->command?->info('   ⚔️  Copa Élite Santander 2026 — cuartos en curso (3 jugados, 1 pendiente).');
     }
 }

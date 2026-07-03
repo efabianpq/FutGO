@@ -17,15 +17,16 @@ use Database\Seeders\Demo\Concerns\SeedsMatches;
 use Illuminate\Database\Seeder;
 
 /**
- * TORNEO 1 — Liga Recreativa Bucaramanga 2025 (FINISHED).
+ * TORNEO 1 — Liga Medellín 2026 (IN_PROGRESS — eliminatoria activa).
  *
- * Referencia histórica completa: 8 equipos en 2 grupos de 4 (clasifican 2) →
- * semifinales → final + tercer puesto. Todos los partidos jugados con goles,
- * asistencias, tarjetas y MVP. Campeón: Halcones FC.
+ * 8 equipos de Medellín y el Valle de Aburrá en 2 grupos de 4 (clasifican 2) →
+ * semifinales jugadas → final y tercer puesto ya cruzados (auto por
+ * `advanceKnockoutResults`) pero programados a futuro, sin jugar todavía. Sirve
+ * para mostrar el bracket en vivo y el cierre de fase de grupos → eliminatoria.
  *
- * Incluye: convocatorias variadas en los últimos partidos, 1 baja por lesión
- * (roster_movement), 2 patrocinadores, recordatorios enviados y un grupo con
- * empate absoluto que fuerza el sorteo determinista (standing_draws).
+ * Incluye: convocatorias variadas en los últimos partidos de grupo, 1 baja por
+ * lesión (roster_movement), 2 patrocinadores, recordatorios enviados y
+ * convocatoria activa para la final pendiente.
  */
 class DemoTorneo1Seeder extends Seeder
 {
@@ -33,10 +34,10 @@ class DemoTorneo1Seeder extends Seeder
 
     /** Los 8 equipos participantes (orden = reparto en grupos A/B). */
     private const TEAM_SLUGS = [
-        'halcones-fc', 'los-condores',        // A0, B0
-        'deportivo-cafe', 'atletico-guane',   // A1, B1
-        'tigres-del-norte', 'independiente-sur', // A2, B2
-        'caribe-fc', 'academia-oro',          // A3, B3
+        'tigres-del-norte', 'academia-oro',       // A0, B0
+        'belen-fc', 'laureles-atletico',          // A1, B1
+        'poblado-united', 'bello-fc',             // A2, B2
+        'itagui-fc', 'envigado-popular',          // A3, B3
     ];
 
     public function run(): void
@@ -44,8 +45,8 @@ class DemoTorneo1Seeder extends Seeder
         $organizador = DemoData::user(DemoData::ORGANIZADOR_EMAIL);
 
         $tournament = Tournament::create([
-            'name'                 => 'Liga Recreativa Bucaramanga 2025',
-            'slug'                 => 'liga-recreativa-bucaramanga-2025',
+            'name'                 => 'Liga Medellín 2026',
+            'slug'                 => 'liga-medellin-2026',
             'sport'                => 'futbol',
             'status'               => 'open',
             'format'               => 'groups_and_knockout',
@@ -67,11 +68,11 @@ class DemoTorneo1Seeder extends Seeder
             'registration_fee'     => 0,
             'visibility'           => 'public',
             'category'             => 'libre',
-            'city'                 => 'Bucaramanga',
-            'venue'                => 'Cancha Marte — La Concordia',
-            'starts_at'            => Carbon::now()->subMonths(10),
-            'ends_at'              => Carbon::now()->subMonths(7),
-            'description'          => 'Liga amateur de fin de semana en Bucaramanga. Temporada 2025.',
+            'city'                 => 'Medellín',
+            'venue'                => 'Unidad Deportiva Belén',
+            'starts_at'            => Carbon::now()->subMonths(2),
+            'ends_at'              => Carbon::now()->addWeeks(3),
+            'description'          => 'Liga de fin de semana entre clubes de Medellín y el Valle de Aburrá. Temporada 2026.',
             'created_by_user_id'   => $organizador->id,
         ]);
         $tournament->tournamentAdmins()->create(['user_id' => $organizador->id]);
@@ -88,26 +89,26 @@ class DemoTorneo1Seeder extends Seeder
         // Helper local: resuelve el Team de un id.
         $teamOf = fn (int $id): Team => $byId->get($id);
 
-        $base = Carbon::now()->subMonths(9);
+        $base = Carbon::now()->subMonths(2);
 
-        // ── Grupo A: Halcones campeón de grupo, Tigres 2do ───────────────────
+        // ── Grupo A: Tigres del Norte campeón de grupo, Poblado United 2do ───
         $resultsA = [
-            [5, 0, ['mvpSlug' => 'halcones-fc']],   // halcones vs deportivo
-            [3, 1, ['mvpSlug' => 'halcones-fc']],   // halcones vs tigres
-            [4, 0, ['mvpSlug' => 'halcones-fc']],   // halcones vs caribe
-            [0, 2, []],                              // deportivo vs tigres
-            [1, 1, []],                              // deportivo vs caribe
-            [3, 1, []],                              // tigres vs caribe
+            [4, 0], // tigres vs belen
+            [2, 1], // tigres vs poblado
+            [3, 0], // tigres vs itagui
+            [0, 2], // belen vs poblado
+            [1, 1], // belen vs itagui
+            [1, 3], // poblado vs itagui
         ];
 
-        // ── Grupo B: Academia 1ro, Cóndores 2do, Guane/Indep empate absoluto ─
+        // ── Grupo B: Academia Oro 1ra, Laureles Atlético 2da ──────────────────
         $resultsB = [
-            [2, 0, ['yellows' => 0]], // condores vs guane
-            [2, 0, ['yellows' => 0]], // condores vs indep
-            [0, 2, ['yellows' => 1]], // condores vs academia
-            [1, 1, ['yellows' => 0]], // guane vs indep
-            [0, 2, ['yellows' => 0]], // guane vs academia
-            [0, 2, ['yellows' => 0]], // indep vs academia
+            [3, 1], // academia vs laureles
+            [4, 0], // academia vs bello
+            [2, 0], // academia vs envigado
+            [2, 1], // laureles vs bello
+            [3, 0], // laureles vs envigado
+            [1, 1], // bello vs envigado
         ];
 
         $groupResults = [$resultsA, $resultsB];
@@ -115,13 +116,15 @@ class DemoTorneo1Seeder extends Seeder
         foreach ($groups as $gi => $group) {
             $matches = TournamentMatch::where('group_id', $group->id)->orderBy('match_number')->get();
             foreach ($matches as $mi => $match) {
-                [$hs, $as, $opts] = $groupResults[$gi][$mi];
+                [$hs, $as] = $groupResults[$gi][$mi];
                 $home = $teamOf($match->home_team_id);
                 $away = $teamOf($match->away_team_id);
 
-                $opts['when'] = $base->copy()->addDays($gi * 1 + $mi * 4);
-                $opts['subs'] = ($mi >= 4) ? 3 : 1; // más cambios en los últimos
-                $opts = $this->resolveMvp($opts, $home, $away);
+                $opts = [
+                    'when' => $base->copy()->addDays($gi * 1 + $mi * 4),
+                    'subs' => ($mi >= 4) ? 3 : 1, // más cambios en los últimos
+                    'mvp'  => true,
+                ];
 
                 $this->playMatch($match, $home, $away, $hs, $as, $opts);
             }
@@ -143,45 +146,39 @@ class DemoTorneo1Seeder extends Seeder
         app(StandingsCalculatorService::class)->recalculate($groupPhase);
         app(PhaseClosureService::class)->closeGroupPhase($groupPhase->refresh());
 
-        // ── Semifinales: Halcones vs Cóndores / Academia vs Tigres ───────────
+        // ── Semifinales jugadas (bracket en curso) ────────────────────────────
         $semi = $tournament->phases()->where('type', 'knockout')->orderBy('order')->first();
         $semiMatches = $semi->matches()->orderBy('match_number')->get();
-        $semiScores = [[3, 1], [2, 1]]; // SF1 halcones gana, SF2 academia gana
+        $semiScores = [[3, 2], [2, 0]];
         foreach ($semiMatches as $i => $m) {
             $home = $teamOf($m->home_team_id);
             $away = $teamOf($m->away_team_id);
             [$hs, $as] = $semiScores[$i];
-            $opts = ['when' => Carbon::now()->subMonths(8), 'subs' => 3, 'yellows' => 1, 'reds' => $i === 0 ? 1 : 0];
-            if ($home->club_id === DemoData::club('halcones-fc')->id) {
-                $opts['mvpTeamPlayerId'] = $this->estrellaTeamPlayerId($home);
-            }
+            $opts = ['when' => Carbon::now()->subWeeks(2), 'subs' => 3, 'yellows' => 1, 'reds' => $i === 0 ? 1 : 0, 'mvp' => true];
             $this->playMatch($m, $home, $away, $hs, $as, $opts);
         }
 
-        // Avanza ganadores → final y perdedores → tercer puesto.
+        // Avanza ganadores → final y perdedores → tercer puesto (sin jugarlos aún).
         app(FixtureGeneratorService::class)->advanceKnockoutResults($semi->refresh());
 
-        // ── Final + Tercer puesto ────────────────────────────────────────────
+        // ── Final + Tercer puesto: cruzados, PROGRAMADOS a futuro (sin jugar) ──
         $final = $tournament->phases()->where('type', 'knockout')->orderByDesc('order')->first();
         $fm = $final->matches()->orderBy('match_number')->first();
-        $fhome = $teamOf($fm->home_team_id);
-        $faway = $teamOf($fm->away_team_id);
-        $fopts = ['when' => Carbon::now()->subMonths(7), 'subs' => 3, 'yellows' => 2, 'mvp' => true];
-        if ($fhome->club_id === DemoData::club('halcones-fc')->id) {
-            $fopts['mvpTeamPlayerId'] = $this->estrellaTeamPlayerId($fhome);
-            $this->playMatch($fm, $fhome, $faway, 3, 2, $fopts);
-        } else {
-            $fopts['mvpTeamPlayerId'] = $this->estrellaTeamPlayerId($faway);
-            $this->playMatch($fm, $fhome, $faway, 2, 3, $fopts);
+        if ($fm) {
+            $this->scheduleMatch($fm, Carbon::now()->addWeeks(2)->setTime(15, 0), 'Unidad Deportiva Belén');
+            if ($fm->home_team_id) {
+                $this->createCallUps($fm, $teamOf($fm->home_team_id), ['confirmado' => 10, 'convocado' => 3]);
+            }
+            if ($fm->away_team_id) {
+                $this->createCallUps($fm, $teamOf($fm->away_team_id), ['confirmado' => 9, 'convocado' => 4]);
+            }
         }
 
         $third = $tournament->phases()->where('type', 'third_place')->first();
         if ($third) {
             $tm = $third->matches()->orderBy('match_number')->first();
             if ($tm && $tm->home_team_id) {
-                $this->playMatch($tm, $teamOf($tm->home_team_id), $teamOf($tm->away_team_id), 2, 1, [
-                    'when' => Carbon::now()->subMonths(7), 'subs' => 2, 'yellows' => 1, 'mvp' => true,
-                ]);
+                $this->scheduleMatch($tm, Carbon::now()->addWeeks(2)->setTime(12, 0), 'Unidad Deportiva Belén');
             }
         }
 
@@ -192,41 +189,16 @@ class DemoTorneo1Seeder extends Seeder
 
         // ── Datos transversales del torneo ───────────────────────────────────
         $this->createSponsors($tournament);
-        $this->createInjuryMovement($tournament, $teams['los-condores'], $organizador);
+        $this->createInjuryMovement($tournament, $teams['belen-fc'], $organizador);
 
-        // ── Cierre del torneo ────────────────────────────────────────────────
-        $tournament->update(['status' => 'finished']);
-
-        $this->command?->info('   🏆 Liga Recreativa 2025 finalizada — campeón Halcones FC.');
-    }
-
-    /** Convierte mvpSlug → mvpTeamPlayerId del titular estrella/registrado. */
-    private function resolveMvp(array $opts, Team $home, Team $away): array
-    {
-        if (empty($opts['mvpSlug'])) {
-            return $opts;
-        }
-        $clubId = DemoData::club($opts['mvpSlug'])->id;
-        $team   = $home->club_id === $clubId ? $home : ($away->club_id === $clubId ? $away : null);
-        unset($opts['mvpSlug']);
-        if ($team) {
-            $opts['mvpTeamPlayerId'] = $this->estrellaTeamPlayerId($team) ?? $this->pickStarters($team, 1)->first()?->id;
-        }
-        return $opts;
-    }
-
-    /** team_player_id del jugador estrella dentro del equipo dado (o null). */
-    private function estrellaTeamPlayerId(Team $team): ?int
-    {
-        $estrella = DemoData::user(DemoData::ESTRELLA_EMAIL);
-        return $team->players()->where('user_id', $estrella->id)->value('id');
+        $this->command?->info('   ⚔️  Liga Medellín 2026 — semifinales jugadas, final programada.');
     }
 
     private function createSponsors(Tournament $tournament): void
     {
         foreach ([
-            ['Cerveza Club Colombia', 1],
-            ['Pinturas Tito Pabón', 2],
+            ['Cervecería Local Laureles', 1],
+            ['Almacén Deportivo El Poblado', 2],
         ] as [$name, $order]) {
             TournamentSponsor::create([
                 'tournament_id' => $tournament->id,
@@ -238,12 +210,12 @@ class DemoTorneo1Seeder extends Seeder
         }
     }
 
-    /** Baja por lesión de un jugador de Los Cóndores en la semana 3. */
-    private function createInjuryMovement(Tournament $tournament, Team $condores, $actor): void
+    /** Baja por lesión de un jugador de Belén FC en la semana 3. */
+    private function createInjuryMovement(Tournament $tournament, Team $belen, $actor): void
     {
         // Un suplente (no titular) para no alterar las estadísticas ya calculadas.
-        $player = $condores->players()->where('status', 'active')->orderBy('id')->skip(12)->first()
-            ?? $condores->players()->orderByDesc('id')->first();
+        $player = $belen->players()->where('status', 'active')->orderBy('id')->skip(12)->first()
+            ?? $belen->players()->orderByDesc('id')->first();
 
         if (! $player) {
             return;
@@ -255,7 +227,7 @@ class DemoTorneo1Seeder extends Seeder
             'user_id'          => $player->user_id,
             'player_name'      => $player->displayName(),
             'type'             => 'baja',
-            'from_team_id'     => $condores->id,
+            'from_team_id'     => $belen->id,
             'to_team_id'       => null,
             'acted_by_user_id' => $actor->id,
             'notes'            => 'Lesión de rodilla en la semana 3 — baja por el resto de la temporada.',
@@ -271,7 +243,7 @@ class DemoTorneo1Seeder extends Seeder
         foreach ($players as $tp) {
             TournamentMatchNotification::firstOrCreate(
                 ['user_id' => $tp->user_id, 'match_id' => $match->id, 'type' => 'reminder'],
-                ['sent_at' => Carbon::now()->subMonths(8)],
+                ['sent_at' => Carbon::now()->subWeeks(3)],
             );
         }
     }

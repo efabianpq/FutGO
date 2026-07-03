@@ -13,8 +13,10 @@ use App\Models\User;
  * objetos entre sí: se ejecutan en orden y resuelven lo que necesitan por
  * `slug` (clubs) o `email` (usuarios) a través de los helpers de esta clase.
  *
- * Mundo: comunidad de fútbol amateur colombiano (Bucaramanga como epicentro,
- * con presencia en Medellín, Bogotá, Cali y Barranquilla).
+ * Mundo: comunidad de fútbol amateur colombiano con presencia multi-ciudad —
+ * Bucaramanga, Medellín, Bogotá (por localidad), Cali, Barranquilla y, con foco
+ * especial, la Sabana de Bogotá (Chía, Cajicá, Zipaquirá, Tocancipá, Sopó, Funza)
+ * a través de la liga escolar.
  */
 final class DemoData
 {
@@ -25,9 +27,10 @@ final class DemoData
     public const ADMIN_EMAIL       = 'admin@futgo.co';
     public const ARBITRO_EMAIL     = 'arbitro@futgo.co';
     public const ORGANIZADOR_EMAIL = 'organizador@futgo.co';     // creador de torneos + capitán Los Cóndores
-    public const HALCONES_EMAIL    = 'capitan.halcones@futgo.co'; // capitán del campeón
+    public const HALCONES_EMAIL    = 'capitan.halcones@futgo.co'; // capitán con historial fuerte (varios torneos + amistosos)
     public const ESTRELLA_EMAIL    = 'jugador.estrella@futgo.co'; // carrera más rica
     public const LIBRE_EMAIL       = 'libre@futgo.co';            // jugador libre con oportunidad activa
+    public const SABANA_ORGANIZER_EMAIL = 'coordinadora.sabana@futgo.co'; // organizadora Liga Escolar Sabana (torneo prioritario para admins)
 
     /**
      * Equipos permanentes. El capitán de cada club se crea con el email indicado.
@@ -86,6 +89,92 @@ final class DemoData
             'slug' => 'academia-oro', 'name' => 'Academia Oro', 'city' => 'Medellín',
             'level' => 'elite_amateur', 'color' => '#CA8A04',
             'captain' => ['name' => 'Gustavo Henao', 'email' => 'gustavo.henao@futgo.co', 'role' => 'user'],
+        ],
+
+        // ── Medellín (torneo "Liga Medellín" — eliminatoria en curso) ───────────
+        [
+            'slug' => 'belen-fc', 'name' => 'Belén FC', 'city' => 'Medellín',
+            'level' => 'intermedio', 'color' => '#0EA5E9',
+            'captain' => ['name' => 'Camilo Zapata', 'email' => 'camilo.zapata@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'laureles-atletico', 'name' => 'Laureles Atlético', 'city' => 'Medellín',
+            'level' => 'intermedio', 'color' => '#7C3AED',
+            'captain' => ['name' => 'Sebastián Montoya', 'email' => 'sebastian.montoya@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'poblado-united', 'name' => 'Poblado United', 'city' => 'Medellín',
+            'level' => 'competitivo', 'color' => '#059669',
+            'captain' => ['name' => 'Nicolás Vélez', 'email' => 'nicolas.velez@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'itagui-fc', 'name' => 'Itagüí FC', 'city' => 'Medellín',
+            'level' => 'intermedio', 'color' => '#DB2777',
+            'captain' => ['name' => 'Andrés Zuluaga', 'email' => 'andres.zuluaga@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'envigado-popular', 'name' => 'Envigado Popular', 'city' => 'Medellín',
+            'level' => 'recreativo', 'color' => '#EAB308',
+            'captain' => ['name' => 'Jorge Ramírez', 'email' => 'jorge.ramirez.env@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'bello-fc', 'name' => 'Bello FC', 'city' => 'Medellín',
+            'level' => 'recreativo', 'color' => '#6B7280',
+            'captain' => ['name' => 'Cristian Higuita', 'email' => 'cristian.higuita@futgo.co', 'role' => 'user'],
+        ],
+
+        // ── Bogotá por localidad (torneo "Liga Barrial Bogotá" — finalizado) ────
+        [
+            'slug' => 'chapinero-fc', 'name' => 'Chapinero FC', 'city' => 'Bogotá',
+            'level' => 'competitivo', 'color' => '#DC2626',
+            'captain' => ['name' => 'Felipe Cruz', 'email' => 'felipe.cruz@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'suba-fc', 'name' => 'Suba FC', 'city' => 'Bogotá',
+            'level' => 'intermedio', 'color' => '#2563EB',
+            'captain' => ['name' => 'Diego Fonseca', 'email' => 'diego.fonseca@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'bosa-atletico', 'name' => 'Bosa Atlético', 'city' => 'Bogotá',
+            'level' => 'recreativo', 'color' => '#16A34A',
+            'captain' => ['name' => 'Harold Niño', 'email' => 'harold.nino@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'kennedy-united', 'name' => 'Kennedy United', 'city' => 'Bogotá',
+            'level' => 'intermedio', 'color' => '#F59E0B',
+            'captain' => ['name' => 'Yeison Cubillos', 'email' => 'yeison.cubillos@futgo.co', 'role' => 'user'],
+        ],
+
+        // ── Liga Escolar Sabana Sub-13 (torneo "vivo", visibility pública) ──────
+        [
+            'slug' => 'colegio-san-rafael-chia', 'name' => 'Colegio San Rafael Chía', 'city' => 'Chía',
+            'level' => 'recreativo', 'color' => '#1E3A8A',
+            'captain' => ['name' => 'Álvaro Beltrán', 'email' => 'alvaro.beltran@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'gimnasio-campestre-cajica', 'name' => 'Gimnasio Campestre Cajicá', 'city' => 'Cajicá',
+            'level' => 'intermedio', 'color' => '#B91C1C',
+            'captain' => ['name' => 'Leonardo Suárez', 'email' => 'leonardo.suarez.caj@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'liceo-sabana-zipaquira', 'name' => 'Liceo La Sabana Zipaquirá', 'city' => 'Zipaquirá',
+            'level' => 'recreativo', 'color' => '#78350F',
+            'captain' => ['name' => 'Pablo Cárdenas', 'email' => 'pablo.cardenas.zip@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'instituto-tocancipa', 'name' => 'Instituto Tocancipá', 'city' => 'Tocancipá',
+            'level' => 'intermedio', 'color' => '#059669',
+            'captain' => ['name' => 'Raúl Bermúdez', 'email' => 'raul.bermudez@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'escuela-futbol-sopo', 'name' => 'Escuela de Fútbol Sopó', 'city' => 'Sopó',
+            'level' => 'recreativo', 'color' => '#7C2D12',
+            'captain' => ['name' => 'Javier Ospina', 'email' => 'javier.ospina@futgo.co', 'role' => 'user'],
+        ],
+        [
+            'slug' => 'real-funza-fc', 'name' => 'Real Funza FC', 'city' => 'Funza',
+            'level' => 'intermedio', 'color' => '#4C1D95',
+            'captain' => ['name' => 'Orlando Caicedo', 'email' => 'orlando.caicedo@futgo.co', 'role' => 'user'],
         ],
     ];
 

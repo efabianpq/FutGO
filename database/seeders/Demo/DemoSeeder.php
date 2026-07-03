@@ -26,17 +26,19 @@ class DemoSeeder extends Seeder
         $this->command?->info('👥 Bloque 1 — Personas y equipos permanentes');
         $this->call(DemoUsersAndClubsSeeder::class);
 
-        $this->command?->info('🏆 Bloque 2 — Torneos (todos los estados)');
-        $this->command?->info('🌱 Sembrando Torneo 1 — Liga Recreativa Bucaramanga 2025...');
+        $this->command?->info('🏆 Bloque 2 — Torneos (todos los estados, multi-ciudad)');
+        $this->command?->info('🌱 Sembrando Torneo 1 — Liga Medellín 2026...');
         $this->call(DemoTorneo1Seeder::class);
         $this->command?->info('🌱 Sembrando Torneo 2 — Copa Élite Santander 2026...');
         $this->call(DemoTorneo2Seeder::class);
-        $this->command?->info('🌱 Sembrando Torneo 3 — Torneo Relámpago Nocturno...');
+        $this->command?->info('🌱 Sembrando Torneo 3 — Liga Barrial Bogotá 2026...');
         $this->call(DemoTorneo3Seeder::class);
         $this->command?->info('🌱 Sembrando Torneo 4 — Torneo Empresarial Café 2026...');
         $this->call(DemoTorneo4Seeder::class);
         $this->command?->info('🌱 Sembrando Torneo 5 — Torneo Privado Club Ejecutivos...');
         $this->call(DemoTorneo5Seeder::class);
+        $this->command?->info('🌱 Sembrando Torneo 6 — Liga Escolar Sabana Sub-13 2026...');
+        $this->call(DemoTorneo6Seeder::class);
 
         $this->command?->info('📊 Bloque 4 — Reputación y datos transversales');
         $this->call(DemoReputacionSeeder::class);
@@ -107,6 +109,12 @@ class DemoSeeder extends Seeder
         $check('Torneo privado (no público)', DB::table('tournaments')->where('visibility', 'private')->exists());
         $check('Partidos finalizados', DB::table('tournament_matches')->where('status', 'finished')->exists());
         $check('Partidos programados (a futuro)', DB::table('tournament_matches')->where('status', 'scheduled')->exists());
+
+        // Multi-ciudad (video promocional): un torneo por escenario objetivo.
+        $check('Torneo Sabana vivo (público, con patrocinador, in_progress)', $this->sabanaTournamentOk());
+        $check('Torneo Bogotá finalizado (round_robin)', DB::table('tournaments')->where('slug', 'liga-barrial-bogota-2026')->where('status', 'finished')->where('format', 'round_robin')->exists());
+        $check('Torneo Medellín en eliminatoria activa (sin finalizar)', $this->medellinKnockoutActive());
+        $check('Torneo Bucaramanga/Cali recién abierto con cupos parciales', DB::table('tournaments')->where('slug', 'torneo-empresarial-cafe-2026')->where('status', 'open')->exists());
         $check('Standings calculados', $this->count('standings') > 0);
         $check('Sorteo de desempate (standing_draws)', $this->count('standing_draws') > 0);
         $check('Goles registrados', DB::table('match_events')->where('type', 'goal')->exists());
@@ -139,8 +147,10 @@ class DemoSeeder extends Seeder
             foreach (['pendiente', 'aceptada', 'rechazada', 'contrapropuesta'] as $st) {
                 $check("Respuesta en estado '{$st}'", DB::table('opportunity_responses')->where('status', $st)->exists());
             }
-            $check('Amistoso jugado', DB::table('friendly_matches')->where('status', 'jugado')->exists());
+            $check('Amistoso jugado (>=3)', DB::table('friendly_matches')->where('status', 'jugado')->count() >= 3);
             $check('Amistoso confirmado (pendiente)', DB::table('friendly_matches')->where('status', 'confirmado')->exists());
+            $check('Amistoso en disputa', DB::table('friendly_matches')->where('status', 'en_disputa')->exists());
+            $check('Oportunidad modo rápido (is_express)', DB::table('opportunities')->where('is_express', true)->exists());
             $check('Conversaciones con mensajes', $this->count('messages') > 0);
             $check('Mensaje estructurado (del sistema)', DB::table('messages')->where('type', 'structured')->exists());
             $check('Mensaje libre (humano)', DB::table('messages')->where('type', 'free')->exists());
@@ -155,6 +165,8 @@ class DemoSeeder extends Seeder
             if (Schema::hasTable('venues')) {
                 $check('Canchas registradas', $this->count('venues') > 0);
                 $check('Cancha vinculada a oportunidad', DB::table('opportunities')->whereNotNull('venue_id')->exists());
+                $check('Cancha en la Sabana', DB::table('venues')->whereIn('city', ['Chía', 'Cajicá'])->exists());
+                $check('Cancha en Bogotá', DB::table('venues')->where('city', 'Bogotá')->exists());
             }
         }
 
@@ -187,5 +199,36 @@ class DemoSeeder extends Seeder
     private function count(string $table): int
     {
         return Schema::hasTable($table) ? DB::table($table)->count() : 0;
+    }
+
+    /** Liga Escolar Sabana: pública, con al menos un patrocinador, y aún en curso. */
+    private function sabanaTournamentOk(): bool
+    {
+        return DB::table('tournaments')
+            ->where('slug', 'liga-escolar-sabana-sub13-2026')
+            ->where('visibility', 'public')
+            ->where('status', 'in_progress')
+            ->exists()
+            && DB::table('tournament_sponsors')
+                ->whereIn('tournament_id', DB::table('tournaments')->where('slug', 'liga-escolar-sabana-sub13-2026')->pluck('id'))
+                ->exists();
+    }
+
+    /** Liga Medellín: fase de grupos cerrada, eliminatoria activa, torneo sin finalizar. */
+    private function medellinKnockoutActive(): bool
+    {
+        $tournamentId = DB::table('tournaments')->where('slug', 'liga-medellin-2026')->value('id');
+        if (! $tournamentId) {
+            return false;
+        }
+
+        $stillOpen = DB::table('tournaments')->where('id', $tournamentId)->where('status', '!=', 'finished')->exists();
+        $knockoutActive = DB::table('tournament_phases')
+            ->where('tournament_id', $tournamentId)
+            ->where('type', 'knockout')
+            ->whereIn('status', ['active', 'pending'])
+            ->exists();
+
+        return $stillOpen && $knockoutActive;
     }
 }
