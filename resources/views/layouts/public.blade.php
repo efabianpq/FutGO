@@ -13,6 +13,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/FutGO/pwa/icon-180.png">
     <link rel="manifest" href="/manifest.json">
 
+    {{-- Anti-FOUC del tema: aplica tema antes de pintar (default: light) --}}
+    <script>
+        (function () {
+            var t = localStorage.getItem('futgo-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
     @php
         $pageTitle = trim($__env->yieldContent('title'));
         $fullTitle = $pageTitle ?: config('app.name');

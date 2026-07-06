@@ -12,7 +12,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://futgo.online',
+        'https://futgo.com.co',
         'capacitor://localhost',
         'http://localhost',
     ],

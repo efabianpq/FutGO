@@ -3,7 +3,7 @@
   "appName": "FutGO",
   "webDir": "public",
   "server": {
-    "url": "https://futgo.online",
+    "url": "https://futgo.com.co",
     "cleartext": false,
     "androidScheme": "https"
   },
