@@ -10,9 +10,12 @@ use App\Models\Torneos\TournamentMatch;
 use App\Models\Torneos\TournamentMatchNotification;
 use App\Models\Torneos\TournamentPhase;
 use App\Models\User;
+use App\Models\Torneos\TournamentSponsor;
 use App\Notifications\MatchReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -110,6 +113,37 @@ class SponsorAndReminderTest extends TestCase
             ->assertOk()
             ->assertSee('Deportes Acme')
             ->assertSee('Patrocinan este torneo');
+    }
+
+    public function test_el_admin_puede_editar_un_patrocinador_y_subir_logo(): void
+    {
+        Storage::fake('public');
+        ['tournament' => $t, 'admin' => $admin] = $this->upcomingMatchScenario();
+        $sponsor = TournamentSponsor::create(['tournament_id' => $t->id, 'name' => 'Acme', 'sort_order' => 0, 'is_active' => true]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.torneos.sponsors.update', [$t, $sponsor]), [
+                'name' => 'Acme Deportes',
+                'link_url' => 'https://acme.test',
+                'logo' => UploadedFile::fake()->image('logo.png'),
+            ])
+            ->assertRedirect();
+
+        $sponsor->refresh();
+        $this->assertSame('Acme Deportes', $sponsor->name);
+        $this->assertNotNull($sponsor->logo_url);
+    }
+
+    public function test_el_admin_puede_inactivar_y_reactivar_un_patrocinador(): void
+    {
+        ['tournament' => $t, 'admin' => $admin] = $this->upcomingMatchScenario();
+        $sponsor = TournamentSponsor::create(['tournament_id' => $t->id, 'name' => 'Acme', 'sort_order' => 0, 'is_active' => true]);
+
+        $this->actingAs($admin)->patch(route('admin.torneos.sponsors.toggle', [$t, $sponsor]))->assertRedirect();
+        $this->assertFalse($sponsor->refresh()->is_active);
+
+        $this->actingAs($admin)->patch(route('admin.torneos.sponsors.toggle', [$t, $sponsor]))->assertRedirect();
+        $this->assertTrue($sponsor->refresh()->is_active);
     }
 
     // ── Scheduler ─────────────────────────────────────────────────────────────

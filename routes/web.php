@@ -472,6 +472,8 @@ Route::middleware('auth')->group(function () {
                     ->group(function () {
                         Route::get('/', [SponsorController::class, 'index'])->name('index');
                         Route::post('/', [SponsorController::class, 'store'])->name('store');
+                        Route::put('/{sponsor}', [SponsorController::class, 'update'])->name('update');
+                        Route::patch('/{sponsor}/toggle', [SponsorController::class, 'toggleActive'])->name('toggle');
                         Route::delete('/{sponsor}', [SponsorController::class, 'destroy'])->name('destroy');
                     });
 

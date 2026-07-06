@@ -7,6 +7,7 @@ use App\Models\Torneos\Tournament;
 use App\Models\Torneos\TournamentSponsor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
@@ -30,23 +31,63 @@ class SponsorController extends Controller
 
         $data = $request->validate([
             'name'       => ['required', 'string', 'max:120'],
-            'logo_url'   => ['nullable', 'url', 'max:255'],
+            'logo'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'link_url'   => ['nullable', 'url', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
         ], [
-            'logo_url.url' => 'El logo debe ser una URL válida (https://...).',
+            'logo.image'   => 'El logo debe ser una imagen (jpg, png o webp).',
             'link_url.url' => 'El enlace debe ser una URL válida (https://...).',
         ]);
 
-        $tournament->sponsors()->create([
+        $sponsor = $tournament->sponsors()->create([
             'name'       => $data['name'],
-            'logo_url'   => $data['logo_url'] ?? null,
             'link_url'   => $data['link_url'] ?? null,
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active'  => true,
         ]);
 
+        if ($request->hasFile('logo')) {
+            $this->storeLogo($sponsor, $request);
+        }
+
         return back()->with('status', 'Patrocinador agregado.');
+    }
+
+    public function update(Request $request, Tournament $tournament, TournamentSponsor $sponsor): RedirectResponse
+    {
+        $this->authorizeManage($tournament);
+        abort_unless($sponsor->tournament_id === $tournament->id, 404);
+
+        $data = $request->validate([
+            'name'       => ['required', 'string', 'max:120'],
+            'logo'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'link_url'   => ['nullable', 'url', 'max:255'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+        ], [
+            'logo.image'   => 'El logo debe ser una imagen (jpg, png o webp).',
+            'link_url.url' => 'El enlace debe ser una URL válida (https://...).',
+        ]);
+
+        $sponsor->name       = $data['name'];
+        $sponsor->link_url   = $data['link_url'] ?? null;
+        $sponsor->sort_order = $data['sort_order'] ?? 0;
+        $sponsor->save();
+
+        if ($request->hasFile('logo')) {
+            $this->storeLogo($sponsor, $request);
+        }
+
+        return back()->with('status', 'Patrocinador actualizado.');
+    }
+
+    public function toggleActive(Tournament $tournament, TournamentSponsor $sponsor): RedirectResponse
+    {
+        $this->authorizeManage($tournament);
+        abort_unless($sponsor->tournament_id === $tournament->id, 404);
+
+        $sponsor->update(['is_active' => ! $sponsor->is_active]);
+
+        return back()->with('status', $sponsor->is_active ? 'Patrocinador activado.' : 'Patrocinador inactivado.');
     }
 
     public function destroy(Tournament $tournament, TournamentSponsor $sponsor): RedirectResponse
@@ -54,9 +95,42 @@ class SponsorController extends Controller
         $this->authorizeManage($tournament);
         abort_unless($sponsor->tournament_id === $tournament->id, 404);
 
+        $this->deleteLogoFile($sponsor);
         $sponsor->delete();
 
         return back()->with('status', 'Patrocinador eliminado.');
+    }
+
+    /** Guarda el logo subido en el disco configurado y borra el anterior. */
+    private function storeLogo(TournamentSponsor $sponsor, Request $request): void
+    {
+        $diskName = config('filesystems.media_disk', 'public');
+        $disk     = Storage::disk($diskName);
+
+        $this->deleteLogoFile($sponsor);
+
+        $path = $request->file('logo')->store("torneos/{$sponsor->tournament_id}/sponsors", $diskName);
+        $sponsor->logo_url = $disk->url($path);
+        $sponsor->save();
+    }
+
+    /** Borra el archivo de logo anterior del disco configurado, si existe. */
+    private function deleteLogoFile(TournamentSponsor $sponsor): void
+    {
+        $previous = $sponsor->logo_url;
+        if (! $previous) {
+            return;
+        }
+
+        $diskName = config('filesystems.media_disk', 'public');
+        $disk     = Storage::disk($diskName);
+        $base     = rtrim($disk->url(''), '/');
+
+        if ($base && str_starts_with($previous, $base . '/')) {
+            $disk->delete(substr($previous, strlen($base) + 1));
+        } elseif (str_starts_with($previous, '/storage/')) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', $previous));
+        }
     }
 
     private function authorizeManage(Tournament $tournament): void

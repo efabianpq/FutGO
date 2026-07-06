@@ -7,6 +7,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#00c853">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/FutGO/pwa/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/FutGO/pwa/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/FutGO/pwa/icon-180.png">
     <link rel="manifest" href="/manifest.json">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -46,8 +50,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 
-    {{-- PWA: manifest e ícono fusionados en /manifest.json (ver meta tags arriba) --}}
-    <link rel="apple-touch-icon" href="/FutGO/pwa/icon-180.png">
     <meta name="apple-mobile-web-app-title" content="FutGO">
 
     <style>[x-cloak] { display: none !important; }</style>
