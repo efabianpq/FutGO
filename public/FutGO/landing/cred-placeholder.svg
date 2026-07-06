@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 132" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Foto del jugador">
+  <rect width="132" height="132" fill="#1c2820"/>
+  <circle cx="66" cy="52" r="26" fill="#ffffff" fill-opacity="0.14"/>
+  <path d="M22 120c0-26 20-40 44-40s44 14 44 40z" fill="#ffffff" fill-opacity="0.14"/>
+</svg>
