@@ -27,7 +27,10 @@
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Cerrar {{ $phase->name }}</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Cerrar {{ $phase->name }}</h1>
+                <x-help-hint topic="admin.torneos.phases.close" />
+            </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 Cerrar la fase de grupos genera la eliminatoria con los clasificados.
             </p>

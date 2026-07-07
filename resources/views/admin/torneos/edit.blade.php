@@ -6,7 +6,10 @@
 
 <div class="max-w-3xl mx-auto px-4 py-8">
     <p class="eyebrow">Editando</p>
-    <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 mb-6 break-words">{{ $tournament->name }}</h1>
+    <div class="flex items-center gap-2 mt-1 mb-6">
+        <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $tournament->name }}</h1>
+        <x-help-hint topic="admin.torneos.edit" />
+    </div>
 
     <div class="bg-white border border-line rounded-md shadow-card-2 p-6 sm:p-8">
         <form method="POST" action="{{ route('admin.torneos.update', $tournament) }}" enctype="multipart/form-data">

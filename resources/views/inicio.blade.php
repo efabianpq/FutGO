@@ -45,7 +45,10 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
             <p class="font-mono text-[11px] tracking-[.14em] uppercase text-muted">{{ now()->translatedFormat('l d \d\e F') }}</p>
-            <h1 class="font-display font-bold text-2xl sm:text-3xl text-text mt-1">Hola, {{ $firstName }}</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-2xl sm:text-3xl text-text">Hola, {{ $firstName }}</h1>
+                <x-help-hint topic="dashboard" />
+            </div>
         </div>
         <div class="flex flex-wrap gap-2">
             <a href="{{ route('torneos.mi-carrera') }}" class="btn btn-primary btn-sm">Mi Carrera</a>

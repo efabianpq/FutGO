@@ -6,7 +6,10 @@
 <div class="max-w-md mx-auto px-4 py-12 sm:py-16">
     <div class="text-center mb-8">
         <p class="eyebrow justify-center">Login</p>
-        <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase mt-3">Iniciar sesión</h1>
+        <div class="flex items-center justify-center gap-2 mt-3">
+            <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase">Iniciar sesión</h1>
+            <x-help-hint topic="login" />
+        </div>
         <p class="text-body-s text-ink-soft mt-2">Ingresa tus credenciales para continuar.</p>
     </div>
 

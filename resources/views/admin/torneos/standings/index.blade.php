@@ -16,7 +16,10 @@
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Posiciones</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Posiciones</h1>
+                <x-help-hint topic="admin.torneos.standings.index" />
+            </div>
             @if ($tournament->tiebreaker_order)
                 <p class="font-mono text-[11px] text-ink-mute mt-1">
                     Desempate: {{ implode(' → ', $tournament->tiebreaker_order) }}

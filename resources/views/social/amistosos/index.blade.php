@@ -12,7 +12,10 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">FutGO Social</p>
-            <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis amistosos</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s text-pitch uppercase">Mis amistosos</h1>
+                <x-help-hint topic="social.amistosos.index" />
+            </div>
             <p class="text-ink-soft text-[14px] mt-1">Carga el resultado de tus amistosos. El rival también carga el suyo: si coinciden, queda confirmado.</p>
         </div>
         <a href="{{ route('social.oportunidades.index', ['tipo' => 'BUSCAR_RIVAL']) }}" class="btn btn-secondary btn-sm">Buscar rival</a>

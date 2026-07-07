@@ -24,7 +24,10 @@
     <div class="flex items-center justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">{{ $tournament->name }}</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Equipos inscritos</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Equipos inscritos</h1>
+                <x-help-hint topic="admin.torneos.equipos.index" />
+            </div>
         </div>
         <div class="flex items-center gap-3">
             <x-badge variant="default">{{ $teams->count() }} equipos</x-badge>

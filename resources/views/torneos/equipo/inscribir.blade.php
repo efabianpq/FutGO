@@ -6,7 +6,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">{{ $tournament->name }}</p>
-        <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Inscribir un equipo</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Inscribir un equipo</h1>
+            <x-help-hint topic="torneos.equipo.inscribir" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-2">
             Elige uno de tus equipos para inscribirlo en este torneo. Su plantilla actual
             se copia al torneo y el organizador deberá aprobar la inscripción.

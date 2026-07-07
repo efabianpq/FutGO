@@ -39,6 +39,7 @@
                           style="background:{{ $team->color }}"></span>
                 @endif
                 <x-badge :variant="$variant">{{ $label }}</x-badge>
+                <x-help-hint topic="admin.torneos.equipos.show" />
             </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 Capitán: {{ $team->captain?->name ?? '—' }} · {{ $team->players->count() }} jugadores

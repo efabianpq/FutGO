@@ -22,7 +22,10 @@
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
      x-data="{ showReport: false }">
 
-    <a href="{{ route('social.oportunidades.index') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Volver a oportunidades</a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('social.oportunidades.index') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Volver a oportunidades</a>
+        <x-help-hint topic="social.oportunidades.show" />
+    </div>
 
     @if (session('status'))
         <div class="mt-4 mb-4 bg-gol/20 border border-gol text-pitch-deep px-4 py-3 rounded-md font-display font-semibold">{{ session('status') }}</div>

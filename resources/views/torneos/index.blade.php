@@ -23,7 +23,10 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">Torneos</p>
-            <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis Torneos</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s text-pitch uppercase">Mis Torneos</h1>
+                <x-help-hint topic="torneos.index" />
+            </div>
             <p class="text-ink-soft text-[13px] mt-1">Los torneos donde participás como administrador, capitán o jugador.</p>
         </div>
         <div class="flex gap-3">

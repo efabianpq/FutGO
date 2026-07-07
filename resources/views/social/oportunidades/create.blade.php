@@ -18,7 +18,10 @@
 
     <div class="mb-6">
         <a href="{{ route('social.oportunidades.index') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Volver a oportunidades</a>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-2">Publicar oportunidad</h1>
+        <div class="flex items-center gap-2 mt-2">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Publicar oportunidad</h1>
+            <x-help-hint topic="social.oportunidades.create" />
+        </div>
     </div>
 
     {{-- S2-A: oportunidad dirigida a un jugador (retar / invitar desde su ficha) --}}

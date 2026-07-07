@@ -118,7 +118,7 @@ class AdminSupportController extends Controller
 
     public function knowledge()
     {
-        $articles = SupportArticle::latest()->paginate(25);
+        $articles = SupportArticle::with('topics')->latest()->paginate(25);
 
         return view('admin.support.knowledge', compact('articles'));
     }
@@ -126,18 +126,63 @@ class AdminSupportController extends Controller
     public function storeArticle(Request $request)
     {
         $data = $request->validate([
-            'title'    => ['required', 'string', 'max:200'],
-            'content'  => ['required', 'string'],
-            'category' => ['required', 'in:torneos,social,cuenta,tecnico,politicas'],
+            'title'        => ['required', 'string', 'max:200'],
+            'content'      => ['required', 'string'],
+            'excerpt'      => ['nullable', 'string', 'max:300'],
+            'category'     => ['required', 'in:torneos,social,cuenta,tecnico,politicas'],
+            'feature_keys' => ['nullable', 'string', 'max:500'],
         ]);
+
+        $featureKeys = $this->parseFeatureKeys($data['feature_keys'] ?? null);
+        unset($data['feature_keys']);
 
         $data['slug']         = Str::slug($data['title']) . '-' . time();
         $data['source']       = 'manual';
         $data['is_published'] = false;
 
-        SupportArticle::create($data);
+        $article = SupportArticle::create($data);
+        $this->syncFeatureKeys($article, $featureKeys);
 
         return back()->with('success', 'Artículo creado. Publicalo cuando esté listo.');
+    }
+
+    public function updateArticle(Request $request, SupportArticle $article)
+    {
+        $data = $request->validate([
+            'title'        => ['required', 'string', 'max:200'],
+            'content'      => ['required', 'string'],
+            'excerpt'      => ['nullable', 'string', 'max:300'],
+            'category'     => ['required', 'in:torneos,social,cuenta,tecnico,politicas'],
+            'feature_keys' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $featureKeys = $this->parseFeatureKeys($data['feature_keys'] ?? null);
+        unset($data['feature_keys']);
+
+        $article->update($data);
+        $this->syncFeatureKeys($article, $featureKeys);
+
+        return back()->with('success', 'Artículo actualizado.');
+    }
+
+    /** @return string[] */
+    private function parseFeatureKeys(?string $raw): array
+    {
+        return collect(explode(',', $raw ?? ''))
+            ->map(fn ($key) => trim($key))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function syncFeatureKeys(SupportArticle $article, array $featureKeys): void
+    {
+        $article->topics()->delete();
+
+        foreach ($featureKeys as $key) {
+            $article->topics()->create(['feature_key' => $key]);
+        }
     }
 
     public function publishArticle(SupportArticle $article)

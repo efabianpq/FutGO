@@ -19,7 +19,10 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
             <p class="eyebrow">FutGO Social</p>
-            <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mis oportunidades</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s text-pitch uppercase">Mis oportunidades</h1>
+                <x-help-hint topic="social.oportunidades.mine" />
+            </div>
         </div>
         <a href="{{ route('social.oportunidades.create') }}" class="btn btn-primary btn-sm">+ Publicar</a>
     </div>

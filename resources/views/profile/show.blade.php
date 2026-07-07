@@ -5,7 +5,10 @@
 @section('content')
 <div class="max-w-2xl mx-auto px-4 py-10">
     <p class="eyebrow">Mi cuenta</p>
-    <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-3 mb-6">Mi perfil</h1>
+    <div class="flex items-center gap-2 mt-3 mb-6">
+        <h1 class="font-display font-bold text-display-m text-pitch uppercase">Mi perfil</h1>
+        <x-help-hint topic="profile.show" />
+    </div>
 
     @if (session('status'))
         <div class="mb-4 bg-gol/20 border border-gol text-pitch-deep px-4 py-3 rounded-md font-display font-semibold">{{ session('status') }}</div>

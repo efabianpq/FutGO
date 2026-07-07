@@ -567,6 +567,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin/soporte')->name('admin.sopor
     Route::post('/tickets/{ticket}/generar-articulo', [AdminSupportController::class, 'generateArticle'])->name('tickets.generate-article');
     Route::get('/conocimiento',                       [AdminSupportController::class, 'knowledge'])->name('knowledge');
     Route::post('/conocimiento',                      [AdminSupportController::class, 'storeArticle'])->name('knowledge.store');
+    Route::patch('/conocimiento/{article}',           [AdminSupportController::class, 'updateArticle'])->name('knowledge.update');
     Route::patch('/conocimiento/{article}/publicar',  [AdminSupportController::class, 'publishArticle'])->name('knowledge.publish');
     Route::delete('/conocimiento/{article}',          [AdminSupportController::class, 'deleteArticle'])->name('knowledge.delete');
     Route::get('/estado',                             [AdminSupportController::class, 'statusPanel'])->name('status');

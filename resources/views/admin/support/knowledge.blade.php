@@ -28,31 +28,68 @@
             </select>
             <textarea name="content" required rows="6" placeholder="Contenido del artículo..."
                       class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2"></textarea>
+            <textarea name="excerpt" maxlength="300" rows="2" placeholder="Resumen corto para el popup de ayuda (opcional)"
+                      class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2"></textarea>
+            <input type="text" name="feature_keys" maxlength="500" placeholder="Claves de pantalla, separadas por coma (ej. torneos.crear)"
+                   class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">
             <button class="btn btn-primary btn-sm">Crear artículo</button>
         </form>
     </details>
 
     <div class="space-y-2">
         @forelse($articles as $article)
-            <div class="flex items-center gap-3 p-4 rounded-xl border border-border bg-surface">
-                <div class="min-w-0 flex-1">
-                    <div class="font-medium text-text truncate">{{ $article->title }}</div>
-                    <div class="text-xs text-muted mt-0.5">
-                        {{ $article->category }} · {{ $article->source }}
-                        · <x-icon name="thumb-up" class="w-3 h-3 inline" /> {{ $article->helpful_count }} / <x-icon name="thumb-down" class="w-3 h-3 inline" /> {{ $article->not_helpful_count }}
-                        · {{ $article->is_published ? 'Publicado' : 'Borrador' }}
+            <details class="p-4 rounded-xl border border-border bg-surface">
+                <summary class="flex items-center gap-3 cursor-pointer list-none">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-text truncate">{{ $article->title }}</div>
+                        <div class="text-xs text-muted mt-0.5">
+                            {{ $article->category }} · {{ $article->source }}
+                            · <x-icon name="thumb-up" class="w-3 h-3 inline" /> {{ $article->helpful_count }} / <x-icon name="thumb-down" class="w-3 h-3 inline" /> {{ $article->not_helpful_count }}
+                            · {{ $article->is_published ? 'Publicado' : 'Borrador' }}
+                        </div>
+                        @if($article->topics->isNotEmpty())
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                @foreach($article->topics as $topic)
+                                    <span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-2 text-muted border border-border">{{ $topic->feature_key }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
-                </div>
-                <form method="POST" action="{{ route('admin.soporte.knowledge.publish', $article) }}" class="shrink-0">
+                </summary>
+
+                <form method="POST" action="{{ route('admin.soporte.knowledge.update', $article) }}" class="mt-4 space-y-3">
                     @csrf @method('PATCH')
-                    <button class="btn btn-secondary btn-sm">{{ $article->is_published ? 'Despublicar' : 'Publicar' }}</button>
+                    <input type="text" name="title" required maxlength="200" value="{{ $article->title }}"
+                           class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">
+                    <select name="category" required class="rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">
+                        @foreach(['torneos' => 'Torneos', 'social' => 'Social', 'cuenta' => 'Cuenta', 'tecnico' => 'Técnico', 'politicas' => 'Políticas'] as $k => $v)
+                            <option value="{{ $k }}" @selected($article->category === $k)>{{ $v }}</option>
+                        @endforeach
+                    </select>
+                    <textarea name="content" required rows="6"
+                              class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">{{ $article->content }}</textarea>
+                    <textarea name="excerpt" maxlength="300" rows="2" placeholder="Resumen corto para el popup de ayuda (opcional)"
+                              class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">{{ $article->excerpt }}</textarea>
+                    <input type="text" name="feature_keys" maxlength="500" placeholder="Claves de pantalla, separadas por coma (ej. torneos.crear)"
+                           value="{{ $article->topics->pluck('feature_key')->implode(', ') }}"
+                           class="w-full rounded-lg border border-border bg-bg text-text text-sm px-3 py-2">
+                    <div class="flex items-center gap-2">
+                        <button class="btn btn-primary btn-sm">Guardar cambios</button>
+                    </div>
                 </form>
-                <form method="POST" action="{{ route('admin.soporte.knowledge.delete', $article) }}" class="shrink-0"
-                      onsubmit="return confirm('¿Eliminar este artículo?')">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-ghost btn-sm text-red-500">Eliminar</button>
-                </form>
-            </div>
+
+                <div class="flex items-center gap-2 mt-3">
+                    <form method="POST" action="{{ route('admin.soporte.knowledge.publish', $article) }}" class="shrink-0">
+                        @csrf @method('PATCH')
+                        <button class="btn btn-secondary btn-sm">{{ $article->is_published ? 'Despublicar' : 'Publicar' }}</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.soporte.knowledge.delete', $article) }}" class="shrink-0"
+                          onsubmit="return confirm('¿Eliminar este artículo?')">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-ghost btn-sm text-red-500">Eliminar</button>
+                    </form>
+                </div>
+            </details>
         @empty
             <p class="text-sm text-muted p-4 rounded-xl border border-border">Todavía no hay artículos.</p>
         @endforelse

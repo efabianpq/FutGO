@@ -22,7 +22,10 @@
     <div class="mb-6 flex items-end justify-between gap-4 flex-wrap">
         <div>
             <p class="eyebrow">FutGO</p>
-            <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mi agenda</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s text-pitch uppercase">Mi agenda</h1>
+                <x-help-hint topic="social.agenda.index" />
+            </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">Todo lo que tienes programado o pendiente, en un solo lugar.</p>
         </div>
         <a href="{{ route('torneos.mi-carrera') }}" class="font-mono text-[12px] text-ink-mute hover:text-pitch">← Mi carrera</a>

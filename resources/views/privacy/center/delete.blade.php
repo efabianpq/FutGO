@@ -4,7 +4,10 @@
 @section('content')
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
     <a href="{{ route('privacidad.centro') }}" class="text-[13px] text-muted hover:text-text">&larr; Centro de Privacidad</a>
-    <h1 class="text-2xl font-bold text-text mt-3 mb-1">Eliminar mi cuenta</h1>
+    <div class="flex items-center gap-2 mt-3 mb-1">
+        <h1 class="text-2xl font-bold text-text">Eliminar mi cuenta</h1>
+        <x-help-hint topic="privacidad.eliminar" />
+    </div>
 
     @if(session('status'))
         <div class="my-4 p-3 rounded-sm bg-primary/10 text-primary text-sm">{{ session('status') }}</div>

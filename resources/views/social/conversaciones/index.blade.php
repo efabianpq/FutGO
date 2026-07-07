@@ -29,7 +29,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">FutGO Social</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Mensajes</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Mensajes</h1>
+            <x-help-hint topic="social.conversaciones.index" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-1">Tus conversaciones con rivales, refuerzos y equipos. Se abren automáticamente cuando aceptas una oportunidad o confirmas un amistoso.</p>
     </div>
 

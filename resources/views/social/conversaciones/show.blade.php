@@ -30,7 +30,10 @@
     <div class="mb-4">
         <a href="{{ route('social.conversaciones.index') }}" class="font-mono text-[11px] text-ink-mute hover:text-pitch">&larr; Mensajes</a>
         <div class="flex items-center justify-between gap-3 mt-1">
-            <h1 class="font-display font-bold text-pitch text-[20px]">{{ $contextTitle }}</h1>
+            <div class="flex items-center gap-2 min-w-0">
+                <h1 class="font-display font-bold text-pitch text-[20px] truncate">{{ $contextTitle }}</h1>
+                <x-help-hint topic="social.conversaciones.show" />
+            </div>
             <div class="flex items-center gap-2 shrink-0">
                 @if ($contextLink)
                     <a href="{{ $contextLink }}" class="btn btn-secondary btn-sm">Ver detalle</a>

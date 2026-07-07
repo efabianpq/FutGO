@@ -43,7 +43,10 @@
         <x-avatar :user="$user" size="lg" class="sm:hidden shrink-0" />
         <x-avatar :user="$user" size="xl" class="hidden sm:block shrink-0" />
         <div class="min-w-0 flex-1">
-            <p class="eyebrow">Hoja de vida deportiva</p>
+            <div class="flex items-center gap-2">
+                <p class="eyebrow">Hoja de vida deportiva</p>
+                <x-help-hint topic="torneos.mi-carrera" />
+            </div>
             <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">{{ $user->name }}</h1>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 {{ $careerStat->tournaments_count }} torneo(s) · {{ $careerStat->teams_count }} equipo(s)

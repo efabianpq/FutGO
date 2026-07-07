@@ -109,6 +109,7 @@ $formInit = [
             <p class="eyebrow">{{ $tournament->name }}</p>
             <div class="flex items-center gap-3 mt-1">
                 <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Planilla del Partido</h1>
+                <x-help-hint topic="torneos.partidos.resultado" />
                 <x-badge :variant="$mStatusVariant">{{ $mStatusLabel }}</x-badge>
                 @if ($match->is_walkover)
                     <x-badge variant="default">W.O.</x-badge>

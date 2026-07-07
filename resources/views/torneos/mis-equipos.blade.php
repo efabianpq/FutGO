@@ -8,7 +8,10 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
             <p class="eyebrow">Equipos</p>
-            <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-1">Mis Equipos</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Mis Equipos</h1>
+                <x-help-hint topic="torneos.mis-equipos" />
+            </div>
             @if ($isPlatformAdmin)
                 <p class="text-ink-soft text-[14px] mt-1">Como administrador de la plataforma ves todos los equipos registrados.</p>
             @else
