@@ -14,6 +14,7 @@
 
     <div class="mt-4 flex items-start gap-3">
         <h1 class="font-display text-xl font-bold text-text flex-1">{{ $ticket->subject }}</h1>
+        <x-help-hint topic="soporte.my-tickets.show" />
         <span class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-surface-2 text-muted">
             {{ $statusLabels[$ticket->status] ?? $ticket->status }}
         </span>

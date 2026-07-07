@@ -4,7 +4,10 @@
 @section('content')
 @include('admin._nav')
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-2xl font-bold text-text mb-6">Publicar nueva versión</h1>
+    <div class="flex items-center gap-2 mb-6">
+        <h1 class="text-2xl font-bold text-text">Publicar nueva versión</h1>
+        <x-help-hint topic="admin.legal.create" />
+    </div>
 
     <form method="POST" action="{{ route('admin.legal.store') }}" class="space-y-5 bg-surface border border-border rounded-md p-6">
         @csrf

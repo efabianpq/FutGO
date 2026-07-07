@@ -8,7 +8,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">Administración</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Moderación de contenido</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Moderación de contenido</h1>
+            <x-help-hint topic="admin.social.moderacion.index" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-1">Revisión manual de reportes de la comunidad.</p>
     </div>
 

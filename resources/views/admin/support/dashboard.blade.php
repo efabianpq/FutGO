@@ -6,7 +6,10 @@
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <p class="eyebrow">Panel administrador</p>
-    <h1 class="font-display font-bold text-2xl text-text mt-2 mb-6">Centro de Soporte</h1>
+    <div class="flex items-center gap-2 mt-2 mb-6">
+        <h1 class="font-display font-bold text-2xl text-text">Centro de Soporte</h1>
+        <x-help-hint topic="admin.soporte.dashboard" />
+    </div>
 
     @if(session('success'))
         <div class="mb-6 p-3 rounded-lg bg-green/10 border border-green/30 text-green text-sm">{{ session('success') }}</div>

@@ -6,7 +6,10 @@
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <p class="eyebrow">Comunidad</p>
-    <h1 class="font-display font-bold text-display-m text-pitch uppercase mt-2 mb-6">Usuarios</h1>
+    <div class="flex items-center gap-2 mt-2 mb-6">
+        <h1 class="font-display font-bold text-display-m text-pitch uppercase">Usuarios</h1>
+        <x-help-hint topic="admin.users.index" />
+    </div>
 
     <form method="GET" class="mb-4">
         <input type="search" name="q" value="{{ $search }}" placeholder="Buscar por nombre o email..."

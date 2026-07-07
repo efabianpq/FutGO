@@ -1,10 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Centro de ayuda')
+@section('title', 'Manuales de uso')
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 py-8">
     <div class="flex items-center gap-3 mb-6">
-        <h1 class="font-display text-2xl font-bold text-text inline-flex items-center gap-2"><x-icon name="book" class="w-6 h-6" /> Centro de ayuda</h1>
+        <h1 class="font-display text-2xl font-bold text-text inline-flex items-center gap-2"><x-icon name="book" class="w-6 h-6" /> Manuales de uso</h1>
+        <x-help-hint topic="soporte.knowledge" />
         <a href="{{ route('soporte.index') }}" class="ml-auto text-sm text-muted hover:text-text underline">Volver</a>
     </div>
 

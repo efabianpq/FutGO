@@ -6,7 +6,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">Cancha</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Editar: {{ $venue->name }}</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Editar: {{ $venue->name }}</h1>
+            <x-help-hint topic="social.canchas.edit" />
+        </div>
     </div>
 
     @include('social.canchas._form', [

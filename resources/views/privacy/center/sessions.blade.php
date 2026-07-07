@@ -3,7 +3,10 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-    <h1 class="text-2xl font-bold text-text mb-1">Centro de Privacidad</h1>
+    <div class="flex items-center gap-2 mb-1">
+        <h1 class="text-2xl font-bold text-text">Centro de Privacidad</h1>
+        <x-help-hint topic="privacidad.sesiones" />
+    </div>
     <p class="text-[14px] text-muted mb-6">Dispositivos con sesión abierta en tu cuenta.</p>
 
     @include('privacy.center._tabs')

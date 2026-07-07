@@ -10,6 +10,7 @@
             <div class="font-semibold text-text">Asistente FutGO</div>
             <div class="text-xs text-green">En línea</div>
         </div>
+        <x-help-hint topic="soporte.chat" />
         <a href="{{ route('soporte.index') }}" class="ml-auto text-sm text-muted hover:text-text underline">Volver</a>
     </div>
 

@@ -15,7 +15,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">Mi perfil</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Reclamar mi perfil</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Reclamar mi perfil</h1>
+            <x-help-hint topic="torneos.reclamos.index" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-1">
             Si un capitán te anotó en un equipo sin que tuvieras cuenta, acá puedes reclamar ese registro
             para heredar tu historial (partidos, goles, tarjetas) y obtener tu credencial digital.

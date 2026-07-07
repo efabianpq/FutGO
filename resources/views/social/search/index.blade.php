@@ -7,7 +7,10 @@
     {{-- Encabezado + caja de búsqueda --}}
     <div class="mb-6">
         <p class="font-mono text-[11px] tracking-[.14em] uppercase text-muted">FutGO</p>
-        <h1 class="font-display font-bold text-2xl text-text mt-1">Buscar en FutGO</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-2xl text-text">Buscar en FutGO</h1>
+            <x-help-hint topic="social.search" />
+        </div>
         <form method="GET" action="{{ route('social.search') }}" class="mt-4 flex items-center gap-2">
             <div class="relative flex-1">
                 <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

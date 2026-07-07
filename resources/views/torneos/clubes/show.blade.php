@@ -37,7 +37,10 @@
         <x-avatar :name="$club->name" :src="$club->shield_url" size="xl" class="hidden sm:block shrink-0" />
         <div class="min-w-0 flex-1">
             <p class="eyebrow">Equipo</p>
-            <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase mt-1 break-words">{{ $club->name }}</h1>
+            <div class="flex items-center gap-2 mt-1">
+                <h1 class="font-display font-bold text-2xl sm:text-display-s md:text-display-m text-pitch uppercase break-words">{{ $club->name }}</h1>
+                <x-help-hint topic="torneos.clubes.show" />
+            </div>
             <p class="font-mono text-[12px] text-ink-mute mt-1">
                 Capitán:
                 @if ($club->captain?->futgo_id)

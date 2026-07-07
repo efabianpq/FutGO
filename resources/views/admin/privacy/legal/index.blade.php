@@ -5,7 +5,10 @@
 @include('admin._nav')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-text">Documentos legales</h1>
+        <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-bold text-text">Documentos legales</h1>
+            <x-help-hint topic="admin.legal.index" />
+        </div>
         <a href="{{ route('admin.legal.create') }}" class="btn btn-primary btn-sm">Publicar versión</a>
     </div>
 

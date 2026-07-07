@@ -18,6 +18,7 @@
 <div class="max-w-3xl mx-auto px-4 py-8">
     <div class="flex items-center gap-3 mb-6">
         <h1 class="font-display text-2xl font-bold text-text inline-flex items-center gap-2"><x-icon name="clipboard" class="w-6 h-6" /> Mis casos</h1>
+        <x-help-hint topic="soporte.my-tickets" />
         <a href="{{ route('soporte.index') }}" class="ml-auto text-sm text-muted hover:text-text underline">Volver</a>
     </div>
 

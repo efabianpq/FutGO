@@ -20,7 +20,10 @@
 
     <div class="mt-4 flex items-start gap-3">
         <div class="flex-1">
-            <h1 class="font-display text-xl font-bold text-text">{{ $ticket->subject }}</h1>
+            <div class="flex items-center gap-2">
+                <h1 class="font-display text-xl font-bold text-text">{{ $ticket->subject }}</h1>
+                <x-help-hint topic="admin.soporte.tickets.show" />
+            </div>
             <p class="text-xs text-muted mt-1">
                 Caso #{{ $ticket->id }} · {{ $ticket->user->name ?? 'N/D' }} ({{ $ticket->user->futgo_id ?? '—' }})
                 · {{ $ticket->category }} · prioridad {{ $ticket->priority }}

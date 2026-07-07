@@ -4,7 +4,10 @@
 @section('content')
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
     <a href="{{ route('privacidad.centro') }}" class="text-[13px] text-muted hover:text-text">&larr; Centro de Privacidad</a>
-    <h1 class="text-2xl font-bold text-text mt-3 mb-1">Descargar mis datos</h1>
+    <div class="flex items-center gap-2 mt-3 mb-1">
+        <h1 class="text-2xl font-bold text-text">Descargar mis datos</h1>
+        <x-help-hint topic="privacidad.exportar" />
+    </div>
     <p class="text-[14px] text-muted mb-6">Obtén una copia de tu información personal en formato JSON (portabilidad).</p>
 
     <div class="bg-surface border border-border rounded-md p-5">

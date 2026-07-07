@@ -13,7 +13,10 @@
         </div>
     @endif
 
-    <h1 class="font-display text-2xl font-bold text-text mb-2">Centro de Soporte</h1>
+    <div class="flex items-center gap-2 mb-2">
+        <h1 class="font-display text-2xl font-bold text-text">Centro de Soporte</h1>
+        <x-help-hint topic="soporte.index" />
+    </div>
     <p class="text-muted mb-8">¿En qué podemos ayudarte?</p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -26,8 +29,8 @@
 
         <a href="{{ route('soporte.knowledge') }}" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">
             <div class="mb-2"><x-icon name="book" class="w-8 h-8 text-muted" /></div>
-            <div class="font-semibold text-text">Centro de ayuda</div>
-            <div class="text-sm text-muted mt-1">Artículos y guías paso a paso</div>
+            <div class="font-semibold text-text">Manuales de uso</div>
+            <div class="text-sm text-muted mt-1">Guías paso a paso de cada pantalla de FutGO</div>
         </a>
 
         <a href="{{ route('soporte.chat') }}?tipo=bug" class="block p-5 rounded-2xl border border-border hover:bg-surface-2 transition">

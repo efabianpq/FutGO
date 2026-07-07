@@ -8,7 +8,10 @@
 
     <div class="mb-6">
         <p class="eyebrow">Administración</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Reclamos de perfil escalados</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Reclamos de perfil escalados</h1>
+            <x-help-hint topic="admin.torneos.reclamos.index" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-1">
             Reclamos de equipos sin capitán activo. Resolvelos en nombre de la plataforma:
             aprobar vincula al jugador y le transfiere el historial.

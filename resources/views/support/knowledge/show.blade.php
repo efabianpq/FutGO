@@ -19,7 +19,7 @@
             } catch (e) {}
         }
      }">
-    <a href="{{ route('soporte.knowledge') }}" class="text-sm text-muted hover:text-text underline">← Centro de ayuda</a>
+    <a href="{{ route('soporte.knowledge') }}" class="text-sm text-muted hover:text-text underline">← Manuales de uso</a>
 
     <h1 class="font-display text-2xl font-bold text-text mt-4 mb-6">{{ $article->title }}</h1>
 

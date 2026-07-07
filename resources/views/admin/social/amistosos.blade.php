@@ -2,11 +2,15 @@
 @section('title', 'Amistosos · Admin')
 
 @section('content')
+@include('admin._nav')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <div class="mb-6">
         <p class="eyebrow">Administración</p>
-        <h1 class="font-display font-bold text-display-s text-pitch uppercase mt-1">Amistosos — disputas</h1>
+        <div class="flex items-center gap-2 mt-1">
+            <h1 class="font-display font-bold text-display-s text-pitch uppercase">Amistosos — disputas</h1>
+            <x-help-hint topic="admin.amistosos.index" />
+        </div>
         <p class="text-ink-soft text-[14px] mt-1">Resolución de resultados en disputa e historial de cancelaciones.</p>
     </div>
 

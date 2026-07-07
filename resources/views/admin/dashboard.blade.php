@@ -6,7 +6,10 @@
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     <p class="eyebrow">Panel administrador</p>
-    <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase mt-2 mb-6 leading-[0.96]">Dashboard</h1>
+    <div class="flex items-center gap-2 mt-2 mb-6">
+        <h1 class="font-display font-bold text-display-m sm:text-display-l text-pitch uppercase leading-[0.96]">Dashboard</h1>
+        <x-help-hint topic="admin.dashboard" />
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <x-stat-card label="Usuarios registrados" :value="$usersCount" />

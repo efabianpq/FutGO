@@ -12,7 +12,10 @@
 <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
     <p class="eyebrow inline-flex items-center gap-1.5"><x-icon name="shield" class="w-3.5 h-3.5" /> Control de identidad</p>
-    <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase mt-2 mb-1">Validar credencial</h1>
+    <div class="flex items-center gap-2 mt-2 mb-1">
+        <h1 class="font-display font-bold text-display-s sm:text-display-m text-pitch uppercase">Validar credencial</h1>
+        <x-help-hint topic="torneos.validar" />
+    </div>
     <p class="text-[14px] text-ink-soft mb-6">
         Escanea el QR de la credencial o ingresa el identificador FUTGO a mano.
         Elige el torneo para verificar si el jugador está habilitado.

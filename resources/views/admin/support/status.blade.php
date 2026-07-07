@@ -8,6 +8,7 @@
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('admin.soporte.dashboard') }}" class="text-sm text-muted hover:text-text underline">← Soporte</a>
         <h1 class="font-display text-2xl font-bold text-text">Estado del servicio</h1>
+        <x-help-hint topic="admin.soporte.status" />
     </div>
 
     @if(session('success'))

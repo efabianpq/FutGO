@@ -143,6 +143,13 @@
                                 <span class="absolute top-0.5 right-0.5 min-w-[1rem] h-4 px-1 rounded-full bg-green text-white text-[10px] font-bold leading-4 text-center">{{ $messagesUnreadCount > 9 ? '9+' : $messagesUnreadCount }}</span>
                             @endif
                         </a>
+
+                        {{-- Ayuda: acceso directo a la Base de Conocimiento completa (todos los
+                             manuales), independiente de los popups contextuales de cada pantalla. --}}
+                        <a href="{{ route('soporte.knowledge') }}" aria-label="Ayuda"
+                           class="flex items-center justify-center w-9 h-9 rounded-full transition-all duration-fast {{ $isActive('soporte.knowledge') ? 'bg-surface-2 text-text' : 'text-muted hover:text-text hover:bg-surface-2' }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 17h.007v.008H12V17z"/></svg>
+                        </a>
                     @endif
 
                     <div class="relative ml-1" @click.outside="profileOpen = false">
@@ -195,6 +202,11 @@
                             <a href="{{ route('soporte.index') }}"
                                class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
                                 Centro de Soporte
+                            </a>
+
+                            <a href="{{ route('soporte.knowledge') }}"
+                               class="block px-4 py-2 text-[14px] font-semibold text-muted hover:text-text hover:bg-surface-2">
+                                Manuales de uso
                             </a>
 
                             <a href="{{ route('torneos.reclamos.index') }}"
@@ -373,6 +385,11 @@
                        class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
                         <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M5.6 5.6l3.1 3.1m6.6 6.6l3.1 3.1m0-12.8l-3.1 3.1m-6.6 6.6l-3.1 3.1"/></svg>
                         Centro de Soporte
+                    </a>
+                    <a href="{{ route('soporte.knowledge') }}" @click="sheet = null"
+                       class="flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold text-[15px] text-text active:bg-surface-2">
+                        <svg class="w-5 h-5 shrink-0 text-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 17h.007v.008H12V17z"/></svg>
+                        Centro de ayuda (todos los manuales)
                     </a>
                     @if ($torneosAccess)
                         <a href="{{ route('torneos.reclamos.index') }}" @click="sheet = null"
